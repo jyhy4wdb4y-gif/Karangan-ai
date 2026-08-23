@@ -39,7 +39,13 @@ const AvatarTutor = {
 
       tutor.innerHTML = `
         <div class="avatar-character">
-          <div class="avatar-face">👩‍🏫</div>
+          <div class="avatar-face">
+  <img
+    src="cikgu-aira.png"
+    alt="Cikgu Aira"
+    class="avatar-image"
+  >
+</div>
           <div class="avatar-status"></div>
         </div>
 
