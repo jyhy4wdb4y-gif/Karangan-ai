@@ -1,1237 +1,2750 @@
-/* =====================================================
-   KARANGAN AI — FULL VERSION V1
-   MAIN APP LOGIC
-===================================================== */
+/* =========================================================
+   KARANGAN AI
+   MASTER PRD v2.0
+   FULL APP CONTROLLER
+
+   Works with:
+   - index.html
+   - style.css
+   - stories.js
+   - avatar.js
+   - /api/ai
+   ========================================================= */
+
+"use strict";
 
 
-/* =====================================================
-   APP STATE
-===================================================== */
+/* =========================================================
+   1. APP CONFIG
+   ========================================================= */
 
-let currentPageIndex = 0;
-let currentPictureIndex = 0;
-let currentGrammarFilter = "";
-let currentQuizAnswered = {};
-let currentQuizCorrectCount = 0;
+const APP_CONFIG = {
+  version: "2.0",
+  storageKey: "karanganAI_v2_state",
+
+  missionOrder: [
+    "story",
+    "vocabulary",
+    "sentence-builder",
+    "grammar-rain",
+    "sentence-recall",
+    "creative-studio",
+    "ai-feedback"
+  ],
+
+  xpRewards: {
+    story: 20,
+    vocabulary: 10,
+    "sentence-builder": 15,
+    "grammar-rain": 15,
+    "sentence-recall": 15,
+    "creative-studio": 25,
+    "ai-feedback": 20
+  },
+
+  levels: [
+    { level: 1, minXp: 0, name: "Penjelajah Bahasa" },
+    { level: 2, minXp: 150, name: "Pemburu Perkataan" },
+    { level: 3, minXp: 350, name: "Pembina Ayat" },
+    { level: 4, minXp: 650, name: "Penulis Muda" },
+    { level: 5, minXp: 1000, name: "Jaguh Bahasa" }
+  ]
+};
 
 
-/* =====================================================
-   PAGE NAVIGATION
-===================================================== */
+/* =========================================================
+   2. DEFAULT STATE
+   ========================================================= */
 
-function openPage(index) {
+const DEFAULT_STATE = {
+  studentName: "Penjelajah Bahasa",
 
-  const pages =
-    document.querySelectorAll(".page");
+  xp: 120,
+  streak: 3,
 
-  const buttons =
-    document.querySelectorAll(".nav-button");
+  completedMissions: [],
 
-  if (!pages[index]) return;
+  storiesCompleted: 1,
 
-  pages.forEach(page =>
-    page.classList.remove("active")
-  );
+  vocabulary: [],
 
-  buttons.forEach(button =>
-    button.classList.remove("active")
-  );
+  savedWriting: "",
 
-  pages[index].classList.add("active");
+  badges: [
+    "first-step"
+  ],
 
-  if (buttons[index]) {
-    buttons[index].classList.add("active");
+  progress: {
+    reading: 20,
+    vocabulary: 10,
+    writing: 5
+  },
+
+  currentStoryId: null,
+
+  lastScreen: "home",
+
+  lastVisitDate: null
+};
+
+
+let appState = loadState();
+
+let currentScreen = "home";
+
+let previousScreen = "home";
+
+let activeModule = null;
+
+let currentStory = null;
+
+let currentTranslationWord = null;
+
+
+/* =========================================================
+   3. DOM HELPERS
+   ========================================================= */
+
+function $(selector) {
+  return document.querySelector(selector);
+}
+
+
+function $$(selector) {
+  return Array.from(document.querySelectorAll(selector));
+}
+
+
+function byId(id) {
+  return document.getElementById(id);
+}
+
+
+function safeText(element, value) {
+  if (element) {
+    element.textContent = value;
+  }
+}
+
+
+/* =========================================================
+   4. STORAGE
+   ========================================================= */
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(APP_CONFIG.storageKey);
+
+    if (!saved) {
+      return structuredCloneSafe(DEFAULT_STATE);
+    }
+
+    const parsed = JSON.parse(saved);
+
+    return {
+      ...structuredCloneSafe(DEFAULT_STATE),
+      ...parsed,
+
+      progress: {
+        ...DEFAULT_STATE.progress,
+        ...(parsed.progress || {})
+      },
+
+      completedMissions:
+        Array.isArray(parsed.completedMissions)
+          ? parsed.completedMissions
+          : [],
+
+      vocabulary:
+        Array.isArray(parsed.vocabulary)
+          ? parsed.vocabulary
+          : [],
+
+      badges:
+        Array.isArray(parsed.badges)
+          ? parsed.badges
+          : []
+    };
+
+  } catch (error) {
+    console.warn(
+      "Unable to load app state:",
+      error
+    );
+
+    return structuredCloneSafe(DEFAULT_STATE);
+  }
+}
+
+
+function saveState() {
+  try {
+    localStorage.setItem(
+      APP_CONFIG.storageKey,
+      JSON.stringify(appState)
+    );
+  } catch (error) {
+    console.warn(
+      "Unable to save app state:",
+      error
+    );
+  }
+}
+
+
+function structuredCloneSafe(value) {
+  if (typeof structuredClone === "function") {
+    return structuredClone(value);
   }
 
-  currentPageIndex = index;
+  return JSON.parse(
+    JSON.stringify(value)
+  );
+}
 
-  updateProgressBar();
+
+/* =========================================================
+   5. INITIALIZE APP
+   ========================================================= */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  initApp
+);
+
+
+function initApp() {
+
+  updateDailyStreak();
+
+  bindNavigation();
+
+  bindMissionCards();
+
+  bindStoryButtons();
+
+  bindWriting();
+
+  bindMentor();
+
+  bindTranslationPopup();
+
+  bindModuleControls();
+
+  bindModal();
+
+  bindQuickTools();
+
+  updateAllUI();
+
+  initializeAvatar();
+
+  showScreen(
+    appState.lastScreen || "home",
+    false
+  );
+
+  setTimeout(
+    hideLoadingScreen,
+    450
+  );
+}
+
+
+/* =========================================================
+   6. LOADING
+   ========================================================= */
+
+function hideLoadingScreen() {
+  const loading = byId(
+    "loadingScreen"
+  );
+
+  if (!loading) {
+    return;
+  }
+
+  loading.classList.add(
+    "hide"
+  );
+
+  setTimeout(
+    () => {
+      loading.style.display =
+        "none";
+    },
+    350
+  );
+}
+
+
+/* =========================================================
+   7. NAVIGATION
+   ========================================================= */
+
+function bindNavigation() {
+
+  $$("[data-nav]").forEach(
+    button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          const target =
+            button.dataset.nav;
+
+          showScreen(target);
+
+        }
+      );
+
+    }
+  );
+
+}
+
+
+function showScreen(
+  screenName,
+  remember = true
+) {
+
+  const target =
+    byId(
+      `${screenName}Screen`
+    );
+
+  if (!target) {
+    return;
+  }
+
+  previousScreen =
+    currentScreen;
+
+  currentScreen =
+    screenName;
+
+
+  $$(".screen").forEach(
+    screen => {
+
+      screen.classList.remove(
+        "active-screen"
+      );
+
+      screen.hidden = true;
+
+    }
+  );
+
+
+  target.hidden = false;
+
+  target.classList.add(
+    "active-screen"
+  );
+
+
+  const immersive =
+    screenName === "story" ||
+    screenName === "module";
+
+
+  const bottomNav =
+    byId(
+      "bottomNavigation"
+    );
+
+
+  const floatingMentor =
+    byId(
+      "mentorFloatingButton"
+    );
+
+
+  if (bottomNav) {
+    bottomNav.style.display =
+      immersive
+        ? "none"
+        : "";
+  }
+
+
+  if (floatingMentor) {
+    floatingMentor.style.display =
+      immersive
+        ? "none"
+        : "";
+  }
+
+
+  $$(".nav-item").forEach(
+    item => {
+
+      item.classList.toggle(
+        "active",
+        item.dataset.nav ===
+          screenName
+      );
+
+    }
+  );
+
+
+  if (
+    remember &&
+    [
+      "home",
+      "learn",
+      "create",
+      "me"
+    ].includes(screenName)
+  ) {
+
+    appState.lastScreen =
+      screenName;
+
+    saveState();
+
+  }
+
 
   window.scrollTo({
     top: 0,
     behavior: "smooth"
   });
 
-}
 
-
-/* =====================================================
-   PROGRESS BAR
-===================================================== */
-
-function updateProgressBar() {
-
-  const progress =
-    document.getElementById("progressFill");
-
-  const label =
-    document.getElementById("progressLabel");
-
-  if (!progress) return;
-
-  const totalPages =
-    document.querySelectorAll(".page").length;
-
-  const percentage =
-    Math.round(
-      ((currentPageIndex + 1) / totalPages)
-      * 100
-    );
-
-  progress.style.width =
-    percentage + "%";
-
-  if (label) {
-    label.textContent =
-      percentage + "%";
+  if (screenName === "me") {
+    initializeAvatar();
   }
 
 }
 
 
-/* =====================================================
-   HOME DASHBOARD
-===================================================== */
+/* =========================================================
+   8. DAILY STREAK
+   ========================================================= */
 
-function renderDashboard() {
+function updateDailyStreak() {
 
-  const progress =
-    getStudentProgress();
+  const today =
+    new Date()
+      .toISOString()
+      .slice(0, 10);
 
-  const lessons =
-    getAllStories();
 
-  const completed =
-    progress.completedLessons.length;
+  if (!appState.lastVisitDate) {
 
-  const lessonCount =
-    document.getElementById("statLessons");
+    appState.lastVisitDate =
+      today;
 
-  const starCount =
-    document.getElementById("statStars");
+    saveState();
 
-  const essayCount =
-    document.getElementById("statEssays");
-
-  if (lessonCount) {
-    lessonCount.textContent =
-      completed;
+    return;
   }
 
-  if (starCount) {
-    starCount.textContent =
-      progress.totalStars;
-  }
-
-  if (essayCount) {
-    essayCount.textContent =
-      progress.essaysWritten;
-  }
-
-
-  const welcome =
-    document.getElementById(
-      "welcomeProgress"
-    );
-
-  if (welcome) {
-
-    welcome.textContent =
-      completed +
-      " daripada " +
-      lessons.length +
-      " pelajaran telah selesai.";
-
-  }
-
-}
-
-
-/* =====================================================
-   STORY LIBRARY
-===================================================== */
-
-function renderStoryLibrary() {
-
-  const container =
-    document.getElementById(
-      "storyLibrary"
-    );
-
-  if (!container) return;
-
-  const stories =
-    getAllStories();
-
-  const progress =
-    getStudentProgress();
-
-  container.innerHTML =
-    stories.map(story => {
-
-      const completed =
-        progress.completedLessons
-          .includes(story.id);
-
-      return `
-        <article
-          class="story-card"
-          onclick="selectStory('${story.id}')"
-        >
-
-          <div class="story-image">
-            ${story.emoji}
-          </div>
-
-          <div class="story-content">
-
-            <span class="story-level">
-              ${story.level}
-            </span>
-
-            <h3>
-              ${story.title}
-              ${completed ? " ✅" : ""}
-            </h3>
-
-            <p>
-              ${story.description}
-            </p>
-
-          </div>
-
-        </article>
-      `;
-
-    }).join("");
-
-}
-
-
-/* =====================================================
-   SELECT LESSON
-===================================================== */
-
-function selectStory(id) {
-
-  const success =
-    setCurrentStory(id);
-
-  if (!success) return;
-
-  currentPictureIndex = 0;
-  currentQuizAnswered = {};
-  currentQuizCorrectCount = 0;
-  currentGrammarFilter = "";
-
-  renderCurrentLesson();
-
-  openPage(2);
-
-}
-
-
-/* =====================================================
-   RENDER CURRENT LESSON
-===================================================== */
-
-function renderCurrentLesson() {
-
-  const story =
-    getCurrentStory();
-
-  renderLessonHeader(story);
-  renderPictureStory(story);
-  renderStoryText(story);
-  renderGrammarStory(story);
-  renderQuiz(story);
-  renderWritingSection(story);
-
-}
-
-
-/* =====================================================
-   LESSON HEADER
-===================================================== */
-
-function renderLessonHeader(story) {
-
-  const title =
-    document.getElementById(
-      "lessonTitle"
-    );
-
-  const theme =
-    document.getElementById(
-      "lessonTheme"
-    );
-
-  const level =
-    document.getElementById(
-      "lessonLevel"
-    );
-
-  if (title) {
-    title.textContent =
-      story.title;
-  }
-
-  if (theme) {
-    theme.textContent =
-      story.theme;
-  }
-
-  if (level) {
-    level.textContent =
-      story.level;
-  }
-
-}
-
-
-/* =====================================================
-   PICTURE STORY
-===================================================== */
-
-function renderPictureStory(story) {
-
-  const picture =
-    story.pictures[
-      currentPictureIndex
-    ];
-
-  if (!picture) return;
-
-
-  const stage =
-    document.getElementById(
-      "pictureStage"
-    );
-
-  const number =
-    document.getElementById(
-      "pictureNumber"
-    );
-
-  const caption =
-    document.getElementById(
-      "pictureCaption"
-    );
-
-  const previous =
-    document.getElementById(
-      "previousPicture"
-    );
-
-  const next =
-    document.getElementById(
-      "nextPicture"
-    );
-
-
-  if (stage) {
-    stage.innerHTML =
-      `<span>${picture.emoji}</span>`;
-  }
-
-
-  if (number) {
-
-    number.textContent =
-      "Gambar " +
-      (currentPictureIndex + 1) +
-      " / " +
-      story.pictures.length;
-
-  }
-
-
-  if (caption) {
-    caption.textContent =
-      picture.caption;
-  }
-
-
-  if (previous) {
-    previous.disabled =
-      currentPictureIndex === 0;
-  }
-
-
-  if (next) {
-
-    next.disabled =
-      currentPictureIndex ===
-      story.pictures.length - 1;
-
-  }
-
-}
-
-
-/* =====================================================
-   PREVIOUS / NEXT PICTURE
-===================================================== */
-
-function previousPicture() {
-
-  const story =
-    getCurrentStory();
-
-  if (currentPictureIndex > 0) {
-
-    currentPictureIndex -= 1;
-
-    renderPictureStory(story);
-
-  }
-
-}
-
-
-function nextPicture() {
-
-  const story =
-    getCurrentStory();
 
   if (
-    currentPictureIndex <
-    story.pictures.length - 1
+    appState.lastVisitDate ===
+    today
+  ) {
+    return;
+  }
+
+
+  const previous =
+    new Date(
+      appState.lastVisitDate +
+      "T00:00:00"
+    );
+
+
+  const current =
+    new Date(
+      today +
+      "T00:00:00"
+    );
+
+
+  const difference =
+    Math.round(
+      (
+        current -
+        previous
+      ) /
+      86400000
+    );
+
+
+  if (difference === 1) {
+
+    appState.streak += 1;
+
+  } else if (
+    difference > 1
   ) {
 
-    currentPictureIndex += 1;
+    appState.streak = 1;
 
-    renderPictureStory(story);
+  }
+
+
+  appState.lastVisitDate =
+    today;
+
+  saveState();
+}
+
+
+/* =========================================================
+   9. UPDATE ALL UI
+   ========================================================= */
+
+function updateAllUI() {
+
+  updateHeader();
+
+  updateMissionUI();
+
+  updateProfileUI();
+
+  updateWritingUI();
+
+  updateProgressUI();
+
+  updateBadgeUI();
+
+}
+
+
+function updateHeader() {
+
+  safeText(
+    byId("xpCount"),
+    appState.xp
+  );
+
+  safeText(
+    byId("streakCount"),
+    appState.streak
+  );
+
+}
+
+
+/* =========================================================
+   10. LEVEL SYSTEM
+   ========================================================= */
+
+function getCurrentLevel() {
+
+  let current =
+    APP_CONFIG.levels[0];
+
+  APP_CONFIG.levels.forEach(
+    level => {
+
+      if (
+        appState.xp >=
+        level.minXp
+      ) {
+        current = level;
+      }
+
+    }
+  );
+
+  return current;
+}
+
+
+function getNextLevel() {
+
+  const current =
+    getCurrentLevel();
+
+  return (
+    APP_CONFIG.levels.find(
+      level =>
+        level.level ===
+        current.level + 1
+    ) ||
+    null
+  );
+}
+
+
+/* =========================================================
+   11. MISSION SYSTEM
+   ========================================================= */
+
+function bindMissionCards() {
+
+  $$("[data-module]").forEach(
+    button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          const module =
+            button.dataset.module;
+
+          openModule(module);
+
+        }
+      );
+
+    }
+  );
+
+
+  const startMission =
+    byId(
+      "startMissionButton"
+    );
+
+
+  if (startMission) {
+
+    startMission.addEventListener(
+      "click",
+      startNextMission
+    );
 
   }
 
 }
 
 
-/* =====================================================
-   WORD CLICKABLE STORY
-===================================================== */
+function startNextMission() {
 
-function buildClickableStory(
-  story,
-  grammarMode = false
-) {
-
-  const parts =
-    story.story.split(/(\s+)/);
-
-  return parts.map(part => {
-
-    if (/^\s+$/.test(part)) {
-      return part;
-    }
+  const next =
+    APP_CONFIG.missionOrder.find(
+      mission =>
+        !appState.completedMissions.includes(
+          mission
+        )
+    );
 
 
-    const clean =
-      normalizeMalayWord(part);
+  if (!next) {
 
-    const grammarType =
-      getGrammarType(clean);
+    showToast(
+      "🎉 Semua misi hari ini sudah selesai!"
+    );
 
-
-    const classes = [
-      "word"
-    ];
+    return;
+  }
 
 
-    if (grammarType) {
-      classes.push(grammarType);
-    }
-
-
-    if (
-      grammarMode &&
-      currentGrammarFilter &&
-      grammarType ===
-        currentGrammarFilter
-    ) {
-
-      classes.push("highlight");
-
-    }
-
-
-    const safeWord =
-      clean.replace(
-        /'/g,
-        "\\'"
-      );
-
-
-    return `
-      <span
-        class="${classes.join(" ")}"
-        onclick="translateWord('${safeWord}', this)"
-      >${part}</span>
-    `;
-
-  }).join("");
-
+  openModule(next);
 }
 
 
-/* =====================================================
-   RENDER STORY TEXT
-===================================================== */
-
-function renderStoryText(story) {
-
-  const container =
-    document.getElementById(
-      "storyText"
-    );
-
-  if (!container) return;
-
-  container.innerHTML =
-    buildClickableStory(
-      story,
-      false
-    );
-
-}
-
-
-/* =====================================================
-   WORD TRANSLATION
-===================================================== */
-
-function translateWord(
-  word,
-  element
+function completeMission(
+  missionName
 ) {
 
-  const clean =
-    normalizeMalayWord(word);
-
-  const meaning =
-    getTranslation(clean);
-
-
-  document
-    .querySelectorAll(
-      ".word.selected"
+  if (
+    appState.completedMissions.includes(
+      missionName
     )
-    .forEach(item =>
-      item.classList.remove(
-        "selected"
+  ) {
+
+    showToast(
+      "✅ Aktiviti ini sudah selesai."
+    );
+
+    return false;
+  }
+
+
+  appState.completedMissions.push(
+    missionName
+  );
+
+
+  const reward =
+    APP_CONFIG.xpRewards[
+      missionName
+    ] || 10;
+
+
+  appState.xp += reward;
+
+
+  updateLearningProgress(
+    missionName
+  );
+
+
+  saveState();
+
+  updateAllUI();
+
+
+  showToast(
+    `⭐ +${reward} XP! Syabas!`
+  );
+
+
+  return true;
+}
+
+
+function updateMissionUI() {
+
+  const completed =
+    appState.completedMissions.length;
+
+  const total =
+    APP_CONFIG.missionOrder.length;
+
+  safeText(
+    byId(
+      "missionCompletedCount"
+    ),
+    completed
+  );
+
+  safeText(
+    byId(
+      "missionTotalCount"
+    ),
+    total
+  );
+
+
+  const progress =
+    Math.min(
+      100,
+      Math.round(
+        completed /
+        total *
+        100
       )
     );
 
 
-  if (element) {
-    element.classList.add(
-      "selected"
+  const bar =
+    byId(
+      "missionProgressBar"
     );
+
+
+  if (bar) {
+    bar.style.width =
+      `${progress}%`;
   }
 
 
+  $$(
+    ".mission-card[data-module]"
+  ).forEach(
+    card => {
+
+      const mission =
+        card.dataset.module;
+
+      const complete =
+        appState.completedMissions.includes(
+          mission
+        );
+
+
+      card.classList.toggle(
+        "completed",
+        complete
+      );
+
+
+      const status =
+        card.querySelector(
+          ".mission-status"
+        );
+
+
+      if (
+        complete &&
+        status
+      ) {
+
+        status.textContent =
+          "✓ Selesai";
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   12. OPEN MODULE
+   ========================================================= */
+
+function openModule(
+  moduleName
+) {
+
+  activeModule =
+    moduleName;
+
+
+  switch (moduleName) {
+
+    case "story":
+      openStory();
+      break;
+
+    case "vocabulary":
+      renderVocabularyModule();
+      break;
+
+    case "sentence-builder":
+      renderSentenceBuilder();
+      break;
+
+    case "grammar-rain":
+      renderGrammarRain();
+      break;
+
+    case "sentence-recall":
+      renderSentenceRecall();
+      break;
+
+    case "creative-studio":
+      showScreen("create");
+      focusWriting();
+      break;
+
+    case "ai-feedback":
+      showScreen("create");
+      runWritingFeedback();
+      break;
+
+    case "ai-mentor":
+      openMentorPanel();
+      break;
+
+    default:
+      showToast(
+        "Aktiviti akan datang."
+      );
+  }
+
+}
+
+
+/* =========================================================
+   13. GENERIC MODULE SCREEN
+   ========================================================= */
+
+function openModuleScreen(
+  html,
+  progress = 20
+) {
+
+  const container =
+    byId(
+      "moduleContent"
+    );
+
+
+  if (container) {
+    container.innerHTML =
+      html;
+  }
+
+
+  const bar =
+    byId(
+      "moduleProgressBar"
+    );
+
+
+  if (bar) {
+    bar.style.width =
+      `${progress}%`;
+  }
+
+
+  showScreen(
+    "module",
+    false
+  );
+
+}
+
+
+function bindModuleControls() {
+
+  const back =
+    byId(
+      "moduleBackButton"
+    );
+
+
+  const close =
+    byId(
+      "moduleCloseButton"
+    );
+
+
+  const storyBack =
+    byId(
+      "storyBackButton"
+    );
+
+
+  if (back) {
+
+    back.addEventListener(
+      "click",
+      closeModule
+    );
+
+  }
+
+
+  if (close) {
+
+    close.addEventListener(
+      "click",
+      closeModule
+    );
+
+  }
+
+
+  if (storyBack) {
+
+    storyBack.addEventListener(
+      "click",
+      closeStory
+    );
+
+  }
+
+}
+
+
+function closeModule() {
+
+  showScreen(
+    previousScreen === "module"
+      ? "learn"
+      : previousScreen
+  );
+
+}
+
+
+function closeStory() {
+
+  showScreen(
+    previousScreen === "story"
+      ? "home"
+      : previousScreen
+  );
+
+}
+
+
+/* =========================================================
+   14. STORY DATA ADAPTER
+   ========================================================= */
+
+function getStoryCollection() {
+
+  try {
+
+    if (
+      typeof stories !==
+      "undefined"
+    ) {
+
+      if (
+        Array.isArray(stories)
+      ) {
+        return stories;
+      }
+
+
+      if (
+        typeof stories ===
+        "object"
+      ) {
+        return Object.values(
+          stories
+        );
+      }
+
+    }
+
+  } catch (error) {
+    console.warn(error);
+  }
+
+
+  if (
+    Array.isArray(
+      window.stories
+    )
+  ) {
+    return window.stories;
+  }
+
+
+  if (
+    Array.isArray(
+      window.STORIES
+    )
+  ) {
+    return window.STORIES;
+  }
+
+
+  if (
+    Array.isArray(
+      window.storyData
+    )
+  ) {
+    return window.storyData;
+  }
+
+
+  return [];
+}
+
+
+/* =========================================================
+   15. FALLBACK STORY
+   ========================================================= */
+
+function getFallbackStory() {
+
+  return {
+
+    id: "story-1",
+
+    title:
+      "Pengembaraan Hari Ini",
+
+    image:
+      "2411F84C-22BF-4BE2-848E-BE95A12D02A9.png",
+
+    paragraphs: [
+      "Pada pagi yang cerah, Aiman bangun awal untuk membantu ibunya di rumah.",
+      "Selepas bersarapan, Aiman menyusun buku dan membersihkan meja belajarnya.",
+      "Ibunya berasa gembira kerana Aiman seorang anak yang rajin dan bertanggungjawab.",
+      "Aiman juga berjanji untuk menyiapkan kerja sekolah sebelum bermain bersama kawan-kawannya."
+    ]
+
+  };
+
+}
+
+
+/* =========================================================
+   16. STORY OPENING
+   ========================================================= */
+
+function bindStoryButtons() {
+
+  $$("[data-story-id]").forEach(
+    button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          openStory(
+            button.dataset.storyId
+          );
+
+        }
+      );
+
+    }
+  );
+
+}
+
+
+function openStory(
+  storyId = null
+) {
+
+  const collection =
+    getStoryCollection();
+
+
+  let story = null;
+
+
+  if (storyId) {
+
+    story =
+      collection.find(
+        item =>
+          String(
+            item.id ||
+            item.storyId ||
+            item.slug
+          ) ===
+          String(storyId)
+      );
+
+  }
+
+
+  if (!story) {
+    story =
+      collection[0] ||
+      getFallbackStory();
+  }
+
+
+  currentStory =
+    normalizeStory(story);
+
+
+  appState.currentStoryId =
+    currentStory.id;
+
+  saveState();
+
+
+  renderStory(
+    currentStory
+  );
+
+
+  showScreen(
+    "story",
+    false
+  );
+
+}
+
+
+/* =========================================================
+   17. NORMALIZE STORY
+   ========================================================= */
+
+function normalizeStory(
+  story
+) {
+
+  const title =
+    story.title ||
+    story.name ||
+    story.judul ||
+    "Cerita Bahasa Melayu";
+
+
+  const image =
+    story.image ||
+    story.imageUrl ||
+    story.img ||
+    story.cover ||
+    "2411F84C-22BF-4BE2-848E-BE95A12D02A9.png";
+
+
+  let paragraphs =
+    story.paragraphs ||
+    story.content ||
+    story.text ||
+    story.story ||
+    [];
+
+
+  if (
+    typeof paragraphs ===
+    "string"
+  ) {
+
+    paragraphs =
+      paragraphs
+        .split(/\n+/)
+        .filter(Boolean);
+
+  }
+
+
+  if (
+    !Array.isArray(
+      paragraphs
+    )
+  ) {
+    paragraphs = [];
+  }
+
+
+  return {
+    ...story,
+
+    id:
+      story.id ||
+      story.storyId ||
+      "story-1",
+
+    title,
+
+    image,
+
+    paragraphs
+  };
+
+}
+
+
+/* =========================================================
+   18. STORY RENDERER
+   ========================================================= */
+
+function renderStory(
+  story
+) {
+
+  safeText(
+    byId(
+      "storyHeaderTitle"
+    ),
+    story.title
+  );
+
+
+  const reader =
+    byId(
+      "storyReader"
+    );
+
+
+  if (!reader) {
+    return;
+  }
+
+
+  let html = "";
+
+
+  if (story.image) {
+
+    html += `
+      <img
+        src="${escapeAttribute(
+          story.image
+        )}"
+        alt="${escapeAttribute(
+          story.title
+        )}"
+      />
+    `;
+
+  }
+
+
+  html += `
+    <h1>${escapeHtml(
+      story.title
+    )}</h1>
+  `;
+
+
+  story.paragraphs.forEach(
+    paragraph => {
+
+      html += `
+        <p class="interactive-story-paragraph">
+          ${makeWordsClickable(
+            paragraph
+          )}
+        </p>
+      `;
+
+    }
+  );
+
+
+  html += `
+    <div style="
+      margin-top:32px;
+      padding:20px;
+      border-radius:20px;
+      background:#fff7e7;
+      text-align:center;
+    ">
+      <h3>Sudah habis membaca?</h3>
+
+      <p>
+        Tekan mana-mana perkataan untuk melihat maksudnya.
+      </p>
+
+      <button
+        id="finishStoryButton"
+        class="primary-button"
+        type="button"
+      >
+        ✓ Saya Sudah Baca
+      </button>
+    </div>
+  `;
+
+
+  reader.innerHTML =
+    html;
+
+
+  reader
+    .querySelectorAll(
+      "[data-word]"
+    )
+    .forEach(
+      element => {
+
+        element.addEventListener(
+          "click",
+          () => {
+
+            translateWord(
+              element.dataset.word
+            );
+
+          }
+        );
+
+      }
+    );
+
+
+  const finish =
+    byId(
+      "finishStoryButton"
+    );
+
+
+  if (finish) {
+
+    finish.addEventListener(
+      "click",
+      () => {
+
+        const firstTime =
+          completeMission(
+            "story"
+          );
+
+
+        if (firstTime) {
+
+          appState.storiesCompleted +=
+            1;
+
+          saveState();
+
+          updateAllUI();
+
+        }
+
+
+        setTimeout(
+          () =>
+            openModule(
+              "vocabulary"
+            ),
+          500
+        );
+
+      }
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   19. CLICKABLE STORY WORDS
+   ========================================================= */
+
+function makeWordsClickable(
+  text
+) {
+
+  const escaped =
+    escapeHtml(
+      String(text)
+    );
+
+
+  return escaped.replace(
+    /([A-Za-zÀ-ÿ'-]+)/g,
+    word => {
+
+      const clean =
+        word
+          .replace(
+            /[^A-Za-zÀ-ÿ'-]/g,
+            ""
+          );
+
+
+      if (
+        clean.length <= 1
+      ) {
+        return word;
+      }
+
+
+      return `
+        <span
+          class="story-word"
+          data-word="${escapeAttribute(
+            clean
+          )}"
+        >${word}</span>
+      `;
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   20. TRANSLATION DICTIONARY
+   ========================================================= */
+
+const BASIC_DICTIONARY = {
+
+  pagi: {
+    zh: "早上",
+    en: "morning"
+  },
+
+  cerah: {
+    zh: "晴朗",
+    en: "bright / clear"
+  },
+
+  membantu: {
+    zh: "帮助",
+    en: "help"
+  },
+
+  ibu: {
+    zh: "母亲",
+    en: "mother"
+  },
+
+  rumah: {
+    zh: "家 / 房子",
+    en: "house / home"
+  },
+
+  buku: {
+    zh: "书",
+    en: "book"
+  },
+
+  belajar: {
+    zh: "学习",
+    en: "study / learn"
+  },
+
+  gembira: {
+    zh: "开心",
+    en: "happy"
+  },
+
+  rajin: {
+    zh: "勤劳",
+    en: "diligent"
+  },
+
+  bertanggungjawab: {
+    zh: "负责任",
+    en: "responsible"
+  },
+
+  sekolah: {
+    zh: "学校",
+    en: "school"
+  },
+
+  bermain: {
+    zh: "玩",
+    en: "play"
+  },
+
+  kawan: {
+    zh: "朋友",
+    en: "friend"
+  },
+
+  membersihkan: {
+    zh: "清理",
+    en: "clean"
+  },
+
+  menyusun: {
+    zh: "整理 / 排列",
+    en: "arrange"
+  },
+
+  awal: {
+    zh: "早",
+    en: "early"
+  }
+
+};
+
+
+/* =========================================================
+   21. TRANSLATE WORD
+   ========================================================= */
+
+async function translateWord(
+  rawWord
+) {
+
+  const word =
+    String(rawWord)
+      .toLowerCase()
+      .trim();
+
+
+  if (!word) {
+    return;
+  }
+
+
+  currentTranslationWord =
+    word;
+
+
   const popup =
-    document.getElementById(
+    byId(
       "translationPopup"
     );
 
-  const wordLabel =
-    document.getElementById(
+
+  const wordElement =
+    byId(
       "translationWord"
     );
 
-  const chinese =
-    document.getElementById(
-      "translationChinese"
+
+  const meaning =
+    byId(
+      "translationMeaning"
     );
 
+
   const example =
-    document.getElementById(
+    byId(
       "translationExample"
     );
 
 
-  if (!popup) return;
-
-
-  if (wordLabel) {
-    wordLabel.textContent =
-      clean;
+  if (popup) {
+    popup.hidden = false;
   }
 
 
-  if (chinese) {
-
-    chinese.textContent =
-      meaning
-        ? "中文：" + meaning
-        : "中文：暂无内置翻译";
-
-  }
-
-
-  if (example) {
-
-    if (meaning) {
-
-      example.textContent =
-        "Tekan perkataan lain untuk melihat maksudnya.";
-
-    } else {
-
-      example.textContent =
-        "Perkataan ini belum dimasukkan ke dalam kamus pelajaran ini.";
-
-    }
-
-  }
-
-
-  popup.classList.add("show");
-
-}
-
-
-/* =====================================================
-   TEXT TO SPEECH
-===================================================== */
-
-function readCurrentStory() {
-
-  const story =
-    getCurrentStory();
-
-  if (
-    !("speechSynthesis" in window)
-  ) {
-
-    alert(
-      "Peranti ini tidak menyokong fungsi bacaan."
-    );
-
-    return;
-
-  }
-
-
-  speechSynthesis.cancel();
-
-
-  const speech =
-    new SpeechSynthesisUtterance(
-      story.story
-    );
-
-
-  speech.lang = "ms-MY";
-
-  speech.rate = 0.85;
-
-  speech.pitch = 1;
-
-
-  const voices =
-    speechSynthesis.getVoices();
-
-
-  const malayVoice =
-    voices.find(voice =>
-      voice.lang &&
-      voice.lang
-        .toLowerCase()
-        .startsWith("ms")
-    );
-
-
-  if (malayVoice) {
-    speech.voice =
-      malayVoice;
-  }
-
-
-  speechSynthesis.speak(
-    speech
+  safeText(
+    wordElement,
+    word
   );
 
-}
 
-
-function stopReading() {
-
-  if (
-    "speechSynthesis" in window
-  ) {
-
-    speechSynthesis.cancel();
-
-  }
-
-}
-
-
-/* =====================================================
-   GRAMMAR STORY
-===================================================== */
-
-function renderGrammarStory(story) {
-
-  const container =
-    document.getElementById(
-      "grammarStory"
-    );
-
-  if (!container) return;
-
-
-  container.innerHTML =
-    buildClickableStory(
-      story,
-      true
-    );
-
-}
-
-
-/* =====================================================
-   GRAMMAR FILTER
-===================================================== */
-
-function highlightGrammar(type) {
-
-  currentGrammarFilter =
-    type;
-
-  renderGrammarStory(
-    getCurrentStory()
-  );
-
-}
-
-
-function clearGrammarHighlight() {
-
-  currentGrammarFilter = "";
-
-  renderGrammarStory(
-    getCurrentStory()
-  );
-
-}
-
-
-/* =====================================================
-   QUIZ
-===================================================== */
-
-function renderQuiz(story) {
-
-  const container =
-    document.getElementById(
-      "quizContainer"
-    );
-
-  if (!container) return;
-
-
-  currentQuizAnswered = {};
-  currentQuizCorrectCount = 0;
-
-
-  container.innerHTML =
-    story.questions.map(
-      (question, questionIndex) => {
-
-        const answers =
-          question.answers.map(
-            (answer, answerIndex) => {
-
-              return `
-                <button
-                  class="answer-button"
-                  onclick="
-                    answerQuiz(
-                      ${questionIndex},
-                      ${answerIndex},
-                      this
-                    )
-                  "
-                >
-                  ${answer}
-                </button>
-              `;
-
-            }
-          ).join("");
-
-
-        return `
-          <div class="card question-card">
-
-            <div class="question-number">
-              Soalan ${questionIndex + 1}
-            </div>
-
-            <div class="question">
-              ${question.question}
-            </div>
-
-            <div
-              class="answers"
-              id="answers-${questionIndex}"
-            >
-
-              ${answers}
-
-            </div>
-
-            <div
-              class="quiz-feedback"
-              id="feedback-${questionIndex}"
-            ></div>
-
-          </div>
-        `;
-
-      }
-    ).join("");
-
-}
-
-
-/* =====================================================
-   ANSWER QUIZ
-===================================================== */
-
-function answerQuiz(
-  questionIndex,
-  answerIndex,
-  button
-) {
-
-  if (
-    currentQuizAnswered[
-      questionIndex
-    ]
-  ) {
-
-    return;
-
-  }
-
-
-  const story =
-    getCurrentStory();
-
-
-  const question =
-    story.questions[
-      questionIndex
+  const local =
+    BASIC_DICTIONARY[
+      word
     ];
 
 
-  if (!question) return;
+  if (local) {
 
-
-  currentQuizAnswered[
-    questionIndex
-  ] = true;
-
-
-  const buttons =
-    document.querySelectorAll(
-      `#answers-${questionIndex}
-      .answer-button`
+    safeText(
+      meaning,
+      `${local.zh} · ${local.en}`
     );
 
 
-  buttons.forEach(
-    answerButton => {
+    safeText(
+      example,
+      `Perkataan: "${word}"`
+    );
 
-      answerButton.disabled =
-        true;
+
+    return;
+
+  }
+
+
+  safeText(
+    meaning,
+    "Mencari maksud..."
+  );
+
+
+  safeText(
+    example,
+    "Cikgu Aira sedang membantu."
+  );
+
+
+  try {
+
+    const result =
+      await callAI({
+        type: "translate",
+        word
+      });
+
+
+    const answer =
+      extractAIText(
+        result
+      );
+
+
+    safeText(
+      meaning,
+      answer ||
+      "Maksud belum tersedia."
+    );
+
+
+    safeText(
+      example,
+      `Perkataan Bahasa Melayu: ${word}`
+    );
+
+  } catch (error) {
+
+    safeText(
+      meaning,
+      "Tekan Tanya Cikgu Aira untuk bantuan."
+    );
+
+
+    safeText(
+      example,
+      "Terjemahan AI tidak tersedia buat sementara."
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   22. TRANSLATION POPUP EVENTS
+   ========================================================= */
+
+function bindTranslationPopup() {
+
+  const close =
+    byId(
+      "translationCloseButton"
+    );
+
+
+  const save =
+    byId(
+      "saveVocabularyButton"
+    );
+
+
+  if (close) {
+
+    close.addEventListener(
+      "click",
+      () => {
+
+        const popup =
+          byId(
+            "translationPopup"
+          );
+
+        if (popup) {
+          popup.hidden =
+            true;
+        }
+
+      }
+    );
+
+  }
+
+
+  if (save) {
+
+    save.addEventListener(
+      "click",
+      saveCurrentVocabulary
+    );
+
+  }
+
+}
+
+
+function saveCurrentVocabulary() {
+
+  if (
+    !currentTranslationWord
+  ) {
+    return;
+  }
+
+
+  const exists =
+    appState.vocabulary.some(
+      item =>
+        item.word ===
+        currentTranslationWord
+    );
+
+
+  if (!exists) {
+
+    appState.vocabulary.push({
+      word:
+        currentTranslationWord,
+
+      addedAt:
+        new Date()
+          .toISOString()
+    });
+
+
+    appState.progress.vocabulary =
+      Math.min(
+        100,
+        appState.progress.vocabulary +
+        5
+      );
+
+
+    saveState();
+
+    updateAllUI();
+
+
+    showToast(
+      "🧠 Disimpan dalam Buku Kosa Kata!"
+    );
+
+  } else {
+
+    showToast(
+      "Perkataan ini sudah disimpan."
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   23. VOCABULARY MODULE
+   ========================================================= */
+
+function renderVocabularyModule() {
+
+  const words =
+    appState.vocabulary;
+
+
+  const list =
+    words.length
+      ? words
+          .map(
+            item => `
+              <div
+                style="
+                  padding:15px 17px;
+                  border:1px solid #ece8e1;
+                  border-radius:16px;
+                  background:white;
+                  font-weight:750;
+                "
+              >
+                🧠 ${escapeHtml(
+                  item.word
+                )}
+              </div>
+            `
+          )
+          .join("")
+
+      : `
+        <div style="
+          padding:24px;
+          border-radius:18px;
+          background:#fff7e7;
+          text-align:center;
+        ">
+          <div style="
+            font-size:42px;
+            margin-bottom:10px;
+          ">
+            📖
+          </div>
+
+          <strong>
+            Buku kosa kata kamu masih kosong.
+          </strong>
+
+          <p style="
+            color:#65727a;
+            line-height:1.6;
+          ">
+            Buka cerita dan tekan mana-mana perkataan.
+            Kemudian simpan perkataan itu di sini.
+          </p>
+        </div>
+      `;
+
+
+  openModuleScreen(
+    `
+      <span class="section-kicker">
+        LANGKAH 2
+      </span>
+
+      <h1>
+        🧠 Buku Kosa Kata
+      </h1>
+
+      <p style="
+        color:#65727a;
+        line-height:1.7;
+      ">
+        Ingat semula perkataan yang kamu jumpa dalam cerita.
+      </p>
+
+      <div style="
+        display:grid;
+        gap:10px;
+        margin:24px 0;
+      ">
+        ${list}
+      </div>
+
+      <button
+        id="finishVocabularyButton"
+        class="primary-button"
+        type="button"
+      >
+        ✓ Saya Sudah Ulang Kaji
+      </button>
+    `,
+    28
+  );
+
+
+  setTimeout(
+    () => {
+
+      const button =
+        byId(
+          "finishVocabularyButton"
+        );
+
+
+      if (button) {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            completeMission(
+              "vocabulary"
+            );
+
+
+            setTimeout(
+              () =>
+                openModule(
+                  "sentence-builder"
+                ),
+              450
+            );
+
+          }
+        );
+
+      }
+
+    },
+    0
+  );
+
+}
+
+
+/* =========================================================
+   24. SENTENCE BUILDER
+   ========================================================= */
+
+function renderSentenceBuilder() {
+
+  const words = [
+    "Aiman",
+    "membantu",
+    "ibunya",
+    "di",
+    "rumah"
+  ];
+
+
+  openModuleScreen(
+    `
+      <span class="section-kicker">
+        LANGKAH 3
+      </span>
+
+      <h1>
+        🧩 Bina Ayat
+      </h1>
+
+      <p style="
+        color:#65727a;
+        line-height:1.7;
+      ">
+        Tekan perkataan mengikut susunan yang betul.
+      </p>
+
+      <div
+        id="sentenceAnswerArea"
+        style="
+          min-height:80px;
+          margin:24px 0 16px;
+          padding:16px;
+          border:2px dashed #d9d4cc;
+          border-radius:18px;
+          background:white;
+          display:flex;
+          flex-wrap:wrap;
+          gap:8px;
+          align-items:center;
+        "
+      >
+        <span style="color:#9ba4a9;">
+          Ayat kamu akan muncul di sini...
+        </span>
+      </div>
+
+      <div
+        id="sentenceWordBank"
+        style="
+          display:flex;
+          flex-wrap:wrap;
+          gap:10px;
+          margin-bottom:24px;
+        "
+      >
+        ${shuffleArray(words)
+          .map(
+            word => `
+              <button
+                class="secondary-button sentence-choice"
+                data-sentence-word="${word}"
+                type="button"
+              >
+                ${word}
+              </button>
+            `
+          )
+          .join("")}
+      </div>
+
+      <button
+        id="checkSentenceButton"
+        class="primary-button"
+        type="button"
+      >
+        Semak Ayat
+      </button>
+    `,
+    42
+  );
+
+
+  setTimeout(
+    initializeSentenceBuilder,
+    0
+  );
+
+}
+
+
+function initializeSentenceBuilder() {
+
+  const selected = [];
+
+  const answer =
+    byId(
+      "sentenceAnswerArea"
+    );
+
+
+  const renderAnswer =
+    () => {
+
+      if (!answer) {
+        return;
+      }
+
+
+      if (!selected.length) {
+
+        answer.innerHTML = `
+          <span style="color:#9ba4a9;">
+            Ayat kamu akan muncul di sini...
+          </span>
+        `;
+
+        return;
+      }
+
+
+      answer.innerHTML =
+        selected
+          .map(
+            word => `
+              <span
+                style="
+                  padding:8px 10px;
+                  background:#eaf3ff;
+                  border-radius:10px;
+                  font-weight:750;
+                "
+              >
+                ${word}
+              </span>
+            `
+          )
+          .join("");
+
+    };
+
+
+  $$(
+    "[data-sentence-word]"
+  ).forEach(
+    button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          selected.push(
+            button.dataset.sentenceWord
+          );
+
+          button.disabled =
+            true;
+
+          button.style.opacity =
+            "0.4";
+
+          renderAnswer();
+
+        }
+      );
 
     }
   );
 
 
-  const feedback =
-    document.getElementById(
-      "feedback-" +
-      questionIndex
+  const check =
+    byId(
+      "checkSentenceButton"
+    );
+
+
+  if (check) {
+
+    check.addEventListener(
+      "click",
+      () => {
+
+        const response =
+          selected.join(" ");
+
+
+        if (
+          response ===
+          "Aiman membantu ibunya di rumah"
+        ) {
+
+          showToast(
+            "🎉 Betul! Ayat yang sangat baik."
+          );
+
+
+          completeMission(
+            "sentence-builder"
+          );
+
+
+          setTimeout(
+            () =>
+              openModule(
+                "grammar-rain"
+              ),
+            700
+          );
+
+        } else {
+
+          showToast(
+            "💡 Cuba lagi. Mulakan dengan Aiman."
+          );
+
+
+          setTimeout(
+            () =>
+              renderSentenceBuilder(),
+            700
+          );
+
+        }
+
+      }
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   25. GRAMMAR RAIN
+   ========================================================= */
+
+function renderGrammarRain() {
+
+  openModuleScreen(
+    `
+      <span class="section-kicker">
+        LANGKAH 4
+      </span>
+
+      <h1>
+        🌧️ Grammar Rain
+      </h1>
+
+      <p style="
+        color:#65727a;
+        line-height:1.7;
+      ">
+        Pilih perkataan yang paling sesuai.
+      </p>
+
+      <div style="
+        margin:26px 0;
+        padding:24px;
+        border-radius:22px;
+        background:#eeecff;
+      ">
+        <strong style="font-size:20px;">
+          Aiman _____ ibunya membersihkan rumah.
+        </strong>
+      </div>
+
+      <div style="
+        display:grid;
+        gap:12px;
+      ">
+
+        <button
+          class="secondary-button grammar-answer"
+          data-answer="membantu"
+          type="button"
+        >
+          membantu
+        </button>
+
+        <button
+          class="secondary-button grammar-answer"
+          data-answer="membaca"
+          type="button"
+        >
+          membaca
+        </button>
+
+        <button
+          class="secondary-button grammar-answer"
+          data-answer="tidur"
+          type="button"
+        >
+          tidur
+        </button>
+
+      </div>
+    `,
+    57
+  );
+
+
+  setTimeout(
+    () => {
+
+      $$(
+        ".grammar-answer"
+      ).forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              if (
+                button.dataset.answer ===
+                "membantu"
+              ) {
+
+                showToast(
+                  "🌟 Betul! Aiman membantu ibunya."
+                );
+
+
+                completeMission(
+                  "grammar-rain"
+                );
+
+
+                setTimeout(
+                  () =>
+                    openModule(
+                      "sentence-recall"
+                    ),
+                  650
+                );
+
+              } else {
+
+                showToast(
+                  "💡 Belum tepat. Cuba lagi."
+                );
+
+              }
+
+            }
+          );
+
+        }
+      );
+
+    },
+    0
+  );
+
+}
+
+
+/* =========================================================
+   26. SENTENCE RECALL
+   ========================================================= */
+
+function renderSentenceRecall() {
+
+  openModuleScreen(
+    `
+      <span class="section-kicker">
+        LANGKAH 5
+      </span>
+
+      <h1>
+        💭 Ingat Ayat
+      </h1>
+
+      <p style="
+        color:#65727a;
+        line-height:1.7;
+      ">
+        Tadi kita membaca satu ayat tentang Aiman.
+        Cuba tulis semula apa yang kamu ingat.
+      </p>
+
+      <div style="
+        padding:18px;
+        border-radius:18px;
+        background:#fff7d5;
+        margin:22px 0;
+      ">
+        💡 Petunjuk:
+        <strong>
+          Aiman + membantu + ibu
+        </strong>
+      </div>
+
+      <textarea
+        id="recallInput"
+        class="karangan-textarea"
+        style="
+          min-height:150px;
+          border:1px solid #ece8e1;
+          border-radius:18px;
+          margin-bottom:16px;
+        "
+        placeholder="Tulis ayat kamu..."
+      ></textarea>
+
+      <button
+        id="checkRecallButton"
+        class="primary-button"
+        type="button"
+      >
+        Semak
+      </button>
+    `,
+    71
+  );
+
+
+  setTimeout(
+    () => {
+
+      const button =
+        byId(
+          "checkRecallButton"
+        );
+
+
+      if (!button) {
+        return;
+      }
+
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          const value =
+            byId(
+              "recallInput"
+            )
+              ?.value
+              .trim()
+              .toLowerCase() ||
+            "";
+
+
+          if (
+            value.includes(
+              "aiman"
+            ) &&
+            value.includes(
+              "membantu"
+            )
+          ) {
+
+            showToast(
+              "🧠 Bagus! Kamu berjaya mengingat ayat."
+            );
+
+
+            completeMission(
+              "sentence-recall"
+            );
+
+
+            setTimeout(
+              () => {
+
+                showScreen(
+                  "create"
+                );
+
+                focusWriting();
+
+              },
+              650
+            );
+
+          } else {
+
+            showToast(
+              "💡 Cuba gunakan perkataan Aiman dan membantu."
+            );
+
+          }
+
+        }
+      );
+
+    },
+    0
+  );
+
+}
+
+
+/* =========================================================
+   27. WRITING
+   ========================================================= */
+
+function bindWriting() {
+
+  const textarea =
+    byId(
+      "karanganInput"
+    );
+
+
+  const saveButton =
+    byId(
+      "saveWritingButton"
+    );
+
+
+  const checkButton =
+    byId(
+      "checkWritingButton"
+    );
+
+
+  if (textarea) {
+
+    textarea.value =
+      appState.savedWriting ||
+      "";
+
+
+    textarea.addEventListener(
+      "input",
+      () => {
+
+        updateWordCount();
+
+      }
+    );
+
+  }
+
+
+  if (saveButton) {
+
+    saveButton.addEventListener(
+      "click",
+      saveWriting
+    );
+
+  }
+
+
+  if (checkButton) {
+
+    checkButton.addEventListener(
+      "click",
+      runWritingFeedback
+    );
+
+  }
+
+}
+
+
+function focusWriting() {
+
+  setTimeout(
+    () => {
+
+      byId(
+        "karanganInput"
+      )?.focus();
+
+    },
+    300
+  );
+
+}
+
+
+function saveWriting() {
+
+  const textarea =
+    byId(
+      "karanganInput"
+    );
+
+
+  if (!textarea) {
+    return;
+  }
+
+
+  appState.savedWriting =
+    textarea.value;
+
+
+  saveState();
+
+
+  showToast(
+    "💾 Karangan sudah disimpan."
+  );
+
+
+  if (
+    textarea.value
+      .trim()
+      .length >= 20
+  ) {
+
+    completeMission(
+      "creative-studio"
+    );
+
+  }
+
+}
+
+
+function updateWritingUI() {
+
+  const textarea =
+    byId(
+      "karanganInput"
     );
 
 
   if (
-    answerIndex ===
-    question.correct
+    textarea &&
+    textarea.value !==
+    appState.savedWriting
   ) {
 
-    button.classList.add(
-      "correct"
+    textarea.value =
+      appState.savedWriting ||
+      "";
+
+  }
+
+
+  updateWordCount();
+}
+
+
+function updateWordCount() {
+
+  const textarea =
+    byId(
+      "karanganInput"
     );
 
 
-    currentQuizCorrectCount += 1;
+  const counter =
+    byId(
+      "writingWordCount"
+    );
 
-    addQuizCorrect();
+
+  if (
+    !textarea ||
+    !counter
+  ) {
+    return;
+  }
 
 
-    if (feedback) {
+  const text =
+    textarea.value
+      .trim();
 
-      feedback.innerHTML =
-        "✅ Betul! " +
-        question.explanation;
+
+  const count =
+    text
+      ? text
+          .split(/\s+/)
+          .filter(Boolean)
+          .length
+      : 0;
+
+
+  counter.textContent =
+    count;
+}
+
+
+/* =========================================================
+   28. AI WRITING FEEDBACK
+   ========================================================= */
+
+async function runWritingFeedback() {
+
+  showScreen(
+    "create"
+  );
+
+
+  const textarea =
+    byId(
+      "karanganInput"
+    );
+
+
+  const panel =
+    byId(
+      "aiFeedbackPanel"
+    );
+
+
+  const content =
+    byId(
+      "aiFeedbackContent"
+    );
+
+
+  const writing =
+    textarea
+      ?.value
+      .trim() ||
+    "";
+
+
+  if (
+    writing.length < 10
+  ) {
+
+    if (panel) {
+      panel.hidden =
+        false;
+    }
+
+
+    if (content) {
+
+      content.innerHTML = `
+        <p>
+          💡 Tulis sekurang-kurangnya satu atau dua ayat dahulu.
+          Selepas itu Cikgu Aira boleh membantu kamu memperbaikinya.
+        </p>
+      `;
 
     }
 
-  } else {
 
-    button.classList.add(
-      "wrong"
-    );
+    focusWriting();
 
-
-    const correctButton =
-      buttons[
-        question.correct
-      ];
+    return;
+  }
 
 
-    if (correctButton) {
+  appState.savedWriting =
+    writing;
 
-      correctButton
-        .classList.add(
-          "correct"
+  saveState();
+
+
+  if (panel) {
+    panel.hidden =
+      false;
+  }
+
+
+  if (content) {
+
+    content.innerHTML = `
+      <p>
+        ✨ Cikgu Aira sedang membaca karangan kamu...
+      </p>
+    `;
+
+  }
+
+
+  try {
+
+    const result =
+      await callAI({
+        type: "writing-feedback",
+
+        text: writing,
+
+        level: "Year 3",
+
+        language:
+          "Bahasa Melayu"
+      });
+
+
+    const answer =
+      extractAIText(
+        result
+      );
+
+
+    if (content) {
+
+      content.innerHTML =
+        formatAIResponse(
+          answer ||
+          getFallbackWritingFeedback(
+            writing
+          )
         );
 
     }
 
 
-    if (feedback) {
-
-      feedback.innerHTML =
-        "❌ Belum tepat. " +
-        question.explanation;
-
-    }
-
-  }
-
-
-  checkQuizCompletion();
-
-}
-
-
-/* =====================================================
-   QUIZ COMPLETION
-===================================================== */
-
-function checkQuizCompletion() {
-
-  const story =
-    getCurrentStory();
-
-
-  const answered =
-    Object.keys(
-      currentQuizAnswered
-    ).length;
-
-
-  if (
-    answered !==
-    story.questions.length
-  ) {
-
-    return;
-
-  }
-
-
-  const result =
-    document.getElementById(
-      "quizFinalResult"
+    completeMission(
+      "creative-studio"
     );
 
 
-  if (!result) return;
-
-
-  const total =
-    story.questions.length;
-
-
-  const percentage =
-    Math.round(
-      (
-        currentQuizCorrectCount
-        / total
-      )
-      * 100
+    completeMission(
+      "ai-feedback"
     );
 
 
-  let message = "";
-
-
-  if (percentage === 100) {
-
-    message =
-      "🌟 Hebat! Semua jawapan betul!";
-
-  } else if (
-    percentage >= 70
-  ) {
-
-    message =
-      "👏 Bagus! Teruskan usaha.";
-
-  } else {
-
-    message =
-      "💪 Cuba baca cerita sekali lagi dan cuba pelajaran seterusnya.";
-
-  }
-
-
-  result.innerHTML =
-    `<strong>
-      ${currentQuizCorrectCount}/${total}
-      betul (${percentage}%)
-    </strong><br>${message}`;
-
-}
-
-
-/* =====================================================
-   WRITING SECTION
-===================================================== */
-
-function renderWritingSection(story) {
-
-  const guide =
-    document.getElementById(
-      "writingGuide"
-    );
-
-  const useful =
-    document.getElementById(
-      "usefulWords"
-    );
-
-  const title =
-    document.getElementById(
-      "writingTitle"
-    );
-
-  const target =
-    document.getElementById(
-      "writingTarget"
-    );
-
-  const essay =
-    document.getElementById(
-      "essay"
-    );
-
-  const feedback =
-    document.getElementById(
-      "aiFeedback"
-    );
-
-
-  if (title) {
-
-    title.textContent =
-      "Karangan: " +
-      story.title;
-
-  }
-
-
-  if (target) {
-
-    target.textContent =
-      "Sasaran: " +
-      story.targetWords;
-
-  }
-
-
-  if (guide) {
-
-    guide.innerHTML =
-      story.writingGuide.map(
-        (item, index) =>
-          `
-            <div>
-              ${index + 1}. ${item}
-            </div>
-          `
-      ).join("");
-
-  }
-
-
-  if (useful) {
-
-    useful.innerHTML =
-      story.usefulWords.map(
-        word =>
-          `
-            <span
-              class="legend-item"
-              style="
-                background:#eef2ff;
-                color:#4f46e5;
-              "
-            >
-              ${word}
-            </span>
-          `
-      ).join("");
-
-  }
-
-
-  if (essay) {
-
-    const saved =
-      getSavedEssay(
-        story.id
+    appState.progress.writing =
+      Math.min(
+        100,
+        appState.progress.writing +
+        15
       );
 
-    essay.value =
-      saved || "";
 
-    updateWordCount();
+    saveState();
 
-  }
-
-
-  if (feedback) {
-
-    feedback.classList.remove(
-      "show"
-    );
-
-    feedback.innerHTML = "";
-
-  }
-
-}
-
-
-/* =====================================================
-   WORD COUNT
-===================================================== */
-
-function updateWordCount() {
-
-  const essay =
-    document.getElementById(
-      "essay"
-    );
-
-
-  const counter =
-    document.getElementById(
-      "wordCount"
-    );
-
-
-  if (!essay || !counter) {
-    return;
-  }
-
-
-  const text =
-    essay.value.trim();
-
-
-  const words =
-    text
-      ? text.split(/\s+/).length
-      : 0;
-
-
-  counter.textContent =
-    words + " perkataan";
-
-
-  saveCurrentEssay();
-
-}
-
-
-/* =====================================================
-   SAVE ESSAY LOCALLY
-===================================================== */
-
-function getEssayStorageKey(
-  storyId
-) {
-
-  return (
-    "karanganEssay_" +
-    storyId
-  );
-
-}
-
-
-function getSavedEssay(
-  storyId
-) {
-
-  try {
-
-    return (
-      localStorage.getItem(
-        getEssayStorageKey(
-          storyId
-        )
-      ) || ""
-    );
-
-  } catch (error) {
-
-    return "";
-
-  }
-
-}
-
-
-function saveCurrentEssay() {
-
-  const essay =
-    document.getElementById(
-      "essay"
-    );
-
-  if (!essay) return;
-
-
-  const story =
-    getCurrentStory();
-
-
-  try {
-
-    localStorage.setItem(
-      getEssayStorageKey(
-        story.id
-      ),
-      essay.value
-    );
+    updateAllUI();
 
   } catch (error) {
 
     console.warn(
-      "Unable to save essay."
+      "AI feedback unavailable:",
+      error
+    );
+
+
+    if (content) {
+
+      content.innerHTML =
+        formatAIResponse(
+          getFallbackWritingFeedback(
+            writing
+          )
+        );
+
+    }
+
+
+    completeMission(
+      "creative-studio"
     );
 
   }
@@ -1239,594 +2752,1317 @@ function saveCurrentEssay() {
 }
 
 
-/* =====================================================
-   CLEAR ESSAY
-===================================================== */
+/* =========================================================
+   29. FALLBACK WRITING FEEDBACK
+   ========================================================= */
 
-function clearEssay() {
+function getFallbackWritingFeedback(
+  writing
+) {
 
-  const essay =
-    document.getElementById(
-      "essay"
-    );
-
-  const feedback =
-    document.getElementById(
-      "aiFeedback"
-    );
+  const wordCount =
+    writing
+      .split(/\s+/)
+      .filter(Boolean)
+      .length;
 
 
-  if (!essay) return;
+  return `
+🌟 Bagus! Kamu sudah mula menulis.
 
+✅ Kekuatan:
+Kamu sudah mempunyai idea yang jelas dan menulis ${wordCount} perkataan.
 
-  const confirmDelete =
-    confirm(
-      "Padam karangan ini?"
-    );
+💡 Cuba perbaiki:
+Pastikan setiap ayat bermula dengan huruf besar dan berakhir dengan tanda noktah.
 
-
-  if (!confirmDelete) {
-    return;
-  }
-
-
-  essay.value = "";
-
-  saveCurrentEssay();
-
-  updateWordCount();
-
-
-  if (feedback) {
-
-    feedback.classList.remove(
-      "show"
-    );
-
-    feedback.innerHTML = "";
-
-  }
+🧠 Cabaran seterusnya:
+Bolehkah kamu tambah satu ayat tentang perasaan atau apa yang berlaku selepas itu?
+  `.trim();
 
 }
 
 
-/* =====================================================
-   AI ESSAY CHECK
-===================================================== */
+/* =========================================================
+   30. AI API
+   ========================================================= */
 
-async function checkEssay() {
+async function callAI(
+  payload
+) {
 
-  const essay =
-    document.getElementById(
-      "essay"
+  const response =
+    await fetch(
+      "/api/ai",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json"
+        },
+
+        body:
+          JSON.stringify(
+            payload
+          )
+      }
     );
 
 
-  const feedback =
-    document.getElementById(
-      "aiFeedback"
+  if (!response.ok) {
+
+    throw new Error(
+      `AI API ${response.status}`
     );
 
+  }
 
-  const button =
-    document.getElementById(
-      "aiCheckButton"
-    );
+
+  return response.json();
+}
+
+
+function extractAIText(
+  result
+) {
+
+  if (!result) {
+    return "";
+  }
 
 
   if (
-    !essay ||
-    !feedback
+    typeof result ===
+    "string"
   ) {
-
-    return;
-
+    return result;
   }
 
 
-  const text =
-    essay.value.trim();
-
-
-  const wordCount =
-    text
-      ? text.split(/\s+/).length
-      : 0;
-
-
-  if (wordCount < 20) {
-
-    feedback.innerHTML =
-      `
-        ✏️ Tulis sekurang-kurangnya
-        20 perkataan sebelum meminta
-        AI menyemak karangan.
-      `;
-
-    feedback.classList.add(
-      "show"
-    );
-
-    return;
-
-  }
-
-
-  saveCurrentEssay();
-
-
-  if (button) {
-
-    button.classList.add(
-      "loading"
-    );
-
-    button.textContent =
-      "⏳ AI sedang menyemak...";
-
-  }
-
-
-  feedback.innerHTML =
-    "AI sedang membaca karangan kamu...";
-
-  feedback.classList.add(
-    "show"
+  return (
+    result.answer ||
+    result.message ||
+    result.text ||
+    result.output ||
+    result.response ||
+    result.content ||
+    ""
   );
+}
 
 
-  const story =
-    getCurrentStory();
+/* =========================================================
+   31. FORMAT AI TEXT
+   ========================================================= */
+
+function formatAIResponse(
+  text
+) {
+
+  return String(text)
+    .split(/\n+/)
+    .filter(Boolean)
+    .map(
+      line => `
+        <p style="
+          line-height:1.65;
+          margin-bottom:12px;
+        ">
+          ${escapeHtml(line)}
+        </p>
+      `
+    )
+    .join("");
+
+}
 
 
-  try {
+/* =========================================================
+   32. CIKGU AIRA
+   ========================================================= */
 
-    const response =
-      await fetch(
-        "/api/ai",
-        {
+function bindMentor() {
 
-          method: "POST",
+  const floating =
+    byId(
+      "mentorFloatingButton"
+    );
 
-          headers: {
-            "Content-Type":
-              "application/json"
-          },
 
-          body:
-            JSON.stringify({
+  const close =
+    byId(
+      "mentorPanelClose"
+    );
 
-              essay: text,
 
-              title:
-                story.title,
+  const form =
+    byId(
+      "mentorForm"
+    );
 
-              level:
-                story.level,
 
-              targetWords:
-                story.targetWords,
+  if (floating) {
 
-              guide:
-                story.writingGuide
+    floating.addEventListener(
+      "click",
+      openMentorPanel
+    );
 
-            })
+  }
+
+
+  if (close) {
+
+    close.addEventListener(
+      "click",
+      closeMentorPanel
+    );
+
+  }
+
+
+  if (form) {
+
+    form.addEventListener(
+      "submit",
+      event => {
+
+        event.preventDefault();
+
+        sendMentorMessage();
+
+      }
+    );
+
+  }
+
+
+  $$(
+    "[data-mentor-prompt]"
+  ).forEach(
+    button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          const prompts = {
+
+            meaning:
+              "Apa maksud perkataan ini?",
+
+            sentence:
+              "Bantu saya bina ayat.",
+
+            idea:
+              "Beri saya petunjuk untuk menulis."
+          };
+
+
+          const input =
+            byId(
+              "mentorInput"
+            );
+
+
+          if (input) {
+
+            input.value =
+              prompts[
+                button.dataset.mentorPrompt
+              ] || "";
+
+            input.focus();
+
+          }
 
         }
       );
 
-
-    if (!response.ok) {
-
-      throw new Error(
-        "AI API unavailable"
-      );
-
     }
-
-
-    const data =
-      await response.json();
-
-
-    const result =
-      data.feedback ||
-      data.result ||
-      data.message ||
-      data.text;
-
-
-    if (!result) {
-
-      throw new Error(
-        "Empty AI response"
-      );
-
-    }
-
-
-    renderAIFeedback(
-      result
-    );
-
-
-    addEssayWritten();
-
-
-  } catch (error) {
-
-    renderOfflineFeedback(
-      text,
-      story
-    );
-
-  } finally {
-
-    if (button) {
-
-      button.classList.remove(
-        "loading"
-      );
-
-      button.textContent =
-        "✨ Semak dengan AI";
-
-    }
-
-    renderDashboard();
-
-  }
-
-}
-
-
-/* =====================================================
-   RENDER AI FEEDBACK
-===================================================== */
-
-function renderAIFeedback(
-  text
-) {
-
-  const feedback =
-    document.getElementById(
-      "aiFeedback"
-    );
-
-  if (!feedback) return;
-
-
-  feedback.innerHTML =
-    `
-      <div class="ai-score">
-        ✨ Semakan AI
-      </div>
-
-      ${escapeHTML(text)
-        .replace(
-          /\n/g,
-          "<br>"
-        )
-      }
-    `;
-
-
-  feedback.classList.add(
-    "show"
   );
 
 }
 
 
-/* =====================================================
-   OFFLINE FEEDBACK
-===================================================== */
+function openMentorPanel() {
 
-function renderOfflineFeedback(
-  essay,
-  story
-) {
-
-  const feedback =
-    document.getElementById(
-      "aiFeedback"
-    );
-
-  if (!feedback) return;
-
-
-  const lower =
-    essay.toLowerCase();
-
-
-  const words =
-    essay.split(/\s+/).length;
-
-
-  let score = 55;
-
-
-  if (words >= 50) {
-    score += 8;
-  }
-
-
-  if (words >= 80) {
-    score += 8;
-  }
-
-
-  if (
-    lower.includes(
-      "selepas"
-    ) ||
-    lower.includes(
-      "kemudian"
-    ) ||
-    lower.includes(
-      "seterusnya"
-    )
-  ) {
-
-    score += 6;
-
-  }
-
-
-  if (
-    lower.includes(
-      "selain itu"
-    )
-  ) {
-
-    score += 5;
-
-  }
-
-
-  if (
-    lower.includes(
-      "akhir sekali"
-    ) ||
-    lower.includes(
-      "akhirnya"
-    )
-  ) {
-
-    score += 5;
-
-  }
-
-
-  if (
-    lower.includes(
-      "gembira"
-    ) ||
-    lower.includes(
-      "bangga"
-    )
-  ) {
-
-    score += 5;
-
-  }
-
-
-  if (score > 92) {
-    score = 92;
-  }
-
-
-  const targetStatus =
-    getTargetStatus(
-      story.targetWords,
-      words
+  const panel =
+    byId(
+      "mentorPanel"
     );
 
 
-  feedback.innerHTML =
-    `
-      <div class="ai-score">
-        ⭐ ${score}/100
-      </div>
-
-      <div class="feedback-section">
-
-        <div class="feedback-title">
-          📝 Bilangan perkataan
-        </div>
-
-        ${words} perkataan.
-        ${targetStatus}
-
-      </div>
-
-      <div class="feedback-section">
-
-        <div class="feedback-title">
-          👍 Kekuatan
-        </div>
-
-        Kamu telah cuba menulis berdasarkan
-        tema cerita dan menggunakan ayat
-        Bahasa Melayu yang lengkap.
-
-      </div>
-
-      <div class="feedback-section">
-
-        <div class="feedback-title">
-          🔧 Boleh diperbaiki
-        </div>
-
-        Gunakan lebih banyak penanda wacana
-        seperti “Kemudian”, “Seterusnya”,
-        “Selain itu” dan “Akhir sekali”.
-
-      </div>
-
-      <div class="feedback-section">
-
-        <div class="feedback-title">
-          💡 Cadangan
-        </div>
-
-        Cuba tambahkan penerangan tentang
-        perasaan, suasana dan nilai murni
-        supaya karangan lebih menarik.
-
-      </div>
-
-      <div class="feedback-section"
-           style="
-             font-size:12px;
-             color:#64748b;
-           ">
-
-        Mod semakan asas digunakan kerana
-        sambungan AI tidak tersedia.
-
-      </div>
-    `;
+  if (!panel) {
+    return;
+  }
 
 
-  feedback.classList.add(
-    "show"
+  panel.hidden =
+    false;
+
+
+  setTimeout(
+    () =>
+      byId(
+        "mentorInput"
+      )?.focus(),
+    150
+  );
+
+}
+
+
+function closeMentorPanel() {
+
+  const panel =
+    byId(
+      "mentorPanel"
+    );
+
+
+  if (panel) {
+    panel.hidden =
+      true;
+  }
+
+}
+
+
+/* =========================================================
+   33. SEND MENTOR MESSAGE
+   ========================================================= */
+
+async function sendMentorMessage() {
+
+  const input =
+    byId(
+      "mentorInput"
+    );
+
+
+  const chat =
+    byId(
+      "mentorChat"
+    );
+
+
+  if (
+    !input ||
+    !chat
+  ) {
+    return;
+  }
+
+
+  const message =
+    input.value.trim();
+
+
+  if (!message) {
+    return;
+  }
+
+
+  input.value =
+    "";
+
+
+  appendChatBubble(
+    message,
+    "student"
   );
 
 
-  addEssayWritten();
-
-}
-
-
-/* =====================================================
-   TARGET WORD HELP
-===================================================== */
-
-function getTargetStatus(
-  target,
-  wordCount
-) {
-
-  const numbers =
-    String(target)
-      .match(/\d+/g);
-
-
-  if (!numbers ||
-      numbers.length < 2) {
-
-    return "";
-
-  }
-
-
-  const min =
-    Number(numbers[0]);
-
-  const max =
-    Number(numbers[1]);
-
-
-  if (wordCount < min) {
-
-    return (
-      "Cuba tambah " +
-      (min - wordCount) +
-      " perkataan lagi."
-    );
-
-  }
-
-
-  if (wordCount > max) {
-
-    return (
-      "Karangan melebihi sasaran sebanyak " +
-      (wordCount - max) +
-      " perkataan."
-    );
-
-  }
-
-
-  return "✅ Panjang karangan sesuai.";
-
-}
-
-
-/* =====================================================
-   COMPLETE CURRENT LESSON
-===================================================== */
-
-function finishLesson() {
-
-  const story =
-    getCurrentStory();
-
-
-  const progress =
-    completeLesson(
-      story.id
-    );
-
-
-  renderDashboard();
-  renderStoryLibrary();
-
-
-  alert(
-    "🎉 Tahniah! Pelajaran selesai. Kamu mendapat 3 ⭐"
-  );
-
-
-  openPage(0);
-
-}
-
-
-/* =====================================================
-   ESCAPE HTML
-===================================================== */
-
-function escapeHTML(text) {
-
-  const div =
+  const thinking =
     document.createElement(
       "div"
     );
 
-  div.textContent =
-    String(text || "");
 
-  return div.innerHTML;
+  thinking.className =
+    "mentor-bubble";
+
+
+  thinking.dataset.thinking =
+    "true";
+
+
+  thinking.textContent =
+    "Cikgu Aira sedang berfikir...";
+
+
+  chat.appendChild(
+    thinking
+  );
+
+
+  chat.scrollTop =
+    chat.scrollHeight;
+
+
+  try {
+
+    const result =
+      await callAI({
+        type: "mentor",
+
+        message,
+
+        level: "Year 3",
+
+        mentorLanguage:
+          "Chinese / English / Bahasa Melayu",
+
+        rule:
+          "Give hints and explanations. Do not write a full essay for the student."
+      });
+
+
+    thinking.remove();
+
+
+    appendChatBubble(
+      extractAIText(
+        result
+      ) ||
+      "Cuba fikirkan satu perkataan penting dahulu. Saya boleh bantu kamu langkah demi langkah.",
+      "mentor"
+    );
+
+  } catch (error) {
+
+    thinking.remove();
+
+
+    appendChatBubble(
+      getMentorFallback(
+        message
+      ),
+      "mentor"
+    );
+
+  }
 
 }
 
 
-/* =====================================================
-   INITIALISE APP
-===================================================== */
+/* =========================================================
+   34. CHAT BUBBLE
+   ========================================================= */
 
-function initialiseKaranganAI() {
+function appendChatBubble(
+  text,
+  sender
+) {
 
-  renderDashboard();
+  const chat =
+    byId(
+      "mentorChat"
+    );
 
-  renderStoryLibrary();
 
-  renderCurrentLesson();
+  if (!chat) {
+    return;
+  }
 
-  updateProgressBar();
+
+  const bubble =
+    document.createElement(
+      "div"
+    );
+
+
+  if (
+    sender ===
+    "student"
+  ) {
+
+    bubble.style.cssText = `
+      max-width:88%;
+      margin:10px 0 10px auto;
+      padding:12px 14px;
+      border-radius:17px 17px 5px 17px;
+      background:#ff9f43;
+      color:white;
+      font-size:14px;
+      line-height:1.5;
+    `;
+
+  } else {
+
+    bubble.className =
+      "mentor-bubble";
+
+    bubble.style.marginTop =
+      "10px";
+
+  }
+
+
+  bubble.textContent =
+    text;
+
+
+  chat.appendChild(
+    bubble
+  );
+
+
+  chat.scrollTop =
+    chat.scrollHeight;
+}
+
+
+/* =========================================================
+   35. MENTOR OFFLINE FALLBACK
+   ========================================================= */
+
+function getMentorFallback(
+  message
+) {
+
+  const lower =
+    message.toLowerCase();
+
+
+  if (
+    lower.includes(
+      "ayat"
+    )
+  ) {
+
+    return "Mari bina ayat langkah demi langkah. Siapa yang melakukan tindakan? Apa tindakan itu? Di mana ia berlaku?";
+
+  }
+
+
+  if (
+    lower.includes(
+      "maksud"
+    )
+  ) {
+
+    return "Beritahu saya perkataan yang kamu mahu fahami. Cuba juga lihat ayat di sekeliling perkataan itu untuk mendapatkan petunjuk.";
+
+  }
+
+
+  if (
+    lower.includes(
+      "karangan"
+    ) ||
+    lower.includes(
+      "idea"
+    )
+  ) {
+
+    return "Cuba jawab tiga soalan dahulu: Siapa? Di mana? Apa yang berlaku? Jawapan kamu boleh menjadi idea awal karangan.";
+
+  }
+
+
+  return "Saya boleh bantu kamu langkah demi langkah. Cuba beritahu saya bahagian mana yang paling susah.";
 
 }
 
 
-/* =====================================================
-   DOM READY
-===================================================== */
+/* =========================================================
+   36. PROFILE
+   ========================================================= */
 
-document.addEventListener(
-  "DOMContentLoaded",
-  initialiseKaranganAI
-);
+function updateProfileUI() {
+
+  const level =
+    getCurrentLevel();
+
+  const next =
+    getNextLevel();
+
+
+  safeText(
+    byId(
+      "studentDisplayName"
+    ),
+    level.name
+  );
+
+
+  safeText(
+    byId(
+      "avatarName"
+    ),
+    level.name
+  );
+
+
+  safeText(
+    byId(
+      "avatarLevel"
+    ),
+    level.level
+  );
+
+
+  safeText(
+    byId(
+      "profileXp"
+    ),
+    appState.xp
+  );
+
+
+  safeText(
+    byId(
+      "profileStreak"
+    ),
+    appState.streak
+  );
+
+
+  safeText(
+    byId(
+      "storiesCompleted"
+    ),
+    appState.storiesCompleted
+  );
+
+
+  safeText(
+    byId(
+      "badgeCount"
+    ),
+    appState.badges.length
+  );
+
+
+  safeText(
+    byId(
+      "currentAvatarXp"
+    ),
+    appState.xp
+  );
+
+
+  safeText(
+    byId(
+      "nextAvatarXp"
+    ),
+    next
+      ? next.minXp
+      : appState.xp
+  );
+
+
+  const xpBar =
+    byId(
+      "avatarXpBar"
+    );
+
+
+  if (xpBar) {
+
+    let percent = 100;
+
+
+    if (next) {
+
+      const levelRange =
+        next.minXp -
+        level.minXp;
+
+
+      const earned =
+        appState.xp -
+        level.minXp;
+
+
+      percent =
+        Math.min(
+          100,
+          Math.max(
+            0,
+            earned /
+            levelRange *
+            100
+          )
+        );
+
+    }
+
+
+    xpBar.style.width =
+      `${percent}%`;
+
+  }
+
+}
+
+
+/* =========================================================
+   37. PROGRESS
+   ========================================================= */
+
+function updateLearningProgress(
+  mission
+) {
+
+  if (
+    mission === "story"
+  ) {
+
+    appState.progress.reading =
+      Math.min(
+        100,
+        appState.progress.reading +
+        10
+      );
+
+  }
+
+
+  if (
+    mission ===
+      "vocabulary" ||
+    mission ===
+      "sentence-builder" ||
+    mission ===
+      "sentence-recall"
+  ) {
+
+    appState.progress.vocabulary =
+      Math.min(
+        100,
+        appState.progress.vocabulary +
+        5
+      );
+
+  }
+
+
+  if (
+    mission ===
+      "creative-studio" ||
+    mission ===
+      "ai-feedback"
+  ) {
+
+    appState.progress.writing =
+      Math.min(
+        100,
+        appState.progress.writing +
+        10
+      );
+
+  }
+
+}
+
+
+function updateProgressUI() {
+
+  setProgress(
+    "reading",
+    appState.progress.reading
+  );
+
+  setProgress(
+    "vocab",
+    appState.progress.vocabulary
+  );
+
+  setProgress(
+    "writing",
+    appState.progress.writing
+  );
+
+}
+
+
+function setProgress(
+  prefix,
+  value
+) {
+
+  safeText(
+    byId(
+      `${prefix}ProgressText`
+    ),
+    `${value}%`
+  );
+
+
+  const bar =
+    byId(
+      `${prefix}ProgressBar`
+    );
+
+
+  if (bar) {
+    bar.style.width =
+      `${value}%`;
+  }
+
+}
+
+
+/* =========================================================
+   38. BADGES
+   ========================================================= */
+
+function updateBadgeUI() {
+
+  if (
+    appState.storiesCompleted >=
+      5 &&
+    !appState.badges.includes(
+      "reader"
+    )
+  ) {
+
+    appState.badges.push(
+      "reader"
+    );
+
+  }
+
+
+  if (
+    appState.completedMissions.includes(
+      "creative-studio"
+    ) &&
+    !appState.badges.includes(
+      "writer"
+    )
+  ) {
+
+    appState.badges.push(
+      "writer"
+    );
+
+  }
+
+
+  saveState();
+
+
+  const cards =
+    $$(".badge-card");
+
+
+  if (cards[0]) {
+    cards[0].classList.remove(
+      "locked"
+    );
+  }
+
+
+  if (cards[1]) {
+
+    cards[1].classList.toggle(
+      "locked",
+      !appState.badges.includes(
+        "reader"
+      )
+    );
+
+
+    cards[1].classList.toggle(
+      "unlocked",
+      appState.badges.includes(
+        "reader"
+      )
+    );
+
+  }
+
+
+  if (cards[2]) {
+
+    cards[2].classList.toggle(
+      "locked",
+      !appState.badges.includes(
+        "writer"
+      )
+    );
+
+
+    cards[2].classList.toggle(
+      "unlocked",
+      appState.badges.includes(
+        "writer"
+      )
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   39. AVATAR.JS INTEGRATION
+   ========================================================= */
+
+function initializeAvatar() {
+
+  const container =
+    byId(
+      "avatarContainer"
+    );
+
+
+  if (!container) {
+    return;
+  }
+
+
+  try {
+
+    if (
+      typeof renderAvatar ===
+      "function"
+    ) {
+
+      renderAvatar(
+        container,
+        appState
+      );
+
+      return;
+    }
+
+
+    if (
+      typeof window.renderAvatar ===
+      "function"
+    ) {
+
+      window.renderAvatar(
+        container,
+        appState
+      );
+
+      return;
+    }
+
+
+    if (
+      typeof initAvatar ===
+      "function"
+    ) {
+
+      initAvatar();
+
+      return;
+    }
+
+  } catch (error) {
+
+    console.warn(
+      "Avatar integration:",
+      error
+    );
+
+  }
+
+
+  const level =
+    getCurrentLevel();
+
+
+  container.innerHTML = `
+    <div style="
+      text-align:center;
+      padding:20px;
+    ">
+
+      <div style="
+        font-size:90px;
+        margin-bottom:12px;
+      ">
+        🧒
+      </div>
+
+      <strong style="
+        font-size:20px;
+      ">
+        ${escapeHtml(
+          level.name
+        )}
+      </strong>
+
+      <p style="
+        color:#65727a;
+      ">
+        Level ${level.level}
+        ·
+        ${appState.xp} XP
+      </p>
+
+    </div>
+  `;
+
+}
+
+
+/* =========================================================
+   40. CREATE QUICK TOOLS
+   ========================================================= */
+
+function bindQuickTools() {
+
+  $$("[data-tool]").forEach(
+    button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          const tool =
+            button.dataset.tool;
+
+
+          if (
+            tool === "idea"
+          ) {
+
+            openMentorPanel();
+
+
+            const input =
+              byId(
+                "mentorInput"
+              );
+
+
+            if (input) {
+
+              input.value =
+                "Beri saya petunjuk idea untuk karangan Tahun 3.";
+
+            }
+
+          }
+
+
+          if (
+            tool ===
+            "vocabulary"
+          ) {
+
+            openModule(
+              "vocabulary"
+            );
+
+          }
+
+
+          if (
+            tool ===
+            "sentence"
+          ) {
+
+            openModule(
+              "sentence-builder"
+            );
+
+          }
+
+        }
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   41. MODAL
+   ========================================================= */
+
+function bindModal() {
+
+  const close =
+    byId(
+      "modalCloseButton"
+    );
+
+
+  const backdrop =
+    $(
+      ".modal-backdrop"
+    );
+
+
+  if (close) {
+
+    close.addEventListener(
+      "click",
+      closeModal
+    );
+
+  }
+
+
+  if (backdrop) {
+
+    backdrop.addEventListener(
+      "click",
+      closeModal
+    );
+
+  }
+
+}
+
+
+function openModal(
+  html
+) {
+
+  const modal =
+    byId(
+      "appModal"
+    );
+
+
+  const content =
+    byId(
+      "modalContent"
+    );
+
+
+  if (
+    !modal ||
+    !content
+  ) {
+    return;
+  }
+
+
+  content.innerHTML =
+    html;
+
+
+  modal.hidden =
+    false;
+}
+
+
+function closeModal() {
+
+  const modal =
+    byId(
+      "appModal"
+    );
+
+
+  if (modal) {
+    modal.hidden =
+      true;
+  }
+
+}
+
+
+/* =========================================================
+   42. TOAST
+   ========================================================= */
+
+let toastTimer = null;
+
+
+function showToast(
+  message
+) {
+
+  const toast =
+    byId(
+      "toast"
+    );
+
+
+  const text =
+    byId(
+      "toastMessage"
+    );
+
+
+  if (
+    !toast ||
+    !text
+  ) {
+    return;
+  }
+
+
+  clearTimeout(
+    toastTimer
+  );
+
+
+  text.textContent =
+    message;
+
+
+  toast.hidden =
+    false;
+
+
+  toast.classList.add(
+    "reward-pop"
+  );
+
+
+  toastTimer =
+    setTimeout(
+      () => {
+
+        toast.hidden =
+          true;
+
+        toast.classList.remove(
+          "reward-pop"
+        );
+
+      },
+      2400
+    );
+
+}
+
+
+/* =========================================================
+   43. UTILITY
+   ========================================================= */
+
+function shuffleArray(
+  array
+) {
+
+  const copy = [
+    ...array
+  ];
+
+
+  for (
+    let i =
+      copy.length - 1;
+    i > 0;
+    i--
+  ) {
+
+    const j =
+      Math.floor(
+        Math.random() *
+        (i + 1)
+      );
+
+
+    [
+      copy[i],
+      copy[j]
+    ] = [
+      copy[j],
+      copy[i]
+    ];
+
+  }
+
+
+  return copy;
+}
+
+
+function escapeHtml(
+  value
+) {
+
+  return String(value)
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+    .replace(
+      /</g,
+      "&lt;"
+    )
+    .replace(
+      />/g,
+      "&gt;"
+    )
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
+}
+
+
+function escapeAttribute(
+  value
+) {
+
+  return escapeHtml(
+    value
+  );
+
+}
+
+
+/* =========================================================
+   44. DEBUG / DEVELOPMENT HELPERS
+   ========================================================= */
+
+window.KaranganAI = {
+
+  getState() {
+    return structuredCloneSafe(
+      appState
+    );
+  },
+
+
+  reset() {
+
+    localStorage.removeItem(
+      APP_CONFIG.storageKey
+    );
+
+    location.reload();
+
+  },
+
+
+  addXP(amount = 10) {
+
+    appState.xp +=
+      Number(amount) || 0;
+
+    saveState();
+
+    updateAllUI();
+
+  },
+
+
+  openModule,
+
+
+  showScreen,
+
+
+  completeMission
+
+};
+
+
+/* =========================================================
+   END KARANGAN AI APP CONTROLLER
+   ========================================================= */
