@@ -4107,15 +4107,438 @@ function finishVocabularyMission() {
    39. SENTENCE BUILDER
    ========================================================= */
 
+/* =========================================================
+   LANGKAH 3 — BINA AYAT
+   Dynamic Sentence Builder
+   ========================================================= */
+
+let sentenceBuilderState = {
+  task: null,
+  selected: [],
+  attempts: 0,
+  hintLevel: 0
+};
+
+
+/* =========================================================
+   START SENTENCE BUILDER
+   ========================================================= */
+
 function renderSentenceBuilder() {
 
-  const words = [
-    "Aiman",
-    "membantu",
-    "ibunya",
-    "di",
-    "rumah"
+  sentenceBuilderState = {
+    task: createSentenceBuilderTask(),
+    selected: [],
+    attempts: 0,
+    hintLevel: 0
+  };
+
+  renderSentenceBuilderScreen();
+}
+
+
+/* =========================================================
+   CREATE SENTENCE TASK
+   ========================================================= */
+
+function createSentenceBuilderTask() {
+
+  let vocabulary = [];
+
+  try {
+
+    if (
+      window.KaranganVocabulary &&
+      typeof window.KaranganVocabulary.getWords === "function"
+    ) {
+
+      vocabulary =
+        window.KaranganVocabulary.getWords() || [];
+
+    }
+
+  } catch (error) {
+
+    console.warn(
+      "Unable to load vocabulary for sentence builder:",
+      error
+    );
+
+  }
+
+
+  /* ---------------------------------------------------------
+     PRIORITY 1
+     Use example sentence saved from Buku Kosa Kata
+     --------------------------------------------------------- */
+
+  const usableVocabulary =
+    shuffleArray(
+      vocabulary.filter(
+        item => {
+
+          if (!item || !item.example) {
+            return false;
+          }
+
+          const cleaned =
+            cleanSentenceBuilderText(
+              item.example
+            );
+
+          const words =
+            cleaned
+              .split(/\s+/)
+              .filter(Boolean);
+
+          return (
+            words.length >= 4 &&
+            words.length <= 10
+          );
+
+        }
+      )
+    );
+
+
+  if (usableVocabulary.length) {
+
+    const item =
+      usableVocabulary[0];
+
+    const sentence =
+      cleanSentenceBuilderText(
+        item.example
+      );
+
+    return {
+      sentence,
+      focusWord:
+        item.word || "",
+      translation:
+        item.translation || "",
+      source:
+        "vocabulary"
+    };
+
+  }
+
+
+  /* ---------------------------------------------------------
+     PRIORITY 2
+     Match known vocabulary to sentence templates
+     --------------------------------------------------------- */
+
+  const knownWords =
+    vocabulary.map(
+      item =>
+        String(
+          item.word || ""
+        ).toLowerCase()
+    );
+
+
+  const templates = [
+
+    {
+      focusWord: "gembira",
+      translation: "开心 · happy",
+      sentence:
+        "Aina berasa gembira kerana mendapat hadiah"
+    },
+
+    {
+      focusWord: "rajin",
+      translation: "勤劳 · diligent",
+      sentence:
+        "Amir seorang murid yang rajin belajar"
+    },
+
+    {
+      focusWord: "membantu",
+      translation: "帮助 · help",
+      sentence:
+        "Siti membantu ibunya di dapur"
+    },
+
+    {
+      focusWord: "bersih",
+      translation: "干净 · clean",
+      sentence:
+        "Kelas kami sentiasa bersih dan kemas"
+    },
+
+    {
+      focusWord: "menjaga",
+      translation: "照顾 / 保护 · take care",
+      sentence:
+        "Kita perlu menjaga kebersihan sekolah"
+    },
+
+    {
+      focusWord: "berani",
+      translation: "勇敢 · brave",
+      sentence:
+        "Hakim berani mencuba perkara baharu"
+    },
+
+    {
+      focusWord: "buku",
+      translation: "书 · book",
+      sentence:
+        "Aiman membaca buku di perpustakaan"
+    },
+
+    {
+      focusWord: "sekolah",
+      translation: "学校 · school",
+      sentence:
+        "Murid pergi ke sekolah pada waktu pagi"
+    },
+
+    {
+      focusWord: "kawan",
+      translation: "朋友 · friend",
+      sentence:
+        "Farah bermain bersama kawan di taman"
+    }
+
   ];
+
+
+  const matchingTemplates =
+    templates.filter(
+      item =>
+        knownWords.includes(
+          item.focusWord
+        )
+    );
+
+
+  if (matchingTemplates.length) {
+
+    return shuffleArray(
+      matchingTemplates
+    )[0];
+
+  }
+
+
+  /* ---------------------------------------------------------
+     PRIORITY 3
+     Fallback Year 3 sentences
+     --------------------------------------------------------- */
+
+  const fallbackTasks = [
+
+    {
+      focusWord: "membantu",
+      translation: "帮助 · help",
+      sentence:
+        "Aiman membantu ibunya di rumah"
+    },
+
+    {
+      focusWord: "rajin",
+      translation: "勤劳 · diligent",
+      sentence:
+        "Siti rajin belajar setiap hari"
+    },
+
+    {
+      focusWord: "gembira",
+      translation: "开心 · happy",
+      sentence:
+        "Aina berasa gembira hari ini"
+    },
+
+    {
+      focusWord: "sekolah",
+      translation: "学校 · school",
+      sentence:
+        "Ali pergi ke sekolah pada waktu pagi"
+    },
+
+    {
+      focusWord: "buku",
+      translation: "书 · book",
+      sentence:
+        "Amir membaca buku di dalam kelas"
+    }
+
+  ];
+
+
+  return shuffleArray(
+    fallbackTasks
+  )[0];
+}
+
+
+/* =========================================================
+   CLEAN SENTENCE
+   ========================================================= */
+
+function cleanSentenceBuilderText(
+  text
+) {
+
+  return String(
+    text || ""
+  )
+    .replace(
+      /\s+/g,
+      " "
+    )
+    .replace(
+      /^[“"' ]+/,
+      ""
+    )
+    .replace(
+      /[.!?。！？"'”]+$/,
+      ""
+    )
+    .trim();
+}
+
+
+/* =========================================================
+   RENDER SENTENCE BUILDER SCREEN
+   ========================================================= */
+
+function renderSentenceBuilderScreen() {
+
+  const task =
+    sentenceBuilderState.task;
+
+
+  if (!task) {
+
+    showToast(
+      "Bina Ayat tidak dapat dimulakan."
+    );
+
+    return;
+
+  }
+
+
+  const words =
+    task.sentence
+      .split(/\s+/)
+      .filter(Boolean);
+
+
+  if (
+    !sentenceBuilderState.wordBank ||
+    sentenceBuilderState.wordBankSentence !==
+      task.sentence
+  ) {
+
+    sentenceBuilderState.wordBank =
+      shuffleArray(
+        words.map(
+          (word, index) => ({
+            id: index,
+            word
+          })
+        )
+      );
+
+    sentenceBuilderState.wordBankSentence =
+      task.sentence;
+
+  }
+
+
+  const selectedIds =
+    new Set(
+      sentenceBuilderState.selected
+    );
+
+
+  const selectedWords =
+    sentenceBuilderState.selected
+      .map(
+        id =>
+          words[id]
+      )
+      .filter(Boolean);
+
+
+  const answerHTML =
+    selectedWords.length
+
+      ? selectedWords
+          .map(
+            (word, position) => `
+              <button
+                type="button"
+                data-remove-sentence-position="${position}"
+                style="
+                  border:0;
+                  border-radius:12px;
+                  padding:10px 13px;
+                  background:#eaf3ff;
+                  color:#26343d;
+                  font-size:16px;
+                  font-weight:800;
+                  cursor:pointer;
+                "
+              >
+                ${escapeHtml(word)}
+              </button>
+            `
+          )
+          .join("")
+
+      : `
+          <span style="
+            color:#a0a9ae;
+            line-height:1.6;
+          ">
+            Ayat kamu akan muncul di sini...
+          </span>
+        `;
+
+
+  const wordBankHTML =
+    sentenceBuilderState.wordBank
+      .map(
+        token => {
+
+          const used =
+            selectedIds.has(
+              token.id
+            );
+
+          return `
+            <button
+              class="secondary-button sentence-choice"
+              data-sentence-token="${token.id}"
+              type="button"
+              ${used ? "disabled" : ""}
+              style="
+                ${
+                  used
+                    ? "opacity:.35;"
+                    : ""
+                }
+              "
+            >
+              ${escapeHtml(
+                token.word
+              )}
+            </button>
+          `;
+
+        }
+      )
+      .join("");
+
+
+  const hint =
+    getSentenceBuilderHint();
 
 
   openModuleScreen(
@@ -4132,35 +4555,146 @@ function renderSentenceBuilder() {
       <p style="
         color:#65727a;
         line-height:1.7;
+        margin-bottom:18px;
       ">
-        Tekan perkataan mengikut susunan yang betul.
+        Susun perkataan menjadi ayat Bahasa Melayu yang betul.
       </p>
 
+
+      <!-- FOCUS WORD -->
+
+      <div style="
+        padding:16px 18px;
+        background:#fff5df;
+        border-radius:18px;
+        margin-bottom:18px;
+      ">
+
+        <div style="
+          font-size:11px;
+          font-weight:900;
+          letter-spacing:.08em;
+          color:#cb7a20;
+          text-transform:uppercase;
+        ">
+          PERKATAAN FOKUS
+        </div>
+
+        <div style="
+          margin-top:6px;
+          font-size:21px;
+          font-weight:900;
+          color:#26343d;
+        ">
+          🧠 ${escapeHtml(
+            task.focusWord || ""
+          )}
+        </div>
+
+        ${
+          task.translation
+            ? `
+              <div style="
+                margin-top:5px;
+                color:#6c55db;
+                font-size:14px;
+                font-weight:700;
+              ">
+                ${escapeHtml(
+                  task.translation
+                )}
+              </div>
+            `
+            : ""
+        }
+
+      </div>
+
+
+      ${
+        hint
+          ? `
+            <div style="
+              padding:14px 16px;
+              border-radius:16px;
+              background:#f2efff;
+              color:#665b8d;
+              line-height:1.55;
+              margin-bottom:16px;
+            ">
+              💡 ${escapeHtml(
+                hint
+              )}
+            </div>
+          `
+          : ""
+      }
+
+
+      <!-- ANSWER AREA -->
 
       <div
         id="sentenceAnswerArea"
         style="
-          min-height:80px;
-          margin:24px 0 16px;
+          min-height:95px;
           padding:16px;
-          border:2px dashed #d9d4cc;
+          margin-bottom:16px;
+          border:2px dashed #d8d3cb;
           border-radius:18px;
           background:white;
           display:flex;
           flex-wrap:wrap;
           gap:8px;
           align-items:center;
+          align-content:center;
         "
       >
+        ${answerHTML}
+      </div>
 
-        <span style="
-          color:#9ba4a9;
-        ">
-          Ayat kamu akan muncul di sini...
-        </span>
+
+      <!-- CONTROLS -->
+
+      <div style="
+        display:grid;
+        grid-template-columns:repeat(3,1fr);
+        gap:10px;
+        margin-bottom:18px;
+      ">
+
+        <button
+          id="undoSentenceButton"
+          class="secondary-button"
+          type="button"
+          ${
+            selectedWords.length
+              ? ""
+              : "disabled"
+          }
+        >
+          ↩️ Undur
+        </button>
+
+        <button
+          id="resetSentenceButton"
+          class="secondary-button"
+          type="button"
+        >
+          🔄 Mula Semula
+        </button>
+
+        <button
+          id="sentenceHintButton"
+          class="secondary-button"
+          type="button"
+        >
+          💡 Petunjuk
+        </button>
 
       </div>
 
+
+      <!-- WORD BANK -->
 
       <div
         id="sentenceWordBank"
@@ -4168,32 +4702,13 @@ function renderSentenceBuilder() {
           display:flex;
           flex-wrap:wrap;
           gap:10px;
-          margin-bottom:24px;
+          padding:16px;
+          border-radius:18px;
+          background:#faf9f7;
+          margin-bottom:22px;
         "
       >
-
-        ${
-          shuffleArray(
-            words
-          )
-            .map(
-              word => `
-                <button
-                  class="secondary-button sentence-choice"
-                  data-sentence-word="${escapeAttribute(
-                    word
-                  )}"
-                  type="button"
-                >
-                  ${escapeHtml(
-                    word
-                  )}
-                </button>
-              `
-            )
-            .join("")
-        }
-
+        ${wordBankHTML}
       </div>
 
 
@@ -4201,8 +4716,28 @@ function renderSentenceBuilder() {
         id="checkSentenceButton"
         class="primary-button"
         type="button"
+        style="
+          width:100%;
+        "
       >
-        Semak Ayat
+        ✓ Semak Ayat
+      </button>
+
+
+      <button
+        id="newSentenceButton"
+        type="button"
+        style="
+          width:100%;
+          border:0;
+          background:transparent;
+          padding:14px 8px;
+          margin-top:5px;
+          color:#7e878c;
+          font-weight:800;
+        "
+      >
+        🎲 Cuba Ayat Lain
       </button>
 
     `,
@@ -4211,77 +4746,20 @@ function renderSentenceBuilder() {
 
 
   setTimeout(
-    initializeSentenceBuilder,
+    bindSentenceBuilderControls,
     0
   );
-
 }
 
 
 /* =========================================================
-   40. INITIALIZE SENTENCE BUILDER
+   BIND SENTENCE BUILDER CONTROLS
    ========================================================= */
 
-function initializeSentenceBuilder() {
-
-  const selected =
-    [];
-
-
-  const answer =
-    byId(
-      "sentenceAnswerArea"
-    );
-
-
-  const renderAnswer =
-    () => {
-
-      if (!answer) {
-        return;
-      }
-
-
-      if (
-        !selected.length
-      ) {
-
-        answer.innerHTML = `
-          <span style="
-            color:#9ba4a9;
-          ">
-            Ayat kamu akan muncul di sini...
-          </span>
-        `;
-
-        return;
-
-      }
-
-
-      answer.innerHTML =
-        selected
-          .map(
-            word => `
-              <span style="
-                padding:8px 10px;
-                background:#eaf3ff;
-                border-radius:10px;
-                font-weight:750;
-              ">
-                ${escapeHtml(
-                  word
-                )}
-              </span>
-            `
-          )
-          .join("");
-
-    };
-
+function bindSentenceBuilderControls() {
 
   $$(
-    "[data-sentence-word]"
+    "[data-sentence-token]"
   ).forEach(
     button => {
 
@@ -4289,26 +4767,138 @@ function initializeSentenceBuilder() {
         "click",
         () => {
 
-          selected.push(
-            button.dataset.sentenceWord
+          const id =
+            Number(
+              button.dataset.sentenceToken
+            );
+
+
+          if (
+            sentenceBuilderState.selected.includes(
+              id
+            )
+          ) {
+
+            return;
+
+          }
+
+
+          sentenceBuilderState.selected.push(
+            id
           );
 
 
-          button.disabled =
-            true;
-
-
-          button.style.opacity =
-            "0.4";
-
-
-          renderAnswer();
+          renderSentenceBuilderScreen();
 
         }
       );
 
     }
   );
+
+
+  $$(
+    "[data-remove-sentence-position]"
+  ).forEach(
+    button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          const position =
+            Number(
+              button.dataset.removeSentencePosition
+            );
+
+
+          sentenceBuilderState.selected.splice(
+            position,
+            1
+          );
+
+
+          renderSentenceBuilderScreen();
+
+        }
+      );
+
+    }
+  );
+
+
+  const undo =
+    byId(
+      "undoSentenceButton"
+    );
+
+
+  if (undo) {
+
+    undo.addEventListener(
+      "click",
+      () => {
+
+        sentenceBuilderState.selected.pop();
+
+        renderSentenceBuilderScreen();
+
+      }
+    );
+
+  }
+
+
+  const reset =
+    byId(
+      "resetSentenceButton"
+    );
+
+
+  if (reset) {
+
+    reset.addEventListener(
+      "click",
+      () => {
+
+        sentenceBuilderState.selected =
+          [];
+
+
+        renderSentenceBuilderScreen();
+
+      }
+    );
+
+  }
+
+
+  const hint =
+    byId(
+      "sentenceHintButton"
+    );
+
+
+  if (hint) {
+
+    hint.addEventListener(
+      "click",
+      () => {
+
+        sentenceBuilderState.hintLevel =
+          Math.min(
+            3,
+            sentenceBuilderState.hintLevel + 1
+          );
+
+
+        renderSentenceBuilderScreen();
+
+      }
+    );
+
+  }
 
 
   const check =
@@ -4321,53 +4911,23 @@ function initializeSentenceBuilder() {
 
     check.addEventListener(
       "click",
-      () => {
+      checkSentenceBuilderAnswer
+    );
 
-        const response =
-          selected.join(
-            " "
-          );
+  }
 
 
-        if (
-          response ===
-          "Aiman membantu ibunya di rumah"
-        ) {
-
-          showToast(
-            "🎉 Betul! Ayat yang sangat baik."
-          );
+  const newSentence =
+    byId(
+      "newSentenceButton"
+    );
 
 
-          completeMission(
-            "sentence-builder"
-          );
+  if (newSentence) {
 
-
-          setTimeout(
-            () =>
-              openModule(
-                "grammar-rain"
-              ),
-            700
-          );
-
-        } else {
-
-          showToast(
-            "💡 Cuba lagi. Mulakan dengan Aiman."
-          );
-
-
-          setTimeout(
-            () =>
-              renderSentenceBuilder(),
-            700
-          );
-
-        }
-
-      }
+    newSentence.addEventListener(
+      "click",
+      renderSentenceBuilder
     );
 
   }
@@ -4375,6 +4935,393 @@ function initializeSentenceBuilder() {
 }
 
 
+/* =========================================================
+   SENTENCE HINT SYSTEM
+   ========================================================= */
+
+function getSentenceBuilderHint() {
+
+  const task =
+    sentenceBuilderState.task;
+
+
+  if (
+    !task ||
+    sentenceBuilderState.hintLevel === 0
+  ) {
+
+    return "";
+
+  }
+
+
+  const words =
+    task.sentence
+      .split(/\s+/)
+      .filter(Boolean);
+
+
+  if (
+    sentenceBuilderState.hintLevel === 1
+  ) {
+
+    return `Ayat bermula dengan "${words[0]}".`;
+
+  }
+
+
+  if (
+    sentenceBuilderState.hintLevel === 2
+  ) {
+
+    return `Dua perkataan pertama ialah "${words
+      .slice(0, 2)
+      .join(" ")}".`;
+
+  }
+
+
+  const half =
+    Math.max(
+      2,
+      Math.ceil(
+        words.length / 2
+      )
+    );
+
+
+  return `Bahagian awal ayat ialah "${words
+    .slice(0, half)
+    .join(" ")}..."`;
+
+}
+
+
+/* =========================================================
+   CHECK SENTENCE
+   ========================================================= */
+
+function checkSentenceBuilderAnswer() {
+
+  const task =
+    sentenceBuilderState.task;
+
+
+  if (!task) {
+
+    return;
+
+  }
+
+
+  const correctWords =
+    task.sentence
+      .split(/\s+/)
+      .filter(Boolean);
+
+
+  if (
+    sentenceBuilderState.selected.length <
+    correctWords.length
+  ) {
+
+    showToast(
+      "🧩 Susun semua perkataan dahulu."
+    );
+
+    return;
+
+  }
+
+
+  sentenceBuilderState.attempts +=
+    1;
+
+
+  const studentSentence =
+    sentenceBuilderState.selected
+      .map(
+        id =>
+          correctWords[id]
+      )
+      .join(" ");
+
+
+  const studentNormalized =
+    normalizeSentenceBuilderAnswer(
+      studentSentence
+    );
+
+
+  const correctNormalized =
+    normalizeSentenceBuilderAnswer(
+      task.sentence
+    );
+
+
+  if (
+    studentNormalized ===
+    correctNormalized
+  ) {
+
+    completeMission(
+      "sentence-builder"
+    );
+
+
+    renderSentenceBuilderSuccess();
+
+    return;
+
+  }
+
+
+  if (
+    sentenceBuilderState.attempts >= 2 &&
+    sentenceBuilderState.hintLevel === 0
+  ) {
+
+    sentenceBuilderState.hintLevel =
+      1;
+
+  }
+
+
+  showToast(
+    "💡 Hampir! Cuba semak susunan perkataan."
+  );
+
+
+  setTimeout(
+    renderSentenceBuilderScreen,
+    450
+  );
+
+}
+
+
+/* =========================================================
+   NORMALIZE SENTENCE
+   ========================================================= */
+
+function normalizeSentenceBuilderAnswer(
+  value
+) {
+
+  return String(
+    value || ""
+  )
+    .toLowerCase()
+    .replace(
+      /[.,!?;:'"“”‘’()-]/g,
+      ""
+    )
+    .replace(
+      /\s+/g,
+      " "
+    )
+    .trim();
+
+}
+
+
+/* =========================================================
+   SENTENCE SUCCESS SCREEN
+   ========================================================= */
+
+function renderSentenceBuilderSuccess() {
+
+  const task =
+    sentenceBuilderState.task;
+
+
+  openModuleScreen(
+    `
+
+      <div style="
+        text-align:center;
+        padding:26px 0 10px;
+      ">
+
+        <div style="
+          font-size:72px;
+          margin-bottom:10px;
+        ">
+          🎉
+        </div>
+
+        <span class="section-kicker">
+          LANGKAH 3 SELESAI
+        </span>
+
+        <h1 style="
+          margin-top:8px;
+        ">
+          Ayat Betul!
+        </h1>
+
+        <p style="
+          color:#65727a;
+          line-height:1.7;
+        ">
+          Kamu berjaya menyusun perkataan menjadi ayat yang lengkap.
+        </p>
+
+
+        <div style="
+          margin:22px 0;
+          padding:20px;
+          border-radius:20px;
+          background:#edf9f3;
+          color:#27493a;
+          font-size:19px;
+          font-weight:850;
+          line-height:1.6;
+        ">
+          “${escapeHtml(
+            task.sentence
+          )}.”
+        </div>
+
+
+        <div style="
+          display:grid;
+          grid-template-columns:1fr 1fr;
+          gap:10px;
+          margin-bottom:22px;
+        ">
+
+          <div style="
+            padding:15px;
+            border-radius:16px;
+            background:#fff6e6;
+          ">
+
+            <strong style="
+              font-size:21px;
+            ">
+              ${
+                task.sentence
+                  .split(/\s+/)
+                  .length
+              }
+            </strong>
+
+            <div style="
+              font-size:12px;
+              color:#7b8388;
+              margin-top:3px;
+            ">
+              Perkataan
+            </div>
+
+          </div>
+
+
+          <div style="
+            padding:15px;
+            border-radius:16px;
+            background:#f2efff;
+          ">
+
+            <strong style="
+              font-size:21px;
+            ">
+              ${
+                sentenceBuilderState.attempts ||
+                1
+              }
+            </strong>
+
+            <div style="
+              font-size:12px;
+              color:#7b8388;
+              margin-top:3px;
+            ">
+              Percubaan
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <button
+          id="continueGrammarRainButton"
+          class="primary-button"
+          type="button"
+          style="
+            width:100%;
+            margin-bottom:11px;
+          "
+        >
+          Teruskan ke Grammar Rain →
+        </button>
+
+
+        <button
+          id="practiceSentenceAgainButton"
+          class="secondary-button"
+          type="button"
+          style="
+            width:100%;
+          "
+        >
+          🧩 Latih Ayat Lagi
+        </button>
+
+      </div>
+
+    `,
+    42
+  );
+
+
+  setTimeout(
+    () => {
+
+      const continueButton =
+        byId(
+          "continueGrammarRainButton"
+        );
+
+
+      if (continueButton) {
+
+        continueButton.addEventListener(
+          "click",
+          () => {
+
+            openModule(
+              "grammar-rain"
+            );
+
+          }
+        );
+
+      }
+
+
+      const practice =
+        byId(
+          "practiceSentenceAgainButton"
+        );
+
+
+      if (practice) {
+
+        practice.addEventListener(
+          "click",
+          renderSentenceBuilder
+        );
+
+      }
+
+    },
+    0
+  );
+
+}
 /* =========================================================
    41. GRAMMAR RAIN
    ========================================================= */
