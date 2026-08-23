@@ -1000,8 +1000,20 @@
 ================================================== -->
 
 <script src="app.js"></script>
+<script src="avatar.js"></script>
+<script>
+  window.addEventListener("load", () => {
+    setTimeout(() => {
+      if (window.AvatarTutor) {
+        AvatarTutor.welcome();
+      }
+    }, 1200);
+  });
+</script>
+  
 
 
 </body>
+  
 
 </html>
