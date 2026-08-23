@@ -8717,6 +8717,11 @@ function updateWordCount() {
    44. AI WRITING FEEDBACK
    ========================================================= */
 
+/* =========================================================
+   LANGKAH 7 — AI FEEDBACK
+   Cikgu Aira Writing Coach
+   ========================================================= */
+
 async function runWritingFeedback() {
 
   showScreen(
@@ -8749,26 +8754,64 @@ async function runWritingFeedback() {
     "";
 
 
+  if (!textarea) {
+    return;
+  }
+
+
+  const stats =
+    getWritingStats(
+      writing
+    );
+
+
+  /* ---------------------------------------------------------
+     MINIMUM WRITING CHECK
+     --------------------------------------------------------- */
+
   if (
-    writing.length <
-    10
+    stats.words < 10
   ) {
 
     if (panel) {
-
-      panel.hidden =
-        false;
-
+      panel.hidden = false;
     }
 
 
     if (content) {
 
       content.innerHTML = `
-        <p>
-          💡 Tulis sekurang-kurangnya satu atau dua ayat dahulu.
-          Selepas itu Cikgu Aira boleh membantu kamu memperbaikinya.
-        </p>
+
+        <div style="
+          padding:18px;
+          border-radius:18px;
+          background:#fff6e5;
+        ">
+
+          <div style="
+            font-size:36px;
+            margin-bottom:8px;
+          ">
+            ✍️
+          </div>
+
+          <strong style="
+            font-size:18px;
+          ">
+            Tulis sedikit lagi dahulu
+          </strong>
+
+          <p style="
+            color:#65727a;
+            line-height:1.6;
+            margin-bottom:0;
+          ">
+            Kamu baru menulis ${stats.words} perkataan.
+            Cuba tulis sekurang-kurangnya 10 perkataan supaya Cikgu Aira boleh memberi maklum balas yang lebih berguna.
+          </p>
+
+        </div>
+
       `;
 
     }
@@ -8777,9 +8820,12 @@ async function runWritingFeedback() {
     focusWriting();
 
     return;
-
   }
 
+
+  /* ---------------------------------------------------------
+     SAVE BEFORE ANALYSIS
+     --------------------------------------------------------- */
 
   appState.savedWriting =
     writing;
@@ -8789,25 +8835,62 @@ async function runWritingFeedback() {
 
 
   if (panel) {
-
-    panel.hidden =
-      false;
-
+    panel.hidden = false;
   }
 
 
   if (content) {
 
     content.innerHTML = `
-      <p>
-        ✨ Cikgu Aira sedang membaca karangan kamu...
-      </p>
+
+      <div style="
+        padding:24px 18px;
+        border-radius:20px;
+        background:linear-gradient(
+          145deg,
+          #f3efff,
+          #fff7e7
+        );
+        text-align:center;
+      ">
+
+        <div style="
+          font-size:46px;
+          margin-bottom:10px;
+        ">
+          👩‍🏫✨
+        </div>
+
+        <strong style="
+          font-size:18px;
+        ">
+          Cikgu Aira sedang membaca...
+        </strong>
+
+        <p style="
+          color:#68747a;
+          line-height:1.6;
+          margin-bottom:0;
+        ">
+          Saya sedang melihat idea, ayat, kosa kata dan tatabahasa kamu.
+        </p>
+
+      </div>
+
     `;
 
   }
 
 
+  /* ---------------------------------------------------------
+     AI REQUEST
+     --------------------------------------------------------- */
+
   try {
+
+    const vocabulary =
+      getWritingVocabularySuggestions();
+
 
     const result =
       await callAI({
@@ -8822,7 +8905,32 @@ async function runWritingFeedback() {
           "Year 3",
 
         language:
-          "Bahasa Melayu"
+          "Bahasa Melayu",
+
+        supportLanguage:
+          "Chinese and English when useful",
+
+        vocabulary,
+
+        instruction:
+          `
+You are Cikgu Aira, a friendly Bahasa Melayu writing coach for a Year 3 student.
+
+Evaluate the student's writing without rewriting the whole essay.
+
+Return concise structured feedback with:
+1. score out of 100
+2. one strength
+3. one grammar or spelling improvement
+4. one vocabulary improvement
+5. one idea to make the writing more interesting
+6. one short corrected example sentence only
+7. encouraging closing message
+
+Use simple Bahasa Melayu.
+Chinese or English may be used briefly to explain difficult vocabulary.
+Do not write a complete replacement essay.
+          `.trim()
 
       });
 
@@ -8833,17 +8941,13 @@ async function runWritingFeedback() {
       );
 
 
-    if (content) {
-
-      content.innerHTML =
-        formatAIResponse(
-          answer ||
-          getFallbackWritingFeedback(
-            writing
-          )
-        );
-
-    }
+    renderStructuredWritingFeedback(
+      answer ||
+      getFallbackWritingFeedback(
+        writing
+      ),
+      writing
+    );
 
 
     completeMission(
@@ -8876,16 +8980,13 @@ async function runWritingFeedback() {
     );
 
 
-    if (content) {
-
-      content.innerHTML =
-        formatAIResponse(
-          getFallbackWritingFeedback(
-            writing
-          )
-        );
-
-    }
+    renderStructuredWritingFeedback(
+      getFallbackWritingFeedback(
+        writing
+      ),
+      writing,
+      true
+    );
 
 
     completeMission(
@@ -8897,6 +8998,620 @@ async function runWritingFeedback() {
 }
 
 
+/* =========================================================
+   RENDER STRUCTURED FEEDBACK
+   ========================================================= */
+
+function renderStructuredWritingFeedback(
+  feedback,
+  writing,
+  offline = false
+) {
+
+  const panel =
+    byId(
+      "aiFeedbackPanel"
+    );
+
+
+  const content =
+    byId(
+      "aiFeedbackContent"
+    );
+
+
+  if (!content) {
+    return;
+  }
+
+
+  if (panel) {
+    panel.hidden = false;
+  }
+
+
+  const stats =
+    getWritingStats(
+      writing
+    );
+
+
+  const score =
+    estimateWritingScore(
+      writing,
+      feedback
+    );
+
+
+  const grade =
+    getWritingGrade(
+      score
+    );
+
+
+  content.innerHTML = `
+
+    <div style="
+      display:grid;
+      gap:16px;
+    ">
+
+
+      <!-- SCORE -->
+
+      <div style="
+        padding:20px;
+        border-radius:22px;
+        background:linear-gradient(
+          145deg,
+          #fff6df,
+          #f2efff
+        );
+        text-align:center;
+      ">
+
+        <div style="
+          font-size:42px;
+          margin-bottom:7px;
+        ">
+          ${grade.emoji}
+        </div>
+
+
+        <div style="
+          font-size:32px;
+          font-weight:950;
+          color:#273239;
+        ">
+          ${score}/100
+        </div>
+
+
+        <strong style="
+          display:block;
+          margin-top:4px;
+          color:#6657b5;
+        ">
+          ${grade.label}
+        </strong>
+
+
+        <div style="
+          display:flex;
+          justify-content:center;
+          gap:16px;
+          margin-top:14px;
+          color:#788187;
+          font-size:13px;
+        ">
+
+          <span>
+            ✏️ ${stats.words} perkataan
+          </span>
+
+          <span>
+            📝 ${stats.sentences} ayat
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <!-- AI FEEDBACK -->
+
+      <div style="
+        padding:18px;
+        border-radius:20px;
+        background:white;
+        border:1px solid #ece7df;
+      ">
+
+        <div style="
+          display:flex;
+          align-items:center;
+          gap:9px;
+          margin-bottom:13px;
+        ">
+
+          <span style="
+            font-size:28px;
+          ">
+            👩‍🏫
+          </span>
+
+          <div>
+
+            <strong style="
+              display:block;
+            ">
+              Maklum Balas Cikgu Aira
+            </strong>
+
+            <small style="
+              color:#8a9297;
+            ">
+              ${
+                offline
+                  ? "Mod bantuan tempatan"
+                  : "AI Writing Coach"
+              }
+            </small>
+
+          </div>
+
+        </div>
+
+
+        <div style="
+          color:#566269;
+          line-height:1.7;
+        ">
+          ${formatAIResponse(
+            feedback
+          )}
+        </div>
+
+      </div>
+
+
+      <!-- NEXT ACTION -->
+
+      <div style="
+        padding:17px;
+        border-radius:18px;
+        background:#eef9f3;
+      ">
+
+        <strong style="
+          display:block;
+          color:#286a4b;
+          margin-bottom:6px;
+        ">
+          🌱 Cabaran Seterusnya
+        </strong>
+
+        <p style="
+          color:#587067;
+          line-height:1.6;
+          margin:0;
+        ">
+          Perbaiki satu atau dua bahagian dahulu. Selepas itu tekan
+          <strong>Semak dengan Cikgu Aira</strong>
+          sekali lagi untuk melihat sama ada karangan kamu bertambah baik.
+        </p>
+
+      </div>
+
+
+      <div style="
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:10px;
+      ">
+
+        <button
+          id="continueEditingWritingButton"
+          class="secondary-button"
+          type="button"
+        >
+          ✏️ Baiki Karangan
+        </button>
+
+
+        <button
+          id="finishWritingJourneyButton"
+          class="primary-button"
+          type="button"
+        >
+          🎉 Selesai
+        </button>
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  setTimeout(
+    bindWritingFeedbackActions,
+    0
+  );
+
+}
+
+
+/* =========================================================
+   FEEDBACK ACTIONS
+   ========================================================= */
+
+function bindWritingFeedbackActions() {
+
+  byId(
+    "continueEditingWritingButton"
+  )?.addEventListener(
+    "click",
+    () => {
+
+      const panel =
+        byId(
+          "aiFeedbackPanel"
+        );
+
+
+      if (panel) {
+
+        panel.hidden =
+          true;
+
+      }
+
+
+      focusWriting();
+
+    }
+  );
+
+
+  byId(
+    "finishWritingJourneyButton"
+  )?.addEventListener(
+    "click",
+    renderWritingJourneyComplete
+  );
+
+}
+
+
+/* =========================================================
+   ESTIMATE SCORE
+   ========================================================= */
+
+function estimateWritingScore(
+  writing,
+  feedback = ""
+) {
+
+  const stats =
+    getWritingStats(
+      writing
+    );
+
+
+  let score =
+    40;
+
+
+  score +=
+    Math.min(
+      25,
+      stats.words * 0.6
+    );
+
+
+  score +=
+    Math.min(
+      15,
+      stats.sentences * 4
+    );
+
+
+  if (
+    /[.!?]/.test(
+      writing
+    )
+  ) {
+
+    score +=
+      5;
+
+  }
+
+
+  if (
+    /^[A-ZÀ-ÖØ-Ý]/.test(
+      writing.trim()
+    )
+  ) {
+
+    score +=
+      5;
+
+  }
+
+
+  const vocabulary =
+    getWritingVocabularySuggestions();
+
+
+  const lowerWriting =
+    writing.toLowerCase();
+
+
+  const usedVocabulary =
+    vocabulary.filter(
+      word =>
+        lowerWriting.includes(
+          word.toLowerCase()
+        )
+    );
+
+
+  score +=
+    Math.min(
+      10,
+      usedVocabulary.length * 2
+    );
+
+
+  const numberFromAI =
+    String(
+      feedback || ""
+    ).match(
+      /\b([1-9][0-9]|100)\s*\/\s*100\b/
+    );
+
+
+  if (
+    numberFromAI
+  ) {
+
+    const aiScore =
+      Number(
+        numberFromAI[1]
+      );
+
+
+    if (
+      aiScore >= 1 &&
+      aiScore <= 100
+    ) {
+
+      score =
+        Math.round(
+          score * 0.35 +
+          aiScore * 0.65
+        );
+
+    }
+
+  }
+
+
+  return Math.max(
+    45,
+    Math.min(
+      100,
+      Math.round(
+        score
+      )
+    )
+  );
+
+}
+
+
+/* =========================================================
+   WRITING GRADE
+   ========================================================= */
+
+function getWritingGrade(
+  score
+) {
+
+  if (
+    score >= 90
+  ) {
+
+    return {
+      emoji: "🏆",
+      label:
+        "Cemerlang!"
+    };
+
+  }
+
+
+  if (
+    score >= 80
+  ) {
+
+    return {
+      emoji: "🌟",
+      label:
+        "Sangat Baik"
+    };
+
+  }
+
+
+  if (
+    score >= 65
+  ) {
+
+    return {
+      emoji: "👏",
+      label:
+        "Baik"
+    };
+
+  }
+
+
+  return {
+    emoji: "🌱",
+    label:
+      "Teruskan Berlatih"
+  };
+
+}
+
+
+/* =========================================================
+   WRITING JOURNEY COMPLETE
+   ========================================================= */
+
+function renderWritingJourneyComplete() {
+
+  const modal =
+    byId(
+      "appModal"
+    );
+
+
+  const content =
+    byId(
+      "modalContent"
+    );
+
+
+  if (
+    modal &&
+    content
+  ) {
+
+    content.innerHTML = `
+
+      <div style="
+        text-align:center;
+        padding:24px 10px;
+      ">
+
+        <div style="
+          font-size:76px;
+          margin-bottom:10px;
+        ">
+          🎓✨
+        </div>
+
+
+        <span class="section-kicker">
+          MISI HARI INI
+        </span>
+
+
+        <h2 style="
+          margin:8px 0;
+        ">
+          Pengembaraan Selesai!
+        </h2>
+
+
+        <p style="
+          color:#65727a;
+          line-height:1.7;
+        ">
+          Kamu sudah membaca, belajar kosa kata, membina ayat,
+          bermain Grammar Rain, melatih ingatan dan menulis karangan.
+        </p>
+
+
+        <div style="
+          margin:20px 0;
+          padding:17px;
+          border-radius:18px;
+          background:#fff6e5;
+        ">
+
+          <strong style="
+            font-size:24px;
+          ">
+            ⭐ ${appState.xp} XP
+          </strong>
+
+          <div style="
+            margin-top:4px;
+            color:#7b8388;
+          ">
+            ${
+              appState.completedMissions.length
+            } / ${
+              APP_CONFIG.missionOrder.length
+            } misi selesai
+          </div>
+
+        </div>
+
+
+        <button
+          id="returnHomeAfterWritingButton"
+          class="primary-button"
+          type="button"
+          style="
+            width:100%;
+          "
+        >
+          🏠 Kembali ke Home
+        </button>
+
+      </div>
+
+    `;
+
+
+    modal.hidden =
+      false;
+
+
+    setTimeout(
+      () => {
+
+        byId(
+          "returnHomeAfterWritingButton"
+        )?.addEventListener(
+          "click",
+          () => {
+
+            closeModal();
+
+            showScreen(
+              "home"
+            );
+
+          }
+        );
+
+      },
+      0
+    );
+
+
+    return;
+
+  }
+
+
+  showToast(
+    "🎉 Semua aktiviti selesai!"
+  );
+
+
+  showScreen(
+    "home"
+  );
+
+}
 /* =========================================================
    45. FALLBACK WRITING FEEDBACK
    ========================================================= */
