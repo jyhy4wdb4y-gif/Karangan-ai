@@ -6307,7 +6307,244 @@ function renderGrammarRainResult() {
    42. SENTENCE RECALL
    ========================================================= */
 
+/* =========================================================
+   LANGKAH 5 — INGAT AYAT
+   Sentence Recall Memory Trainer
+   ========================================================= */
+
+let sentenceRecallState = {
+  sentence: "",
+  focusWords: [],
+  phase: "preview",
+  hintLevel: 0,
+  attempts: 0,
+  timer: null
+};
+
+
+/* =========================================================
+   START SENTENCE RECALL
+   ========================================================= */
+
 function renderSentenceRecall() {
+
+  const sentence =
+    getSentenceRecallSource();
+
+
+  sentenceRecallState = {
+    sentence,
+    focusWords:
+      getSentenceRecallFocusWords(
+        sentence
+      ),
+    phase: "preview",
+    hintLevel: 0,
+    attempts: 0,
+    timer: null
+  };
+
+
+  renderSentenceRecallPreview();
+
+}
+
+
+/* =========================================================
+   GET SOURCE SENTENCE
+   Prefer previous Bina Ayat sentence
+   ========================================================= */
+
+function getSentenceRecallSource() {
+
+  if (
+    typeof sentenceBuilderState !==
+      "undefined" &&
+    sentenceBuilderState?.task?.sentence
+  ) {
+
+    return cleanRecallSentence(
+      sentenceBuilderState.task.sentence
+    );
+
+  }
+
+
+  if (
+    typeof sentenceBuilderSession !==
+      "undefined" &&
+    sentenceBuilderSession?.task?.sentence
+  ) {
+
+    return cleanRecallSentence(
+      sentenceBuilderSession.task.sentence
+    );
+
+  }
+
+
+  const vocabulary =
+    getVocabularyWords();
+
+
+  const usable =
+    vocabulary.filter(
+      item => {
+
+        const example =
+          cleanRecallSentence(
+            item.example
+          );
+
+
+        const count =
+          example
+            .split(/\s+/)
+            .filter(Boolean)
+            .length;
+
+
+        return (
+          example &&
+          count >= 4 &&
+          count <= 12
+        );
+
+      }
+    );
+
+
+  if (
+    usable.length
+  ) {
+
+    return cleanRecallSentence(
+      shuffleArray(
+        usable
+      )[0].example
+    );
+
+  }
+
+
+  return "Aiman membantu ibunya di rumah";
+
+}
+
+
+/* =========================================================
+   CLEAN RECALL SENTENCE
+   ========================================================= */
+
+function cleanRecallSentence(
+  value
+) {
+
+  return String(
+    value || ""
+  )
+    .replace(
+      /\s+/g,
+      " "
+    )
+    .replace(
+      /^[“"' ]+/,
+      ""
+    )
+    .replace(
+      /[.!?。！？"'”]+$/,
+      ""
+    )
+    .trim();
+
+}
+
+
+/* =========================================================
+   GET FOCUS WORDS
+   ========================================================= */
+
+function getSentenceRecallFocusWords(
+  sentence
+) {
+
+  const stopWords =
+    new Set([
+      "di",
+      "ke",
+      "dan",
+      "yang",
+      "pada",
+      "untuk",
+      "dengan",
+      "seorang",
+      "itu",
+      "ini",
+      "dalam"
+    ]);
+
+
+  const words =
+    sentence
+      .split(/\s+/)
+      .map(
+        word =>
+          word.replace(
+            /[^A-Za-zÀ-ÿ'-]/g,
+            ""
+          )
+      )
+      .filter(
+        word =>
+          word.length > 2 &&
+          !stopWords.has(
+            word.toLowerCase()
+          )
+      );
+
+
+  const unique =
+    [];
+
+
+  words.forEach(
+    word => {
+
+      if (
+        !unique.some(
+          item =>
+            item.toLowerCase() ===
+            word.toLowerCase()
+        )
+      ) {
+
+        unique.push(
+          word
+        );
+
+      }
+
+    }
+  );
+
+
+  return unique.slice(
+    0,
+    3
+  );
+
+}
+
+
+/* =========================================================
+   PREVIEW SCREEN
+   ========================================================= */
+
+function renderSentenceRecallPreview() {
+
+  sentenceRecallState.phase =
+    "preview";
+
 
   openModuleScreen(
     `
@@ -6320,50 +6557,80 @@ function renderSentenceRecall() {
         💭 Ingat Ayat
       </h1>
 
+
       <p style="
         color:#65727a;
         line-height:1.7;
+        margin-bottom:20px;
       ">
-        Tadi kita membaca satu ayat tentang Aiman.
-        Cuba tulis semula apa yang kamu ingat.
+        Baca ayat ini dengan teliti.
+        Cuba ingat susunan perkataan sebelum ayat disembunyikan.
       </p>
 
 
       <div style="
-        padding:18px;
-        border-radius:18px;
-        background:#fff7d5;
-        margin:22px 0;
+        padding:28px 22px;
+        border-radius:24px;
+        background:linear-gradient(
+          145deg,
+          #fff7dd,
+          #f3efff
+        );
+        border:1px solid #eee4d1;
+        text-align:center;
+        margin-bottom:22px;
       ">
 
-        💡 Petunjuk:
+        <div style="
+          font-size:44px;
+          margin-bottom:14px;
+        ">
+          👀
+        </div>
 
-        <strong>
-          Aiman + membantu + ibu
-        </strong>
+
+        <div style="
+          font-size:22px;
+          font-weight:900;
+          line-height:1.65;
+          color:#29343b;
+        ">
+          “${escapeHtml(
+            sentenceRecallState.sentence
+          )}.”
+        </div>
 
       </div>
 
 
-      <textarea
-        id="recallInput"
-        class="karangan-textarea"
-        style="
-          min-height:150px;
-          border:1px solid #ece8e1;
-          border-radius:18px;
-          margin-bottom:16px;
-        "
-        placeholder="Tulis ayat kamu..."
-      ></textarea>
+      <div style="
+        padding:15px 17px;
+        border-radius:17px;
+        background:#eef9f4;
+        color:#547064;
+        line-height:1.6;
+        margin-bottom:20px;
+      ">
+        🧠 Cuba ingat:
+        <strong>
+          ${escapeHtml(
+            sentenceRecallState.focusWords.join(
+              " · "
+            )
+          )}
+        </strong>
+      </div>
 
 
       <button
-        id="checkRecallButton"
+        id="startRecallMemoryButton"
         class="primary-button"
         type="button"
+        style="
+          width:100%;
+        "
       >
-        Semak
+        🙈 Saya Sudah Ingat
       </button>
 
     `,
@@ -6374,73 +6641,11 @@ function renderSentenceRecall() {
   setTimeout(
     () => {
 
-      const button =
-        byId(
-          "checkRecallButton"
-        );
-
-
-      if (!button) {
-        return;
-      }
-
-
-      button.addEventListener(
+      byId(
+        "startRecallMemoryButton"
+      )?.addEventListener(
         "click",
-        () => {
-
-          const value =
-            byId(
-              "recallInput"
-            )
-              ?.value
-              .trim()
-              .toLowerCase() ||
-            "";
-
-
-          if (
-            value.includes(
-              "aiman"
-            ) &&
-            value.includes(
-              "membantu"
-            )
-          ) {
-
-            showToast(
-              "🧠 Bagus! Kamu berjaya mengingat ayat."
-            );
-
-
-            completeMission(
-              "sentence-recall"
-            );
-
-
-            setTimeout(
-              () => {
-
-                showScreen(
-                  "create"
-                );
-
-
-                focusWriting();
-
-              },
-              650
-            );
-
-          } else {
-
-            showToast(
-              "💡 Cuba gunakan perkataan Aiman dan membantu."
-            );
-
-          }
-
-        }
+        renderSentenceRecallInput
       );
 
     },
@@ -6450,6 +6655,742 @@ function renderSentenceRecall() {
 }
 
 
+/* =========================================================
+   INPUT SCREEN
+   ========================================================= */
+
+function renderSentenceRecallInput() {
+
+  sentenceRecallState.phase =
+    "input";
+
+
+  const hint =
+    getSentenceRecallHint();
+
+
+  openModuleScreen(
+    `
+
+      <span class="section-kicker">
+        LANGKAH 5
+      </span>
+
+      <h1>
+        💭 Ingat Ayat
+      </h1>
+
+
+      <p style="
+        color:#65727a;
+        line-height:1.7;
+      ">
+        Ayat tadi sudah disembunyikan.
+        Cuba tulis semula berdasarkan ingatan kamu.
+      </p>
+
+
+      ${
+        hint
+          ? `
+            <div style="
+              margin:18px 0;
+              padding:15px 17px;
+              border-radius:17px;
+              background:#f2efff;
+              color:#665c8a;
+              line-height:1.6;
+            ">
+              💡 ${escapeHtml(
+                hint
+              )}
+            </div>
+          `
+          : ""
+      }
+
+
+      <textarea
+        id="recallInput"
+        class="karangan-textarea"
+        style="
+          min-height:150px;
+          width:100%;
+          box-sizing:border-box;
+          border:1px solid #e6e1d9;
+          border-radius:18px;
+          padding:16px;
+          margin:20px 0 14px;
+          font-size:16px;
+          line-height:1.6;
+          background:white;
+        "
+        placeholder="Tulis semula ayat yang kamu ingat..."
+      ></textarea>
+
+
+      <div style="
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:10px;
+        margin-bottom:12px;
+      ">
+
+        <button
+          id="recallHintButton"
+          class="secondary-button"
+          type="button"
+        >
+          💡 Petunjuk
+        </button>
+
+
+        <button
+          id="recallViewAgainButton"
+          class="secondary-button"
+          type="button"
+        >
+          👀 Lihat Sekali Lagi
+        </button>
+
+      </div>
+
+
+      <button
+        id="checkRecallButton"
+        class="primary-button"
+        type="button"
+        style="
+          width:100%;
+        "
+      >
+        ✓ Semak Ingatan
+      </button>
+
+    `,
+    71
+  );
+
+
+  setTimeout(
+    bindSentenceRecallControls,
+    0
+  );
+
+}
+
+
+/* =========================================================
+   BIND RECALL CONTROLS
+   ========================================================= */
+
+function bindSentenceRecallControls() {
+
+  byId(
+    "recallHintButton"
+  )?.addEventListener(
+    "click",
+    () => {
+
+      sentenceRecallState.hintLevel =
+        Math.min(
+          3,
+          sentenceRecallState.hintLevel + 1
+        );
+
+
+      const currentValue =
+        byId(
+          "recallInput"
+        )?.value || "";
+
+
+      renderSentenceRecallInput();
+
+
+      setTimeout(
+        () => {
+
+          const input =
+            byId(
+              "recallInput"
+            );
+
+
+          if (input) {
+
+            input.value =
+              currentValue;
+
+            input.focus();
+
+          }
+
+        },
+        0
+      );
+
+    }
+  );
+
+
+  byId(
+    "recallViewAgainButton"
+  )?.addEventListener(
+    "click",
+    renderSentenceRecallPreview
+  );
+
+
+  byId(
+    "checkRecallButton"
+  )?.addEventListener(
+    "click",
+    checkSentenceRecallAnswer
+  );
+
+}
+
+
+/* =========================================================
+   RECALL HINT
+   ========================================================= */
+
+function getSentenceRecallHint() {
+
+  if (
+    sentenceRecallState.hintLevel ===
+    0
+  ) {
+
+    return "";
+
+  }
+
+
+  const words =
+    sentenceRecallState.sentence
+      .split(/\s+/)
+      .filter(Boolean);
+
+
+  if (
+    sentenceRecallState.hintLevel ===
+    1
+  ) {
+
+    return `Kata kunci: ${sentenceRecallState.focusWords.join(
+      " · "
+    )}`;
+
+  }
+
+
+  if (
+    sentenceRecallState.hintLevel ===
+    2
+  ) {
+
+    return `Ayat bermula dengan "${words
+      .slice(
+        0,
+        Math.min(
+          2,
+          words.length
+        )
+      )
+      .join(" ")}".`;
+
+  }
+
+
+  const half =
+    Math.max(
+      2,
+      Math.ceil(
+        words.length / 2
+      )
+    );
+
+
+  return `Bahagian awal ayat ialah "${words
+    .slice(
+      0,
+      half
+    )
+    .join(" ")}..."`;
+
+}
+
+
+/* =========================================================
+   CHECK RECALL ANSWER
+   ========================================================= */
+
+function checkSentenceRecallAnswer() {
+
+  const input =
+    byId(
+      "recallInput"
+    );
+
+
+  const value =
+    input?.value
+      .trim() ||
+    "";
+
+
+  if (
+    value.length < 3
+  ) {
+
+    showToast(
+      "✍️ Cuba tulis ayat dahulu."
+    );
+
+    return;
+
+  }
+
+
+  sentenceRecallState.attempts +=
+    1;
+
+
+  const score =
+    calculateSentenceRecallSimilarity(
+      value,
+      sentenceRecallState.sentence
+    );
+
+
+  if (
+    score >= 80
+  ) {
+
+    completeMission(
+      "sentence-recall"
+    );
+
+
+    renderSentenceRecallSuccess(
+      score
+    );
+
+    return;
+
+  }
+
+
+  if (
+    score >= 55
+  ) {
+
+    showToast(
+      `🧠 Hampir tepat! Ingatan kamu ${score}%.`
+    );
+
+
+    sentenceRecallState.hintLevel =
+      Math.max(
+        sentenceRecallState.hintLevel,
+        1
+      );
+
+
+    return;
+
+  }
+
+
+  showToast(
+    `💡 Cuba lagi. Ingatan kamu ${score}%.`
+  );
+
+
+  sentenceRecallState.hintLevel =
+    Math.max(
+      sentenceRecallState.hintLevel,
+      2
+    );
+
+
+  const currentValue =
+    value;
+
+
+  setTimeout(
+    () => {
+
+      renderSentenceRecallInput();
+
+
+      setTimeout(
+        () => {
+
+          const newInput =
+            byId(
+              "recallInput"
+            );
+
+
+          if (newInput) {
+
+            newInput.value =
+              currentValue;
+
+          }
+
+        },
+        0
+      );
+
+    },
+    450
+  );
+
+}
+
+
+/* =========================================================
+   SIMILARITY SCORE
+   ========================================================= */
+
+function calculateSentenceRecallSimilarity(
+  studentSentence,
+  correctSentence
+) {
+
+  const studentWords =
+    normalizeRecallText(
+      studentSentence
+    )
+      .split(" ")
+      .filter(Boolean);
+
+
+  const correctWords =
+    normalizeRecallText(
+      correctSentence
+    )
+      .split(" ")
+      .filter(Boolean);
+
+
+  if (
+    !correctWords.length
+  ) {
+
+    return 0;
+
+  }
+
+
+  let correctPosition =
+    0;
+
+
+  correctWords.forEach(
+    (
+      word,
+      index
+    ) => {
+
+      if (
+        studentWords[index] ===
+        word
+      ) {
+
+        correctPosition +=
+          1;
+
+      }
+
+    }
+  );
+
+
+  const correctSet =
+    new Set(
+      correctWords
+    );
+
+
+  const rememberedWords =
+    new Set(
+      studentWords.filter(
+        word =>
+          correctSet.has(
+            word
+          )
+      )
+    );
+
+
+  const vocabularyScore =
+    rememberedWords.size /
+    new Set(
+      correctWords
+    ).size;
+
+
+  const positionScore =
+    correctPosition /
+    correctWords.length;
+
+
+  const lengthScore =
+    Math.min(
+      studentWords.length,
+      correctWords.length
+    ) /
+    Math.max(
+      studentWords.length,
+      correctWords.length
+    );
+
+
+  const final =
+    (
+      vocabularyScore * 0.5 +
+      positionScore * 0.35 +
+      lengthScore * 0.15
+    ) *
+    100;
+
+
+  return Math.round(
+    Math.min(
+      100,
+      Math.max(
+        0,
+        final
+      )
+    )
+  );
+
+}
+
+
+/* =========================================================
+   NORMALIZE RECALL TEXT
+   ========================================================= */
+
+function normalizeRecallText(
+  value
+) {
+
+  return String(
+    value || ""
+  )
+    .toLowerCase()
+    .replace(
+      /[.,!?;:'"“”‘’()-]/g,
+      ""
+    )
+    .replace(
+      /\s+/g,
+      " "
+    )
+    .trim();
+
+}
+
+
+/* =========================================================
+   SUCCESS SCREEN
+   ========================================================= */
+
+function renderSentenceRecallSuccess(
+  score
+) {
+
+  openModuleScreen(
+    `
+
+      <div style="
+        text-align:center;
+        padding:24px 0 10px;
+      ">
+
+        <div style="
+          font-size:72px;
+          margin-bottom:10px;
+        ">
+          🧠✨
+        </div>
+
+
+        <span class="section-kicker">
+          LANGKAH 5 SELESAI
+        </span>
+
+
+        <h1 style="
+          margin-top:8px;
+        ">
+          Ingatan Hebat!
+        </h1>
+
+
+        <p style="
+          color:#65727a;
+          line-height:1.7;
+          margin-bottom:22px;
+        ">
+          Kamu berjaya mengingat semula ayat yang dipelajari.
+        </p>
+
+
+        <div style="
+          padding:20px;
+          border-radius:20px;
+          background:#eef9f3;
+          margin-bottom:18px;
+        ">
+
+          <div style="
+            font-size:13px;
+            color:#658173;
+            font-weight:800;
+            margin-bottom:7px;
+          ">
+            AYAT ASAL
+          </div>
+
+          <div style="
+            font-size:18px;
+            font-weight:850;
+            line-height:1.6;
+            color:#29463b;
+          ">
+            “${escapeHtml(
+              sentenceRecallState.sentence
+            )}.”
+          </div>
+
+        </div>
+
+
+        <div style="
+          display:grid;
+          grid-template-columns:1fr 1fr;
+          gap:10px;
+          margin-bottom:22px;
+        ">
+
+          <div style="
+            padding:17px;
+            border-radius:17px;
+            background:#fff6e5;
+          ">
+
+            <strong style="
+              font-size:24px;
+            ">
+              ${score}%
+            </strong>
+
+            <div style="
+              margin-top:3px;
+              font-size:12px;
+              color:#7a8288;
+            ">
+              Ingatan
+            </div>
+
+          </div>
+
+
+          <div style="
+            padding:17px;
+            border-radius:17px;
+            background:#f2efff;
+          ">
+
+            <strong style="
+              font-size:24px;
+            ">
+              ${sentenceRecallState.attempts}
+            </strong>
+
+            <div style="
+              margin-top:3px;
+              font-size:12px;
+              color:#7a8288;
+            ">
+              Percubaan
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <button
+          id="continueToWritingStudioButton"
+          class="primary-button"
+          type="button"
+          style="
+            width:100%;
+            margin-bottom:10px;
+          "
+        >
+          Teruskan ke Studio Karangan →
+        </button>
+
+
+        <button
+          id="retrySentenceRecallButton"
+          class="secondary-button"
+          type="button"
+          style="
+            width:100%;
+          "
+        >
+          💭 Latih Ingatan Lagi
+        </button>
+
+      </div>
+
+    `,
+    71
+  );
+
+
+  setTimeout(
+    () => {
+
+      byId(
+        "continueToWritingStudioButton"
+      )?.addEventListener(
+        "click",
+        () => {
+
+          showScreen(
+            "create"
+          );
+
+
+          focusWriting();
+
+        }
+      );
+
+
+      byId(
+        "retrySentenceRecallButton"
+      )?.addEventListener(
+        "click",
+        renderSentenceRecall
+      );
+
+    },
+    0
+  );
+
+}
 /* =========================================================
    43. WRITING
    ========================================================= */
