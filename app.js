@@ -8894,6 +8894,68 @@ function updateWritingUI() {
   }
 
 
+  function updateWordCount() {
+
+  const textarea =
+    byId(
+      "karanganInput"
+    );
+
+
+  const counter =
+    byId(
+      "writingWordCount"
+    );
+
+
+  if (
+    !textarea ||
+    !counter
+  ) {
+
+    return;
+
+  }
+
+
+  const text =
+    String(
+      textarea.value || ""
+    ).trim();
+
+
+  const count =
+    text
+      ? text
+          .split(/\s+/)
+          .filter(Boolean)
+          .length
+      : 0;
+
+
+  counter.textContent =
+    count;
+
+};
+
+
+  /*
+    Writing Studio may not be loaded yet.
+    Do not stop the whole app if it is unavailable.
+  */
+
+  if (
+    typeof updateWritingStudioProgress ===
+    "function"
+  ) {
+
+    updateWritingStudioProgress();
+
+  }
+
+}
+
+
   updateWordCount();
 
   updateWritingStudioProgress();
