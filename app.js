@@ -5326,7 +5326,264 @@ function renderSentenceBuilderSuccess() {
    41. GRAMMAR RAIN
    ========================================================= */
 
+/* =========================================================
+   LANGKAH 4 — GRAMMAR RAIN
+   Multi-round Grammar Game
+   ========================================================= */
+
+let grammarRainState = {
+  questions: [],
+  index: 0,
+  score: 0,
+  lives: 3,
+  answered: false
+};
+
+
+/* =========================================================
+   START GRAMMAR RAIN
+   ========================================================= */
+
 function renderGrammarRain() {
+
+  grammarRainState = {
+    questions:
+      createGrammarRainQuestions(),
+
+    index: 0,
+
+    score: 0,
+
+    lives: 3,
+
+    answered: false
+  };
+
+
+  renderGrammarRainRound();
+
+}
+
+
+/* =========================================================
+   CREATE QUESTION SET
+   ========================================================= */
+
+function createGrammarRainQuestions() {
+
+  const baseQuestions = [
+
+    {
+      sentence:
+        "Aiman _____ ibunya membersihkan rumah.",
+      answer:
+        "membantu",
+      options: [
+        "membantu",
+        "membaca",
+        "tidur"
+      ],
+      explanation:
+        "Membantu bermaksud memberikan pertolongan."
+    },
+
+    {
+      sentence:
+        "Siti seorang murid yang sangat _____.",
+      answer:
+        "rajin",
+      options: [
+        "rajin",
+        "lapar",
+        "gelap"
+      ],
+      explanation:
+        "Rajin sesuai untuk menerangkan sikap murid yang tekun belajar."
+    },
+
+    {
+      sentence:
+        "Kita perlu _____ kebersihan sekolah.",
+      answer:
+        "menjaga",
+      options: [
+        "menjaga",
+        "membuang",
+        "menutup"
+      ],
+      explanation:
+        "Menjaga bermaksud memelihara sesuatu supaya kekal baik."
+    },
+
+    {
+      sentence:
+        "Aina berasa _____ kerana mendapat hadiah.",
+      answer:
+        "gembira",
+      options: [
+        "gembira",
+        "takut",
+        "marah"
+      ],
+      explanation:
+        "Gembira ialah perasaan senang dan bahagia."
+    },
+
+    {
+      sentence:
+        "Amir membaca _____ di perpustakaan.",
+      answer:
+        "buku",
+      options: [
+        "buku",
+        "meja",
+        "kasut"
+      ],
+      explanation:
+        "Buku ialah benda yang biasa dibaca."
+    },
+
+    {
+      sentence:
+        "Murid pergi ke _____ pada waktu pagi.",
+      answer:
+        "sekolah",
+      options: [
+        "sekolah",
+        "dapur",
+        "taman permainan"
+      ],
+      explanation:
+        "Sekolah ialah tempat murid belajar."
+    },
+
+    {
+      sentence:
+        "Hakim _____ mencuba perkara baharu.",
+      answer:
+        "berani",
+      options: [
+        "berani",
+        "malas",
+        "senyap"
+      ],
+      explanation:
+        "Berani bermaksud tidak takut menghadapi sesuatu."
+    }
+  ];
+
+
+  const vocabulary =
+    getVocabularyWords();
+
+
+  const knownWords =
+    new Set(
+      vocabulary.map(
+        item =>
+          String(
+            item.word || ""
+          ).toLowerCase()
+      )
+    );
+
+
+  const preferred =
+    baseQuestions.filter(
+      question =>
+        knownWords.has(
+          question.answer.toLowerCase()
+        )
+    );
+
+
+  const remaining =
+    baseQuestions.filter(
+      question =>
+        !knownWords.has(
+          question.answer.toLowerCase()
+        )
+    );
+
+
+  const selected =
+    [
+      ...shuffleArray(preferred),
+      ...shuffleArray(remaining)
+    ]
+      .slice(
+        0,
+        5
+      )
+      .map(
+        question => ({
+          ...question,
+          options:
+            shuffleArray(
+              question.options
+            )
+        })
+      );
+
+
+  return selected;
+
+}
+
+
+/* =========================================================
+   RENDER CURRENT ROUND
+   ========================================================= */
+
+function renderGrammarRainRound() {
+
+  const question =
+    grammarRainState.questions[
+      grammarRainState.index
+    ];
+
+
+  if (
+    !question ||
+    grammarRainState.lives <= 0
+  ) {
+
+    renderGrammarRainResult();
+
+    return;
+
+  }
+
+
+  const roundNumber =
+    grammarRainState.index + 1;
+
+
+  const total =
+    grammarRainState.questions.length;
+
+
+  const progress =
+    Math.round(
+      grammarRainState.index /
+      total *
+      100
+    );
+
+
+  const hearts =
+    Array.from(
+      { length: 3 },
+      (
+        _,
+        index
+      ) =>
+        index <
+        grammarRainState.lives
+          ? "❤️"
+          : "🖤"
+    ).join(" ");
+
 
   openModuleScreen(
     `
@@ -5339,57 +5596,675 @@ function renderGrammarRain() {
         🌧️ Grammar Rain
       </h1>
 
-      <p style="
-        color:#65727a;
-        line-height:1.7;
-      ">
-        Pilih perkataan yang paling sesuai.
-      </p>
-
 
       <div style="
-        margin:26px 0;
-        padding:24px;
-        border-radius:22px;
-        background:#eeecff;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:12px;
+        margin:14px 0 18px;
       ">
 
-        <strong style="
-          font-size:20px;
+        <div style="
+          padding:9px 13px;
+          border-radius:999px;
+          background:#fff4dd;
+          font-size:13px;
+          font-weight:900;
+          color:#b36c1d;
         ">
-          Aiman _____ ibunya membersihkan rumah.
-        </strong>
+          ⭐ ${grammarRainState.score} mata
+        </div>
+
+
+        <div style="
+          font-size:18px;
+          letter-spacing:2px;
+        ">
+          ${hearts}
+        </div>
 
       </div>
 
 
       <div style="
-        display:grid;
-        gap:12px;
+        height:8px;
+        background:#ece9e4;
+        border-radius:999px;
+        overflow:hidden;
+        margin-bottom:24px;
       ">
 
-        <button
-          class="secondary-button grammar-answer"
-          data-answer="membantu"
-          type="button"
-        >
-          membantu
-        </button>
+        <div style="
+          width:${progress}%;
+          height:100%;
+          background:#ff9f43;
+          border-radius:999px;
+        "></div>
+
+      </div>
+
+
+      <div style="
+        font-size:13px;
+        font-weight:850;
+        color:#8a9297;
+        margin-bottom:8px;
+      ">
+        Soalan ${roundNumber} daripada ${total}
+      </div>
+
+
+      <div style="
+        min-height:190px;
+        border-radius:26px;
+        background:linear-gradient(
+          180deg,
+          #eeeaff,
+          #f7f4ff
+        );
+        border:1px solid #e4ddff;
+        padding:28px 22px;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        text-align:center;
+        margin-bottom:22px;
+        position:relative;
+        overflow:hidden;
+      ">
+
+        <div style="
+          font-size:46px;
+          margin-bottom:14px;
+        ">
+          ☁️
+        </div>
+
+
+        <strong style="
+          font-size:22px;
+          line-height:1.5;
+          color:#2c3540;
+        ">
+          ${escapeHtml(
+            question.sentence
+          )}
+        </strong>
+
+
+        <div style="
+          position:absolute;
+          bottom:-12px;
+          left:0;
+          right:0;
+          text-align:center;
+          font-size:42px;
+          opacity:.55;
+        ">
+          🌧️ 🌧️ 🌧️
+        </div>
+
+      </div>
+
+
+      <p style="
+        color:#65727a;
+        text-align:center;
+        margin-bottom:16px;
+      ">
+        Tangkap jawapan yang betul sebelum hujan turun!
+      </p>
+
+
+      <div
+        id="grammarRainOptions"
+        style="
+          display:grid;
+          gap:12px;
+        "
+      >
+
+        ${
+          question.options
+            .map(
+              option => `
+
+                <button
+                  type="button"
+                  class="secondary-button grammar-rain-answer"
+                  data-grammar-answer="${escapeAttribute(
+                    option
+                  )}"
+                  style="
+                    width:100%;
+                    padding:15px 16px;
+                    font-size:17px;
+                    font-weight:850;
+                  "
+                >
+                  ${escapeHtml(
+                    option
+                  )}
+                </button>
+
+              `
+            )
+            .join("")
+        }
+
+      </div>
+
+    `,
+    57
+  );
+
+
+  setTimeout(
+    bindGrammarRainRoundControls,
+    0
+  );
+
+}
+
+
+/* =========================================================
+   BIND ROUND CONTROLS
+   ========================================================= */
+
+function bindGrammarRainRoundControls() {
+
+  $$(
+    ".grammar-rain-answer"
+  ).forEach(
+    button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          if (
+            grammarRainState.answered
+          ) {
+
+            return;
+
+          }
+
+
+          submitGrammarRainAnswer(
+            button.dataset.grammarAnswer,
+            button
+          );
+
+        }
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   SUBMIT ANSWER
+   ========================================================= */
+
+function submitGrammarRainAnswer(
+  selectedAnswer,
+  selectedButton
+) {
+
+  const question =
+    grammarRainState.questions[
+      grammarRainState.index
+    ];
+
+
+  if (!question) {
+    return;
+  }
+
+
+  grammarRainState.answered =
+    true;
+
+
+  const correct =
+    String(
+      selectedAnswer
+    ).toLowerCase() ===
+    String(
+      question.answer
+    ).toLowerCase();
+
+
+  $$(
+    ".grammar-rain-answer"
+  ).forEach(
+    button => {
+
+      button.disabled =
+        true;
+
+
+      const answer =
+        String(
+          button.dataset.grammarAnswer
+        ).toLowerCase();
+
+
+      if (
+        answer ===
+        String(
+          question.answer
+        ).toLowerCase()
+      ) {
+
+        button.style.background =
+          "#e8f8ef";
+
+        button.style.borderColor =
+          "#85d5ac";
+
+        button.style.color =
+          "#237c52";
+
+      }
+
+    }
+  );
+
+
+  if (correct) {
+
+    grammarRainState.score +=
+      20;
+
+
+    if (selectedButton) {
+
+      selectedButton.style.background =
+        "#e8f8ef";
+
+      selectedButton.style.borderColor =
+        "#85d5ac";
+
+      selectedButton.style.color =
+        "#237c52";
+
+    }
+
+
+    showToast(
+      "🌟 Betul! +20 mata"
+    );
+
+  } else {
+
+    grammarRainState.lives =
+      Math.max(
+        0,
+        grammarRainState.lives - 1
+      );
+
+
+    if (selectedButton) {
+
+      selectedButton.style.background =
+        "#fff0f0";
+
+      selectedButton.style.borderColor =
+        "#efaaaa";
+
+      selectedButton.style.color =
+        "#b94d4d";
+
+    }
+
+
+    showToast(
+      `💡 Belum tepat. Jawapan betul: ${question.answer}`
+    );
+
+  }
+
+
+  showGrammarRainExplanation(
+    question,
+    correct
+  );
+
+}
+
+
+/* =========================================================
+   EXPLANATION PANEL
+   ========================================================= */
+
+function showGrammarRainExplanation(
+  question,
+  correct
+) {
+
+  const options =
+    byId(
+      "grammarRainOptions"
+    );
+
+
+  if (!options) {
+    return;
+  }
+
+
+  const panel =
+    document.createElement(
+      "div"
+    );
+
+
+  panel.style.cssText = `
+    margin-top:16px;
+    padding:16px;
+    border-radius:17px;
+    background:${correct ? "#eef9f3" : "#fff5e9"};
+    color:#566269;
+    line-height:1.6;
+    font-size:14px;
+  `;
+
+
+  panel.innerHTML = `
+
+    <strong style="
+      color:#313b41;
+    ">
+      ${
+        correct
+          ? "✅ Tepat!"
+          : "💡 Cuba ingat:"
+      }
+    </strong>
+
+    <div style="
+      margin-top:6px;
+    ">
+      ${escapeHtml(
+        question.explanation
+      )}
+    </div>
+
+
+    <button
+      id="nextGrammarRainButton"
+      class="primary-button"
+      type="button"
+      style="
+        width:100%;
+        margin-top:14px;
+      "
+    >
+      ${
+        grammarRainState.index + 1 >=
+        grammarRainState.questions.length
+
+          ? "Lihat Keputusan →"
+
+          : "Soalan Seterusnya →"
+      }
+    </button>
+
+  `;
+
+
+  options.appendChild(
+    panel
+  );
+
+
+  byId(
+    "nextGrammarRainButton"
+  )?.addEventListener(
+    "click",
+    nextGrammarRainRound
+  );
+
+}
+
+
+/* =========================================================
+   NEXT ROUND
+   ========================================================= */
+
+function nextGrammarRainRound() {
+
+  grammarRainState.index +=
+    1;
+
+
+  grammarRainState.answered =
+    false;
+
+
+  if (
+    grammarRainState.lives <= 0 ||
+    grammarRainState.index >=
+      grammarRainState.questions.length
+  ) {
+
+    renderGrammarRainResult();
+
+    return;
+
+  }
+
+
+  renderGrammarRainRound();
+
+}
+
+
+/* =========================================================
+   RESULT SCREEN
+   ========================================================= */
+
+function renderGrammarRainResult() {
+
+  const total =
+    grammarRainState.questions.length;
+
+
+  const maxScore =
+    total * 20;
+
+
+  const percentage =
+    maxScore
+      ? Math.round(
+          grammarRainState.score /
+          maxScore *
+          100
+        )
+      : 0;
+
+
+  const passed =
+    percentage >= 60;
+
+
+  if (passed) {
+
+    completeMission(
+      "grammar-rain"
+    );
+
+  }
+
+
+  let emoji =
+    "🌟";
+
+
+  let title =
+    "Hebat!";
+
+
+  let message =
+    "Kamu berjaya mengenal pasti perkataan yang sesuai dalam ayat.";
+
+
+  if (
+    percentage === 100
+  ) {
+
+    emoji =
+      "🏆";
+
+    title =
+      "Sempurna!";
+
+    message =
+      "Semua jawapan betul. Grammar Rain berjaya ditamatkan dengan cemerlang!";
+
+  } else if (
+    !passed
+  ) {
+
+    emoji =
+      "💪";
+
+    title =
+      "Cuba Lagi!";
+
+    message =
+      "Tak mengapa. Cuba sekali lagi dan perhatikan maksud setiap ayat.";
+
+  }
+
+
+  openModuleScreen(
+    `
+
+      <div style="
+        text-align:center;
+        padding:24px 0 8px;
+      ">
+
+        <div style="
+          font-size:72px;
+          margin-bottom:10px;
+        ">
+          ${emoji}
+        </div>
+
+
+        <span class="section-kicker">
+          GRAMMAR RAIN
+        </span>
+
+
+        <h1 style="
+          margin-top:8px;
+        ">
+          ${title}
+        </h1>
+
+
+        <p style="
+          color:#65727a;
+          line-height:1.7;
+          margin-bottom:24px;
+        ">
+          ${message}
+        </p>
+
+
+        <div style="
+          display:grid;
+          grid-template-columns:1fr 1fr;
+          gap:10px;
+          margin-bottom:22px;
+        ">
+
+          <div style="
+            padding:18px;
+            background:#fff6e5;
+            border-radius:18px;
+          ">
+
+            <strong style="
+              font-size:26px;
+            ">
+              ${grammarRainState.score}
+            </strong>
+
+            <div style="
+              color:#7a8288;
+              font-size:12px;
+              margin-top:3px;
+            ">
+              Mata
+            </div>
+
+          </div>
+
+
+          <div style="
+            padding:18px;
+            background:#f2efff;
+            border-radius:18px;
+          ">
+
+            <strong style="
+              font-size:26px;
+            ">
+              ${percentage}%
+            </strong>
+
+            <div style="
+              color:#7a8288;
+              font-size:12px;
+              margin-top:3px;
+            ">
+              Ketepatan
+            </div>
+
+          </div>
+
+        </div>
+
+
+        ${
+          passed
+            ? `
+
+              <button
+                id="continueSentenceRecallButton"
+                class="primary-button"
+                type="button"
+                style="
+                  width:100%;
+                  margin-bottom:10px;
+                "
+              >
+                Teruskan ke Ingat Ayat →
+              </button>
+
+            `
+            : ""
+        }
+
 
         <button
-          class="secondary-button grammar-answer"
-          data-answer="membaca"
+          id="retryGrammarRainButton"
+          class="secondary-button"
           type="button"
+          style="
+            width:100%;
+          "
         >
-          membaca
-        </button>
-
-        <button
-          class="secondary-button grammar-answer"
-          data-answer="tidur"
-          type="button"
-        >
-          tidur
+          🌧️ Main Lagi
         </button>
 
       </div>
@@ -5402,47 +6277,22 @@ function renderGrammarRain() {
   setTimeout(
     () => {
 
-      $$(
-        ".grammar-answer"
-      ).forEach(
-        button => {
-
-          button.addEventListener(
-            "click",
-            () => {
-
-              if (
-                button.dataset.answer ===
-                "membantu"
-              ) {
-
-                showToast(
-                  "🌟 Betul! Aiman membantu ibunya."
-                );
+      byId(
+        "retryGrammarRainButton"
+      )?.addEventListener(
+        "click",
+        renderGrammarRain
+      );
 
 
-                completeMission(
-                  "grammar-rain"
-                );
+      byId(
+        "continueSentenceRecallButton"
+      )?.addEventListener(
+        "click",
+        () => {
 
-
-                setTimeout(
-                  () =>
-                    openModule(
-                      "sentence-recall"
-                    ),
-                  650
-                );
-
-              } else {
-
-                showToast(
-                  "💡 Belum tepat. Cuba lagi."
-                );
-
-              }
-
-            }
+          openModule(
+            "sentence-recall"
           );
 
         }
@@ -5453,8 +6303,6 @@ function renderGrammarRain() {
   );
 
 }
-
-
 /* =========================================================
    42. SENTENCE RECALL
    ========================================================= */
