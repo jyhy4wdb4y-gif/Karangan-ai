@@ -1566,13 +1566,21 @@ const BASIC_DICTIONARY = {
    21. TRANSLATION
    ========================================================= */
 
-async function translateWord(
-  rawWord
-) {
+/* =========================================================
+   21. TRANSLATION
+   Vocabulary v2 + AI Fallback
+   ========================================================= */
+
+async function translateWord(rawWord) {
+
   const word =
-    String(rawWord)
+    String(rawWord || "")
       .toLowerCase()
-      .trim();
+      .trim()
+      .replace(
+        /^[^a-zA-ZÀ-ÿ]+|[^a-zA-ZÀ-ÿ'-]+$/g,
+        ""
+      );
 
 
   if (!word) {
@@ -1584,17 +1592,27 @@ async function translateWord(
     word;
 
 
+  const storySentence =
+    findStorySentenceContainingWord(
+      word
+    );
+
+
   currentTranslationData = {
+
     word,
+
     translation: "",
+
     meaning: "",
+
     example:
-      findStorySentenceContainingWord(
-        word
-      ),
+      storySentence,
+
     storyId:
       currentStory?.id ||
       null
+
   };
 
 
@@ -1622,25 +1640,138 @@ async function translateWord(
       "translationMeaning"
     );
 
+
   const exampleEl =
     byId(
       "translationExample"
     );
 
 
-  const local =
-    BASIC_DICTIONARY[word];
+  /* ---------------------------------------------------------
+     STEP 1
+     Vocabulary v2 Dictionary
+     --------------------------------------------------------- */
+
+  const vocabularyEngine =
+    getVocabularyEngine();
 
 
-  if (local) {
+  let dictionaryResult =
+    null;
+
+
+  if (
+    vocabularyEngine &&
+    typeof vocabularyEngine.lookupWord ===
+      "function"
+  ) {
+
+    try {
+
+      dictionaryResult =
+        vocabularyEngine.lookupWord(
+          word
+        );
+
+    } catch (error) {
+
+      console.warn(
+        "Vocabulary lookup error:",
+        error
+      );
+
+    }
+
+  }
+
+
+  if (dictionaryResult) {
+
     const translation =
-      `${local.zh} · ${local.en}`;
+      dictionaryResult.translation ||
+      [
+        dictionaryResult.zh,
+        dictionaryResult.en
+      ]
+        .filter(Boolean)
+        .join(" · ");
 
 
     currentTranslationData.translation =
       translation;
 
+
     currentTranslationData.meaning =
+      dictionaryResult.meaning ||
+      translation;
+
+
+    safeText(
+      meaningEl,
+      translation
+    );
+
+
+    /*
+      Show simple Malay meaning as well,
+      if the HTML has translationDefinition.
+    */
+
+    safeText(
+      byId(
+        "translationDefinition"
+      ),
+      dictionaryResult.meaning ||
+      ""
+    );
+
+
+    safeText(
+      exampleEl,
+      storySentence ||
+      `Perkataan: ${word}`
+    );
+
+
+    updateSaveVocabularyButton();
+
+
+    return;
+
+  }
+
+
+  /* ---------------------------------------------------------
+     STEP 2
+     Old app.js BASIC_DICTIONARY fallback
+
+     Keep this for backwards compatibility.
+     --------------------------------------------------------- */
+
+  const local =
+    typeof BASIC_DICTIONARY !==
+      "undefined"
+      ? BASIC_DICTIONARY[word]
+      : null;
+
+
+  if (local) {
+
+    const translation =
+      [
+        local.zh,
+        local.en
+      ]
+        .filter(Boolean)
+        .join(" · ");
+
+
+    currentTranslationData.translation =
+      translation;
+
+
+    currentTranslationData.meaning =
+      local.meaning ||
       translation;
 
 
@@ -1651,17 +1782,36 @@ async function translateWord(
 
 
     safeText(
+      byId(
+        "translationDefinition"
+      ),
+      local.meaning ||
+      ""
+    );
+
+
+    safeText(
       exampleEl,
-      currentTranslationData.example ||
+      storySentence ||
       `Perkataan: ${word}`
     );
 
 
     updateSaveVocabularyButton();
 
+
     return;
+
   }
 
+
+  /* ---------------------------------------------------------
+     STEP 3
+     AI fallback
+
+     Words not inside Vocabulary v2 will be sent
+     to /api/ai automatically.
+     --------------------------------------------------------- */
 
   safeText(
     meaningEl,
@@ -1669,60 +1819,120 @@ async function translateWord(
   );
 
 
+  safeText(
+    byId(
+      "translationDefinition"
+    ),
+    "Cikgu Aira sedang mencari maksud perkataan ini..."
+  );
+
+
+  safeText(
+    exampleEl,
+    storySentence ||
+    `Perkataan: ${word}`
+  );
+
+
   try {
+
     const result =
       await callAI({
-        type: "translate",
+
+        type:
+          "translate",
+
         word,
+
         context:
-          currentTranslationData.example
+          storySentence,
+
+        language:
+          "Bahasa Melayu",
+
+        targetLanguages: [
+          "Chinese",
+          "English"
+        ],
+
+        instruction:
+          "Translate this Bahasa Melayu word into Simplified Chinese and English. Also give one short simple Bahasa Melayu definition suitable for a Year 3 student."
+
       });
 
 
     const answer =
-      extractAIText(result) ||
-      "Maksud belum tersedia.";
+      extractAIText(
+        result
+      );
 
 
-    currentTranslationData.translation =
-      answer;
+    if (answer) {
 
-    currentTranslationData.meaning =
-      answer;
-
-
-    safeText(
-      meaningEl,
-      answer
-    );
+      currentTranslationData.translation =
+        answer;
 
 
-    safeText(
-      exampleEl,
-      currentTranslationData.example ||
-      `Perkataan: ${word}`
-    );
+      currentTranslationData.meaning =
+        answer;
+
+
+      safeText(
+        meaningEl,
+        answer
+      );
+
+
+      safeText(
+        byId(
+          "translationDefinition"
+        ),
+        ""
+      );
+
+    } else {
+
+      throw new Error(
+        "Empty translation response"
+      );
+
+    }
+
 
   } catch (error) {
+
+    console.warn(
+      "Translation AI fallback failed:",
+      error
+    );
+
+
     currentTranslationData.translation =
-      "Terjemahan belum tersedia";
+      "Maksud belum tersedia";
+
+
+    currentTranslationData.meaning =
+      "Maksud belum tersedia";
 
 
     safeText(
       meaningEl,
-      "Terjemahan belum tersedia."
+      "Maksud belum tersedia."
     );
 
 
     safeText(
-      exampleEl,
-      currentTranslationData.example ||
+      byId(
+        "translationDefinition"
+      ),
       "Tanya Cikgu Aira untuk bantuan."
     );
+
   }
 
 
   updateSaveVocabularyButton();
+
 }
 
 
