@@ -8857,6 +8857,10 @@ function updateLearnUI() {
    UPDATE ALL UI
    ========================================================= */
 
+/* =========================================================
+   UPDATE ALL UI
+   ========================================================= */
+
 function updateAllUI() {
 
   updateHeader();
@@ -8872,6 +8876,11 @@ function updateAllUI() {
   updateBadgeUI();
 
 }
+
+
+/* =========================================================
+   UPDATE WRITING UI
+   ========================================================= */
 
 function updateWritingUI() {
 
@@ -8894,7 +8903,32 @@ function updateWritingUI() {
   }
 
 
-  function updateWordCount() {
+  updateWordCount();
+
+
+  /*
+    Keep app startup safe even if
+    Writing Studio progress function
+    is not available yet.
+  */
+
+  if (
+    typeof updateWritingStudioProgress ===
+    "function"
+  ) {
+
+    updateWritingStudioProgress();
+
+  }
+
+}
+
+
+/* =========================================================
+   WORD COUNT
+   ========================================================= */
+
+function updateWordCount() {
 
   const textarea =
     byId(
@@ -8936,73 +8970,12 @@ function updateWritingUI() {
   counter.textContent =
     count;
 
-};
-
-
-  /*
-    Writing Studio may not be loaded yet.
-    Do not stop the whole app if it is unavailable.
-  */
-
-  if (
-    typeof updateWritingStudioProgress ===
-    "function"
-  ) {
-
-    updateWritingStudioProgress();
-
-  }
-
 }
 
 
-  updateWordCount();
-
-  updateWritingStudioProgress();
-
-}
-/* =========================================================
-   WORD COUNT
-   ========================================================= */
-
-function updateWordCount() {
-
-  const textarea =
-    byId(
-      "karanganInput"
-    );
-
-
-  const counter =
-    byId(
-      "writingWordCount"
-    );
-
-
-  if (
-    !textarea ||
-    !counter
-  ) {
-
-    return;
-
-  }
-
-
-  const stats =
-    getWritingStats(
-      textarea.value
-    );
-
-
-  counter.textContent =
-    stats.words;
-
-}
 /* =========================================================
    44. AI WRITING FEEDBACK
    ========================================================= */
-
 /* =========================================================
    LANGKAH 7 — AI FEEDBACK
    Cikgu Aira Writing Coach
