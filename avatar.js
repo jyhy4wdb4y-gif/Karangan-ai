@@ -41,7 +41,7 @@ const AvatarTutor = {
         <div class="avatar-character">
           <div class="avatar-face">
   <img
-    src="cikgu-aira.png"
+    src="Cikgu-aira.png"
     alt="Cikgu Aira"
     class="avatar-image"
   >
