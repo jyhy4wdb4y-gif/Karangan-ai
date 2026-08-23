@@ -1,1326 +1,1007 @@
 <!DOCTYPE html>
 <html lang="ms">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  >
+
+  <meta
+    name="apple-mobile-web-app-capable"
+    content="yes"
+  >
+
+  <meta
+    name="apple-mobile-web-app-status-bar-style"
+    content="default"
+  >
+
+  <meta
+    name="theme-color"
+    content="#5b5ce2"
+  >
 
   <title>Karangan AI</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+  <!-- FULL VERSION CSS -->
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f5f7fb;
-      color: #1f2937;
-      min-height: 100vh;
-    }
-
-    .app {
-      max-width: 920px;
-      margin: auto;
-      min-height: 100vh;
-      background: white;
-      padding-bottom: 80px;
-    }
-
-    header {
-      padding: 28px 24px;
-      background: linear-gradient(135deg, #4f46e5, #7c3aed);
-      color: white;
-    }
-
-    header h1 {
-      font-size: 31px;
-      margin-bottom: 6px;
-    }
-
-    header p {
-      opacity: 0.9;
-      font-size: 15px;
-    }
-
-    .progress-wrap {
-      padding: 16px 20px 8px;
-      background: #fff;
-    }
-
-    .progress-bar {
-      width: 100%;
-      height: 9px;
-      background: #e5e7eb;
-      border-radius: 20px;
-      overflow: hidden;
-    }
-
-    .progress {
-      height: 100%;
-      width: 20%;
-      background: linear-gradient(90deg,#6366f1,#8b5cf6);
-      transition: 0.3s;
-    }
-
-    .tabs {
-      display: flex;
-      gap: 8px;
-      padding: 14px 16px;
-      overflow-x: auto;
-      background: #fff;
-      border-bottom: 1px solid #eee;
-      position: sticky;
-      top: 0;
-      z-index: 20;
-    }
-
-    .tab {
-      white-space: nowrap;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 14px;
-      background: #eef2ff;
-      color: #4338ca;
-      font-weight: 700;
-      font-size: 14px;
-      cursor: pointer;
-    }
-
-    .tab.active {
-      color: white;
-      background: #4f46e5;
-    }
-
-    .page {
-      display: none;
-      padding: 22px;
-    }
-
-    .page.active {
-      display: block;
-    }
-
-    .card {
-      background: white;
-      border: 1px solid #e5e7eb;
-      border-radius: 22px;
-      padding: 20px;
-      margin-bottom: 18px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.045);
-    }
-
-    .card h2 {
-      font-size: 23px;
-      margin-bottom: 8px;
-    }
-
-    .card h3 {
-      font-size: 18px;
-      margin-bottom: 10px;
-    }
-
-    .muted {
-      color: #6b7280;
-      line-height: 1.55;
-    }
-
-    .hero-picture {
-      width: 100%;
-      min-height: 255px;
-      border-radius: 20px;
-      background:
-        linear-gradient(rgba(255,255,255,.1),rgba(255,255,255,.1)),
-        linear-gradient(135deg,#bae6fd,#bbf7d0);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      font-size: 90px;
-      margin: 18px 0;
-    }
-
-    .story {
-      font-size: 21px;
-      line-height: 2.15;
-      letter-spacing: 0.1px;
-    }
-
-    .word {
-      display: inline-block;
-      cursor: pointer;
-      border-radius: 7px;
-      padding: 0 2px;
-      transition: .15s;
-    }
-
-    .word:active {
-      transform: scale(.96);
-      background: #e0e7ff;
-    }
-
-    .word.verb.highlight {
-      background: #dcfce7;
-      color: #166534;
-    }
-
-    .word.adjective.highlight {
-      background: #fef3c7;
-      color: #92400e;
-    }
-
-    .word.number.highlight {
-      background: #dbeafe;
-      color: #1e40af;
-    }
-
-    .translation-box {
-      display: none;
-      margin-top: 18px;
-      background: #eef2ff;
-      border-radius: 18px;
-      padding: 18px;
-      border: 1px solid #c7d2fe;
-    }
-
-    .translation-box.show {
-      display: block;
-    }
-
-    .translation-ms {
-      font-size: 23px;
-      font-weight: 800;
-      color: #4338ca;
-      margin-bottom: 5px;
-    }
-
-    .translation-cn {
-      font-size: 19px;
-      font-weight: 700;
-    }
-
-    .translation-note {
-      color: #6b7280;
-      margin-top: 6px;
-      font-size: 14px;
-    }
-
-    button {
-      font-family: inherit;
-    }
-
-    .primary-btn {
-      border: none;
-      background: #4f46e5;
-      color: white;
-      border-radius: 14px;
-      padding: 13px 18px;
-      font-weight: 750;
-      font-size: 16px;
-      cursor: pointer;
-      margin: 5px 4px 5px 0;
-    }
-
-    .secondary-btn {
-      border: 1px solid #c7d2fe;
-      color: #4338ca;
-      background: #eef2ff;
-      border-radius: 14px;
-      padding: 12px 16px;
-      font-weight: 700;
-      font-size: 15px;
-      cursor: pointer;
-      margin: 5px 4px 5px 0;
-    }
-
-    .grammar-controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin: 15px 0;
-    }
-
-    .legend {
-      margin-top: 12px;
-      font-size: 14px;
-      line-height: 2;
-    }
-
-    .legend span {
-      border-radius: 8px;
-      padding: 5px 9px;
-      margin-right: 7px;
-    }
-
-    .verb-legend {
-      background: #dcfce7;
-      color: #166534;
-    }
-
-    .adj-legend {
-      background: #fef3c7;
-      color: #92400e;
-    }
-
-    .num-legend {
-      background: #dbeafe;
-      color: #1e40af;
-    }
-
-    .question {
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 15px;
-    }
-
-    .answers {
-      display: grid;
-      gap: 10px;
-    }
-
-    .answer {
-      text-align: left;
-      border: 1px solid #d1d5db;
-      background: #fff;
-      border-radius: 14px;
-      padding: 13px 15px;
-      font-size: 16px;
-    }
-
-    .answer.correct {
-      background: #dcfce7;
-      border-color: #22c55e;
-    }
-
-    .answer.wrong {
-      background: #fee2e2;
-      border-color: #ef4444;
-    }
-
-    textarea {
-      width: 100%;
-      min-height: 250px;
-      resize: vertical;
-      border-radius: 18px;
-      border: 1px solid #d1d5db;
-      padding: 16px;
-      font-size: 17px;
-      line-height: 1.7;
-      outline: none;
-      font-family: inherit;
-    }
-
-    textarea:focus {
-      border-color: #6366f1;
-      box-shadow: 0 0 0 3px rgba(99,102,241,.12);
-    }
-
-    .writing-stats {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 8px;
-      color: #6b7280;
-      font-size: 14px;
-    }
-
-    .hint {
-      background: #fffbeb;
-      border: 1px solid #fde68a;
-      padding: 14px;
-      border-radius: 15px;
-      margin: 10px 0;
-      line-height: 1.6;
-    }
-
-    .feedback {
-      display: none;
-      margin-top: 18px;
-      border-radius: 18px;
-      padding: 18px;
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
-      line-height: 1.7;
-      white-space: pre-wrap;
-    }
-
-    .feedback.show {
-      display: block;
-    }
-
-    .score {
-      font-size: 27px;
-      font-weight: 800;
-      color: #16a34a;
-      margin-bottom: 8px;
-    }
-
-    .loading {
-      opacity: .65;
-      pointer-events: none;
-    }
-
-    .footer-note {
-      text-align: center;
-      color: #9ca3af;
-      font-size: 13px;
-      padding: 25px;
-    }
-
-    @media (max-width: 600px) {
-      header {
-        padding: 22px 18px;
-      }
-
-      header h1 {
-        font-size: 27px;
-      }
-
-      .page {
-        padding: 16px;
-      }
-
-      .story {
-        font-size: 19px;
-      }
-
-      .hero-picture {
-        font-size: 72px;
-        min-height: 210px;
-      }
-    }
-  </style>
 </head>
+
 
 <body>
 
 <div class="app">
 
-  <header>
-    <h1>Karangan AI ✨</h1>
-    <p>Belajar Bahasa Melayu dengan cerita, kosa kata dan AI</p>
-  </header>
 
-  <div class="progress-wrap">
-    <div class="progress-bar">
-      <div class="progress" id="progress"></div>
-    </div>
-  </div>
+<!-- ==================================================
+     HEADER
+================================================== -->
 
-  <div class="tabs">
-    <button class="tab active" onclick="openPage(0)">📖 Cerita</button>
-    <button class="tab" onclick="openPage(1)">🌏 Terjemahan</button>
-    <button class="tab" onclick="openPage(2)">🎨 Tatabahasa</button>
-    <button class="tab" onclick="openPage(3)">🧠 Latihan</button>
-    <button class="tab" onclick="openPage(4)">✍️ Karangan</button>
-  </div>
+<header class="top-header">
 
+  <div class="header-row">
 
-  <!-- PAGE 1 -->
-  <section class="page active">
+    <div class="brand">
 
-    <div class="card">
-      <h2>Cerita Bergambar</h2>
-      <p class="muted">
-        Baca cerita di bawah. Tekan mana-mana perkataan untuk melihat maksudnya dalam Bahasa Cina.
-      </p>
-
-      <div class="hero-picture">
-        👦🏻🌳🧹🍂
+      <div class="logo">
+        ✨
       </div>
 
-      <button class="primary-btn" onclick="readStory()">
+      <div class="brand-text">
+
+        <h1>
+          Karangan AI
+        </h1>
+
+        <p>
+          Belajar · Faham · Tulis
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <button
+      class="profile-button"
+      onclick="openPage(0)"
+      aria-label="Profil pelajar"
+    >
+      👦🏻
+    </button>
+
+  </div>
+
+</header>
+
+
+
+<!-- ==================================================
+     PROGRESS
+================================================== -->
+
+<section class="progress-section">
+
+  <div class="progress-info">
+
+    <span>
+      Kemajuan Pembelajaran
+    </span>
+
+    <span id="progressLabel">
+      17%
+    </span>
+
+  </div>
+
+
+  <div class="progress-track">
+
+    <div
+      class="progress-fill"
+      id="progressFill"
+    ></div>
+
+  </div>
+
+</section>
+
+
+
+<!-- ==================================================
+     MAIN NAVIGATION
+================================================== -->
+
+<nav class="lesson-nav">
+
+  <button
+    class="nav-button active"
+    onclick="openPage(0)"
+  >
+    🏠 Utama
+  </button>
+
+
+  <button
+    class="nav-button"
+    onclick="openPage(1)"
+  >
+    📚 Cerita
+  </button>
+
+
+  <button
+    class="nav-button"
+    onclick="openPage(2)"
+  >
+    🖼️ Bergambar
+  </button>
+
+
+  <button
+    class="nav-button"
+    onclick="openPage(3)"
+  >
+    📖 Bacaan
+  </button>
+
+
+  <button
+    class="nav-button"
+    onclick="openPage(4)"
+  >
+    🎨 Tatabahasa
+  </button>
+
+
+  <button
+    class="nav-button"
+    onclick="openPage(5)"
+  >
+    🧠 Latihan
+  </button>
+
+
+  <button
+    class="nav-button"
+    onclick="openPage(6)"
+  >
+    ✍️ Karangan
+  </button>
+
+</nav>
+
+
+
+<!-- ==================================================
+     PAGE 0
+     DASHBOARD
+================================================== -->
+
+<main>
+
+
+<section class="page active">
+
+  <div class="welcome-card">
+
+    <h2>
+      Selamat datang! 👋
+    </h2>
+
+    <p>
+      Mari tingkatkan kemahiran Bahasa Melayu
+      dan belajar menulis karangan dengan
+      lebih yakin.
+    </p>
+
+
+    <div class="stats-grid">
+
+      <div class="stat">
+
+        <span
+          class="stat-number"
+          id="statLessons"
+        >
+          0
+        </span>
+
+        <span class="stat-label">
+          Pelajaran
+        </span>
+
+      </div>
+
+
+      <div class="stat">
+
+        <span
+          class="stat-number"
+          id="statStars"
+        >
+          0
+        </span>
+
+        <span class="stat-label">
+          ⭐ Bintang
+        </span>
+
+      </div>
+
+
+      <div class="stat">
+
+        <span
+          class="stat-number"
+          id="statEssays"
+        >
+          0
+        </span>
+
+        <span class="stat-label">
+          Karangan
+        </span>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="card">
+
+    <div class="card-title">
+      📚 Pelajaran Saya
+    </div>
+
+    <p
+      class="card-subtitle"
+      id="welcomeProgress"
+    >
+      0 pelajaran telah selesai.
+    </p>
+
+
+    <div style="margin-top:16px;">
+
+      <button
+        class="primary-button full-button"
+        onclick="openPage(1)"
+      >
+        Mula Belajar →
+      </button>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="card">
+
+    <div class="card-title">
+      🏆 Pencapaian
+    </div>
+
+    <p class="card-subtitle">
+      Lengkapkan pelajaran untuk
+      mengumpul bintang.
+    </p>
+
+
+    <div
+      class="badge-grid"
+      style="margin-top:16px;"
+    >
+
+      <div class="badge">
+
+        <div class="badge-icon">
+          📖
+        </div>
+
+        <div class="badge-name">
+          Pembaca Hebat
+        </div>
+
+      </div>
+
+
+      <div class="badge">
+
+        <div class="badge-icon">
+          ✍️
+        </div>
+
+        <div class="badge-name">
+          Penulis Muda
+        </div>
+
+      </div>
+
+
+      <div class="badge">
+
+        <div class="badge-icon">
+          🌟
+        </div>
+
+        <div class="badge-name">
+          Bintang Bahasa
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<!-- ==================================================
+     PAGE 1
+     STORY LIBRARY
+================================================== -->
+
+<section class="page">
+
+  <div class="card">
+
+    <div class="card-title">
+      📚 Pilih Cerita
+    </div>
+
+    <p class="card-subtitle">
+      Pilih satu cerita bergambar
+      untuk memulakan pembelajaran.
+    </p>
+
+  </div>
+
+
+  <div
+    class="story-library"
+    id="storyLibrary"
+  >
+  </div>
+
+</section>
+
+
+
+<!-- ==================================================
+     PAGE 2
+     PICTURE STORY
+================================================== -->
+
+<section class="page">
+
+  <div class="card">
+
+    <span
+      class="story-level"
+      id="lessonLevel"
+    >
+      Tahun 4
+    </span>
+
+
+    <div
+      class="card-title"
+      id="lessonTitle"
+    >
+      Gotong-royong di Taman
+    </div>
+
+
+    <p
+      class="card-subtitle"
+      id="lessonTheme"
+    >
+      Kebersihan dan Alam Sekitar
+    </p>
+
+  </div>
+
+
+
+  <div class="card">
+
+    <div class="card-title">
+      🖼️ Cerita Bergambar
+    </div>
+
+    <p class="card-subtitle">
+      Lihat setiap gambar dan cuba
+      ceritakan apa yang sedang berlaku.
+    </p>
+
+
+    <div
+      class="picture-stage"
+      id="pictureStage"
+    >
+      👨‍👩‍👧‍👦🌳
+    </div>
+
+
+    <div
+      class="picture-number"
+      id="pictureNumber"
+      style="
+        position:static;
+        display:inline-block;
+        margin-bottom:10px;
+      "
+    >
+      Gambar 1 / 6
+    </div>
+
+
+    <p
+      class="card-subtitle"
+      id="pictureCaption"
+      style="
+        font-size:17px;
+        color:#334155;
+      "
+    >
+      Amir dan keluarganya tiba
+      di taman rekreasi.
+    </p>
+
+
+    <div class="picture-controls">
+
+      <button
+        class="secondary-button"
+        id="previousPicture"
+        onclick="previousPicture()"
+      >
+        ← Sebelum
+      </button>
+
+
+      <button
+        class="primary-button"
+        id="nextPicture"
+        onclick="nextPicture()"
+      >
+        Seterusnya →
+      </button>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="card">
+
+    <div class="card-title">
+      💡 Cuba Fikir
+    </div>
+
+    <p class="card-subtitle">
+      Siapakah yang kamu lihat?
+      Apakah yang sedang dilakukan?
+      Bagaimanakah keadaan tempat itu?
+    </p>
+
+
+    <div style="margin-top:15px;">
+
+      <button
+        class="primary-button"
+        onclick="openPage(3)"
+      >
+        Baca Cerita →
+      </button>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<!-- ==================================================
+     PAGE 3
+     READING + TRANSLATION
+================================================== -->
+
+<section class="page">
+
+  <div class="card">
+
+    <div class="card-title">
+      📖 Baca Cerita
+    </div>
+
+    <p class="card-subtitle">
+      Tekan mana-mana perkataan
+      untuk melihat maksudnya dalam
+      Bahasa Cina.
+    </p>
+
+
+    <div style="margin-top:15px;">
+
+      <button
+        class="primary-button"
+        onclick="readCurrentStory()"
+      >
         🔊 Dengar Cerita
       </button>
 
-      <button class="secondary-btn" onclick="stopReading()">
+
+      <button
+        class="secondary-button"
+        onclick="stopReading()"
+      >
         ⏹ Berhenti
       </button>
-    </div>
-
-    <div class="card">
-      <h3>Gotong-royong di Taman</h3>
-
-      <div class="story" id="story">
-        Pada hari Sabtu, Amir dan keluarganya pergi ke taman rekreasi.
-        Mereka menyertai aktiviti gotong-royong bersama penduduk di kawasan itu.
-        Amir menyapu daun-daun kering dengan menggunakan penyapu.
-        Kakaknya pula mengutip sampah lalu memasukkannya ke dalam beg plastik.
-        Ayah Amir memotong beberapa dahan pokok yang panjang manakala ibunya menanam tiga pokok bunga yang cantik.
-        Selepas selesai bekerja, taman itu menjadi bersih dan indah.
-        Amir berasa sangat gembira kerana dapat menjaga kebersihan alam sekitar.
-      </div>
-
-      <div class="translation-box" id="translationBox">
-        <div class="translation-ms" id="selectedWord"></div>
-        <div class="translation-cn" id="chineseMeaning"></div>
-        <div class="translation-note" id="translationNote"></div>
-      </div>
-    </div>
-
-  </section>
-
-
-  <!-- PAGE 2 -->
-  <section class="page">
-
-    <div class="card">
-      <h2>🌏 Terjemahan Perkataan</h2>
-      <p class="muted">
-        在故事中点击任何马来文单词，就可以查看中文意思。
-      </p>
-
-      <div class="hint">
-        💡 <b>使用方法：</b><br>
-        回到「Cerita」，直接点击例如
-        <b>keluarganya、menyapu、kering、pokok、bersih、gembira</b>
-        等单词。
-      </div>
-
-      <button class="primary-btn" onclick="openPage(0)">
-        ← Kembali ke Cerita
-      </button>
-    </div>
-
-    <div class="card">
-      <h3>Perkataan terakhir</h3>
-
-      <div class="translation-box show">
-        <div class="translation-ms" id="historyWord">Belum dipilih</div>
-        <div class="translation-cn" id="historyChinese">
-          还没有选择单词
-        </div>
-      </div>
-    </div>
-
-  </section>
-
-
-  <!-- PAGE 3 -->
-  <section class="page">
-
-    <div class="card">
-      <h2>🎨 Kenali Tatabahasa</h2>
-
-      <p class="muted">
-        Tekan kategori di bawah untuk melihat jenis perkataan dalam cerita.
-      </p>
-
-      <div class="grammar-controls">
-
-        <button class="secondary-btn"
-                onclick="highlightGrammar('verb')">
-          🟢 Kata Kerja
-        </button>
-
-        <button class="secondary-btn"
-                onclick="highlightGrammar('adjective')">
-          🟡 Kata Adjektif
-        </button>
-
-        <button class="secondary-btn"
-                onclick="highlightGrammar('number')">
-          🔵 Kata Bilangan
-        </button>
-
-        <button class="secondary-btn"
-                onclick="clearHighlights()">
-          Padam Warna
-        </button>
-
-      </div>
-
-      <div class="legend">
-        <span class="verb-legend">Kata Kerja</span>
-        <span class="adj-legend">Kata Adjektif</span>
-        <span class="num-legend">Kata Bilangan</span>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>Cerita</h3>
-
-      <div class="story" id="grammarStory"></div>
-    </div>
-
-  </section>
-
-
-  <!-- PAGE 4 -->
-  <section class="page">
-
-    <div class="card">
-      <h2>🧠 Latihan Kosa Kata</h2>
-
-      <div class="question">
-        Apakah maksud perkataan “gembira”?
-      </div>
-
-      <div class="answers">
-
-        <button class="answer"
-                onclick="answerQuestion(this,false)">
-          生气
-        </button>
-
-        <button class="answer"
-                onclick="answerQuestion(this,true)">
-          高兴 / 开心
-        </button>
-
-        <button class="answer"
-                onclick="answerQuestion(this,false)">
-          疲倦
-        </button>
-
-        <button class="answer"
-                onclick="answerQuestion(this,false)">
-          害怕
-        </button>
-
-      </div>
-
-      <p id="quizResult"
-         style="margin-top:15px;font-weight:700;"></p>
 
     </div>
 
-
-    <div class="card">
-
-      <div class="question">
-        Yang manakah Kata Kerja?
-      </div>
-
-      <div class="answers">
-
-        <button class="answer"
-                onclick="answerQuestion2(this,false)">
-          cantik
-        </button>
-
-        <button class="answer"
-                onclick="answerQuestion2(this,false)">
-          tiga
-        </button>
-
-        <button class="answer"
-                onclick="answerQuestion2(this,true)">
-          menyapu
-        </button>
-
-        <button class="answer"
-                onclick="answerQuestion2(this,false)">
-          gembira
-        </button>
-
-      </div>
-
-      <p id="quizResult2"
-         style="margin-top:15px;font-weight:700;"></p>
-
-    </div>
-
-  </section>
-
-
-  <!-- PAGE 5 -->
-  <section class="page">
-
-    <div class="card">
-
-      <h2>✍️ Mari Menulis</h2>
-
-      <p class="muted">
-        Tulis sebuah karangan berdasarkan cerita
-        <b>“Gotong-royong di Taman”</b>.
-      </p>
-
-      <div class="hint">
-        <b>Panduan:</b><br>
-        1. Bilakah aktiviti itu diadakan?<br>
-        2. Siapakah yang terlibat?<br>
-        3. Apakah aktiviti yang dilakukan?<br>
-        4. Bagaimanakah keadaan taman selepas gotong-royong?<br>
-        5. Apakah perasaan Amir?
-      </div>
-
-      <textarea
-        id="essay"
-        placeholder="Pada hari Sabtu, saya dan keluarga..."
-        oninput="updateWordCount()"></textarea>
-
-      <div class="writing-stats">
-        <span id="wordCount">0 perkataan</span>
-        <span>Sasaran: 80–120 perkataan</span>
-      </div>
-
-      <div style="margin-top:15px;">
-
-        <button
-          class="primary-btn"
-          id="aiButton"
-          onclick="checkEssay()">
-          ✨ Semak dengan AI
-        </button>
-
-        <button
-          class="secondary-btn"
-          onclick="clearEssay()">
-          Padam
-        </button>
-
-      </div>
-
-      <div class="feedback" id="feedback"></div>
-
-    </div>
-
-  </section>
-
-  <div class="footer-note">
-    Karangan AI · Versi Percubaan
   </div>
+
+
+
+  <div class="card">
+
+    <div
+      class="story-text"
+      id="storyText"
+    >
+    </div>
+
+
+    <div
+      class="translation-popup"
+      id="translationPopup"
+    >
+
+      <div
+        class="translation-word"
+        id="translationWord"
+      >
+      </div>
+
+
+      <div
+        class="translation-chinese"
+        id="translationChinese"
+      >
+      </div>
+
+
+      <div
+        class="translation-example"
+        id="translationExample"
+      >
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="card">
+
+    <div class="card-title">
+      🎯 Seterusnya
+    </div>
+
+    <p class="card-subtitle">
+      Sudah faham cerita?
+      Mari belajar tatabahasa
+      yang digunakan.
+    </p>
+
+
+    <div style="margin-top:15px;">
+
+      <button
+        class="primary-button"
+        onclick="openPage(4)"
+      >
+        Belajar Tatabahasa →
+      </button>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<!-- ==================================================
+     PAGE 4
+     GRAMMAR
+================================================== -->
+
+<section class="page">
+
+  <div class="card">
+
+    <div class="card-title">
+      🎨 Kenali Tatabahasa
+    </div>
+
+    <p class="card-subtitle">
+      Pilih kategori untuk melihat
+      perkataan tersebut dalam cerita.
+    </p>
+
+
+    <div class="grammar-buttons">
+
+      <button
+        class="secondary-button"
+        onclick="highlightGrammar('verb')"
+      >
+        🟢 Kata Kerja
+      </button>
+
+
+      <button
+        class="secondary-button"
+        onclick="highlightGrammar('adjective')"
+      >
+        🟡 Kata Adjektif
+      </button>
+
+
+      <button
+        class="secondary-button"
+        onclick="highlightGrammar('number')"
+      >
+        🔵 Kata Bilangan
+      </button>
+
+
+      <button
+        class="secondary-button"
+        onclick="highlightGrammar('noun')"
+      >
+        🟣 Kata Nama
+      </button>
+
+
+      <button
+        class="secondary-button"
+        onclick="clearGrammarHighlight()"
+      >
+        ✖ Padam Warna
+      </button>
+
+    </div>
+
+
+
+    <div class="grammar-legend">
+
+      <span
+        class="legend-item"
+        style="
+          background:#dcfce7;
+          color:#166534;
+        "
+      >
+        Kata Kerja
+      </span>
+
+
+      <span
+        class="legend-item"
+        style="
+          background:#fef3c7;
+          color:#92400e;
+        "
+      >
+        Kata Adjektif
+      </span>
+
+
+      <span
+        class="legend-item"
+        style="
+          background:#dbeafe;
+          color:#1d4ed8;
+        "
+      >
+        Kata Bilangan
+      </span>
+
+
+      <span
+        class="legend-item"
+        style="
+          background:#f3e8ff;
+          color:#7e22ce;
+        "
+      >
+        Kata Nama
+      </span>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="card">
+
+    <div
+      class="story-text"
+      id="grammarStory"
+    >
+    </div>
+
+  </div>
+
+
+
+  <div class="card">
+
+    <button
+      class="primary-button full-button"
+      onclick="openPage(5)"
+    >
+      Cuba Latihan →
+    </button>
+
+  </div>
+
+</section>
+
+
+
+<!-- ==================================================
+     PAGE 5
+     QUIZ
+================================================== -->
+
+<section class="page">
+
+  <div class="card">
+
+    <div class="card-title">
+      🧠 Latihan
+    </div>
+
+    <p class="card-subtitle">
+      Jawab soalan berdasarkan
+      cerita yang telah dibaca.
+    </p>
+
+  </div>
+
+
+
+  <div id="quizContainer">
+  </div>
+
+
+
+  <div class="card">
+
+    <div
+      id="quizFinalResult"
+      style="
+        text-align:center;
+        line-height:1.7;
+        margin-bottom:15px;
+      "
+    >
+      Jawab semua soalan untuk
+      melihat keputusan.
+    </div>
+
+
+    <button
+      class="primary-button full-button"
+      onclick="openPage(6)"
+    >
+      ✍️ Mula Menulis →
+    </button>
+
+  </div>
+
+</section>
+
+
+
+<!-- ==================================================
+     PAGE 6
+     WRITING
+================================================== -->
+
+<section class="page">
+
+  <div class="card">
+
+    <div
+      class="card-title"
+      id="writingTitle"
+    >
+      ✍️ Mari Menulis
+    </div>
+
+
+    <p class="card-subtitle">
+      Gunakan gambar, cerita dan
+      perkataan yang telah dipelajari
+      untuk menghasilkan karangan sendiri.
+    </p>
+
+
+    <div
+      class="writing-guide"
+      id="writingGuide"
+    >
+    </div>
+
+  </div>
+
+
+
+  <div class="card">
+
+    <div class="card-title">
+      💡 Perkataan Berguna
+    </div>
+
+
+    <div
+      class="grammar-legend"
+      id="usefulWords"
+    >
+    </div>
+
+  </div>
+
+
+
+  <div class="card">
+
+    <textarea
+      id="essay"
+      placeholder="Mula menulis karangan kamu di sini..."
+      oninput="updateWordCount()"
+    ></textarea>
+
+
+    <div class="writing-info">
+
+      <span id="wordCount">
+        0 perkataan
+      </span>
+
+      <span id="writingTarget">
+        Sasaran: 80–120 perkataan
+      </span>
+
+    </div>
+
+
+    <div style="margin-top:16px;">
+
+      <button
+        class="primary-button"
+        id="aiCheckButton"
+        onclick="checkEssay()"
+      >
+        ✨ Semak dengan AI
+      </button>
+
+
+      <button
+        class="secondary-button"
+        onclick="clearEssay()"
+      >
+        🗑 Padam
+      </button>
+
+    </div>
+
+
+    <div
+      class="ai-feedback"
+      id="aiFeedback"
+    >
+    </div>
+
+  </div>
+
+
+
+  <div class="card">
+
+    <div class="card-title">
+      🏆 Selesai?
+    </div>
+
+    <p class="card-subtitle">
+      Selepas membaca, membuat latihan
+      dan menulis karangan, tandakan
+      pelajaran ini sebagai selesai.
+    </p>
+
+
+    <div style="margin-top:15px;">
+
+      <button
+        class="success-button full-button"
+        onclick="finishLesson()"
+      >
+        ✓ Selesaikan Pelajaran & Dapat 3 ⭐
+      </button>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+</main>
+
+
+
+<!-- ==================================================
+     FOOTER
+================================================== -->
+
+<footer class="app-footer">
+
+  <strong>
+    Karangan AI
+  </strong>
+
+  <br>
+
+  Full Version V1 ·
+  Bahasa Melayu Writing Companion
+
+</footer>
+
 
 </div>
 
 
-<script>
 
-const pages = document.querySelectorAll(".page");
-const tabs = document.querySelectorAll(".tab");
-const progress = document.getElementById("progress");
+<!-- ==================================================
+     DATABASE
+================================================== -->
 
-function openPage(index) {
+<script src="stories.js"></script>
 
-  pages.forEach(page => page.classList.remove("active"));
-  tabs.forEach(tab => tab.classList.remove("active"));
 
-  pages[index].classList.add("active");
-  tabs[index].classList.add("active");
+<!-- ==================================================
+     APP ENGINE
+================================================== -->
 
-  progress.style.width = ((index + 1) * 20) + "%";
+<script src="app.js"></script>
 
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
-}
-
-
-// ======================================================
-// CERITA
-// ======================================================
-
-const storyText =
-`Pada hari Sabtu, Amir dan keluarganya pergi ke taman rekreasi.
-Mereka menyertai aktiviti gotong-royong bersama penduduk di kawasan itu.
-Amir menyapu daun-daun kering dengan menggunakan penyapu.
-Kakaknya pula mengutip sampah lalu memasukkannya ke dalam beg plastik.
-Ayah Amir memotong beberapa dahan pokok yang panjang manakala ibunya menanam tiga pokok bunga yang cantik.
-Selepas selesai bekerja, taman itu menjadi bersih dan indah.
-Amir berasa sangat gembira kerana dapat menjaga kebersihan alam sekitar.`;
-
-
-// ======================================================
-// KAMUS BM → 中文
-// ======================================================
-
-const dictionary = {
-
-  "pada":"在 / 于",
-  "hari":"日子 / 天",
-  "sabtu":"星期六",
-
-  "amir":"阿米尔",
-
-  "dan":"和",
-  "keluarganya":"他的家人",
-  "keluarga":"家庭 / 家人",
-
-  "pergi":"去",
-  "ke":"到 / 去",
-  "taman":"公园",
-  "rekreasi":"休闲 / 康乐",
-
-  "mereka":"他们",
-  "menyertai":"参加",
-  "aktiviti":"活动",
-  "gotong-royong":"大扫除 / 集体劳动",
-  "bersama":"一起",
-  "penduduk":"居民",
-  "di":"在",
-  "kawasan":"地区 / 区域",
-  "itu":"那个",
-
-  "menyapu":"扫",
-  "daun-daun":"树叶",
-  "daun":"叶子",
-  "kering":"干的",
-  "dengan":"用 / 和",
-  "menggunakan":"使用",
-  "penyapu":"扫把",
-
-  "kakaknya":"他的姐姐",
-  "kakak":"哥哥 / 姐姐",
-  "pula":"则 / 另一方面",
-  "mengutip":"捡拾",
-  "sampah":"垃圾",
-  "lalu":"然后",
-  "memasukkannya":"把它放进去",
-  "memasukkan":"放入",
-  "dalam":"里面",
-  "beg":"袋子",
-  "plastik":"塑料",
-
-  "ayah":"父亲",
-  "memotong":"剪 / 切",
-  "beberapa":"几个 / 一些",
-  "dahan":"树枝",
-  "pokok":"树 / 植物",
-  "yang":"……的 / 那个",
-  "panjang":"长的",
-  "manakala":"而 / 与此同时",
-
-  "ibunya":"他的母亲",
-  "ibu":"母亲",
-  "menanam":"种植",
-  "tiga":"三",
-  "bunga":"花",
-  "cantik":"漂亮的",
-
-  "selepas":"之后",
-  "selesai":"完成",
-  "bekerja":"工作",
-
-  "menjadi":"变成",
-  "bersih":"干净的",
-  "indah":"美丽的",
-
-  "berasa":"感到",
-  "sangat":"非常",
-  "gembira":"高兴 / 开心",
-  "kerana":"因为",
-  "dapat":"能够",
-  "menjaga":"照顾 / 维护",
-  "kebersihan":"清洁",
-  "alam":"自然",
-  "sekitar":"周围 / 环境",
-  "alam sekitar":"环境"
-};
-
-
-// ======================================================
-// TATABAHASA
-// ======================================================
-
-const grammar = {
-
-  verb: [
-    "pergi",
-    "menyertai",
-    "menyapu",
-    "menggunakan",
-    "mengutip",
-    "memasukkannya",
-    "memotong",
-    "menanam",
-    "bekerja",
-    "menjadi",
-    "berasa",
-    "menjaga"
-  ],
-
-  adjective: [
-    "kering",
-    "panjang",
-    "cantik",
-    "bersih",
-    "indah",
-    "gembira"
-  ],
-
-  number: [
-    "beberapa",
-    "tiga"
-  ]
-
-};
-
-
-// ======================================================
-// JADIKAN SETIAP PERKATAAN BOLEH DITEKAN
-// ======================================================
-
-function normalizeWord(word) {
-
-  return word
-    .toLowerCase()
-    .replace(/[.,!?;:"”“'()]/g, "")
-    .trim();
-}
-
-
-function findGrammarClass(word) {
-
-  const clean = normalizeWord(word);
-
-  if (grammar.verb.includes(clean)) {
-    return "verb";
-  }
-
-  if (grammar.adjective.includes(clean)) {
-    return "adjective";
-  }
-
-  if (grammar.number.includes(clean)) {
-    return "number";
-  }
-
-  return "";
-}
-
-
-function makeClickableStory(elementId) {
-
-  const container = document.getElementById(elementId);
-
-  const parts = storyText.split(/(\s+)/);
-
-  container.innerHTML = parts.map(part => {
-
-    if (/^\s+$/.test(part)) {
-      return part;
-    }
-
-    const clean = normalizeWord(part);
-    const grammarClass = findGrammarClass(clean);
-
-    return `<span
-      class="word ${grammarClass}"
-      onclick="translateWord('${clean.replace(/'/g,"\\'")}')"
-    >${part}</span>`;
-
-  }).join("");
-}
-
-
-makeClickableStory("story");
-makeClickableStory("grammarStory");
-
-
-// ======================================================
-// TERJEMAHAN
-// ======================================================
-
-function translateWord(word) {
-
-  if (!word) return;
-
-  const box = document.getElementById("translationBox");
-
-  const selectedWord =
-    document.getElementById("selectedWord");
-
-  const chineseMeaning =
-    document.getElementById("chineseMeaning");
-
-  const note =
-    document.getElementById("translationNote");
-
-  selectedWord.textContent = word;
-
-  if (dictionary[word]) {
-
-    chineseMeaning.textContent =
-      "中文：" + dictionary[word];
-
-    note.textContent =
-      "Tekan perkataan lain untuk melihat maksudnya.";
-
-  } else {
-
-    chineseMeaning.textContent =
-      "中文：暂无内置翻译";
-
-    note.textContent =
-      "Perkataan ini belum dimasukkan ke dalam kamus percubaan.";
-
-  }
-
-  box.classList.add("show");
-
-  document.getElementById("historyWord").textContent =
-    word;
-
-  document.getElementById("historyChinese").textContent =
-    dictionary[word]
-      ? dictionary[word]
-      : "暂无内置翻译";
-
-}
-
-
-// ======================================================
-// BACA CERITA
-// ======================================================
-
-function readStory() {
-
-  if (!("speechSynthesis" in window)) {
-
-    alert("Peranti ini tidak menyokong fungsi bacaan.");
-
-    return;
-  }
-
-  speechSynthesis.cancel();
-
-  const speech =
-    new SpeechSynthesisUtterance(storyText);
-
-  speech.lang = "ms-MY";
-  speech.rate = 0.85;
-  speech.pitch = 1;
-
-  const voices =
-    speechSynthesis.getVoices();
-
-  const malayVoice =
-    voices.find(v =>
-      v.lang &&
-      v.lang.toLowerCase().startsWith("ms")
-    );
-
-  if (malayVoice) {
-    speech.voice = malayVoice;
-  }
-
-  speechSynthesis.speak(speech);
-}
-
-
-function stopReading() {
-
-  if ("speechSynthesis" in window) {
-    speechSynthesis.cancel();
-  }
-
-}
-
-
-// ======================================================
-// HIGHLIGHT TATABAHASA
-// ======================================================
-
-function clearHighlights() {
-
-  document
-    .querySelectorAll("#grammarStory .word")
-    .forEach(word => {
-      word.classList.remove("highlight");
-    });
-
-}
-
-
-function highlightGrammar(type) {
-
-  clearHighlights();
-
-  document
-    .querySelectorAll("#grammarStory ." + type)
-    .forEach(word => {
-      word.classList.add("highlight");
-    });
-
-}
-
-
-// ======================================================
-// LATIHAN
-// ======================================================
-
-function answerQuestion(button, correct) {
-
-  const buttons =
-    button.parentElement.querySelectorAll(".answer");
-
-  buttons.forEach(btn => {
-    btn.disabled = true;
-  });
-
-  if (correct) {
-
-    button.classList.add("correct");
-
-    document.getElementById("quizResult")
-      .textContent =
-      "✅ Betul! Gembira bermaksud 高兴 / 开心.";
-
-  } else {
-
-    button.classList.add("wrong");
-
-    document.getElementById("quizResult")
-      .textContent =
-      "❌ Cuba lagi. Maksud gembira ialah 高兴 / 开心.";
-
-  }
-
-}
-
-
-function answerQuestion2(button, correct) {
-
-  const buttons =
-    button.parentElement.querySelectorAll(".answer");
-
-  buttons.forEach(btn => {
-    btn.disabled = true;
-  });
-
-  if (correct) {
-
-    button.classList.add("correct");
-
-    document.getElementById("quizResult2")
-      .textContent =
-      "✅ Betul! “menyapu” ialah Kata Kerja.";
-
-  } else {
-
-    button.classList.add("wrong");
-
-    document.getElementById("quizResult2")
-      .textContent =
-      "❌ Jawapan yang betul ialah “menyapu”.";
-
-  }
-
-}
-
-
-// ======================================================
-// KARANGAN
-// ======================================================
-
-function updateWordCount() {
-
-  const text =
-    document.getElementById("essay")
-      .value
-      .trim();
-
-  const words =
-    text
-      ? text.split(/\s+/).length
-      : 0;
-
-  document.getElementById("wordCount")
-    .textContent =
-    words + " perkataan";
-
-}
-
-
-function clearEssay() {
-
-  document.getElementById("essay").value = "";
-
-  document.getElementById("feedback")
-    .classList.remove("show");
-
-  updateWordCount();
-
-}
-
-
-// ======================================================
-// AI SEMAKAN
-// ======================================================
-
-async function checkEssay() {
-
-  const essay =
-    document.getElementById("essay")
-      .value
-      .trim();
-
-  const feedback =
-    document.getElementById("feedback");
-
-  const button =
-    document.getElementById("aiButton");
-
-  if (essay.length < 20) {
-
-    feedback.innerHTML =
-      "✏️ Tulis karangan yang lebih panjang dahulu sebelum meminta AI menyemak.";
-
-    feedback.classList.add("show");
-
-    return;
-  }
-
-  button.classList.add("loading");
-  button.textContent = "⏳ AI sedang menyemak...";
-
-  feedback.innerHTML =
-    "AI sedang membaca karangan kamu...";
-
-  feedback.classList.add("show");
-
-  try {
-
-    const response =
-      await fetch("/api/ai", {
-
-        method: "POST",
-
-        headers: {
-          "Content-Type": "application/json"
-        },
-
-        body: JSON.stringify({
-          essay: essay
-        })
-
-      });
-
-
-    if (!response.ok) {
-      throw new Error("AI API tidak tersedia");
-    }
-
-
-    const data =
-      await response.json();
-
-
-    const result =
-      data.feedback ||
-      data.result ||
-      data.message ||
-      data.text;
-
-
-    if (!result) {
-      throw new Error("Tiada jawapan AI");
-    }
-
-
-    feedback.innerHTML =
-      "<div class='score'>🌟 Semakan AI</div>" +
-      escapeHTML(result)
-        .replace(/\n/g,"<br>");
-
-
-  } catch (error) {
-
-    offlineFeedback(essay);
-
-  } finally {
-
-    button.classList.remove("loading");
-    button.textContent = "✨ Semak dengan AI";
-
-  }
-
-}
-
-
-// ======================================================
-// FALLBACK JIKA AI BELUM TERHUBUNG
-// ======================================================
-
-function offlineFeedback(essay) {
-
-  const feedback =
-    document.getElementById("feedback");
-
-  const words =
-    essay.split(/\s+/).length;
-
-  let score = 60;
-
-  if (words >= 50) score += 10;
-  if (words >= 80) score += 10;
-
-  if (
-    essay.toLowerCase().includes("selain itu") ||
-    essay.toLowerCase().includes("kemudian") ||
-    essay.toLowerCase().includes("selepas")
-  ) {
-    score += 5;
-  }
-
-  if (
-    essay.toLowerCase().includes("gembira") ||
-    essay.toLowerCase().includes("bangga")
-  ) {
-    score += 5;
-  }
-
-  if (score > 90) score = 90;
-
-
-  feedback.innerHTML = `
-
-    <div class="score">
-      ⭐ ${score}/100
-    </div>
-
-    <b>Bilangan perkataan:</b>
-    ${words} perkataan
-
-    <br><br>
-
-    <b>👍 Kekuatan:</b><br>
-    Kamu telah cuba menerangkan aktiviti gotong-royong dengan baik.
-
-    <br><br>
-
-    <b>🔧 Boleh diperbaiki:</b><br>
-    Gunakan penanda wacana seperti
-    “Kemudian”, “Selain itu”, “Seterusnya”
-    dan “Akhir sekali”.
-
-    <br><br>
-
-    <b>💡 Cadangan:</b><br>
-    Tambahkan ayat tentang perasaan dan nilai murni
-    pada bahagian penutup.
-
-    <br><br>
-
-    <small>
-      Mod semakan asas digunakan kerana sambungan AI belum tersedia.
-    </small>
-
-  `;
-
-}
-
-
-// ======================================================
-// KESELAMATAN PAPARAN
-// ======================================================
-
-function escapeHTML(text) {
-
-  const div =
-    document.createElement("div");
-
-  div.textContent = text;
-
-  return div.innerHTML;
-
-}
-
-</script>
 
 </body>
+
 </html>
