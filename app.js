@@ -7395,6 +7395,97 @@ function renderSentenceRecallSuccess(
    43. WRITING
    ========================================================= */
 
+/* =========================================================
+   LANGKAH 6 — STUDIO KARANGAN
+   Guided Writing Studio
+   ========================================================= */
+
+let writingStudioState = {
+
+  promptVisible: true,
+
+  ideaIndex: 0,
+
+  sentenceStarterIndex: 0,
+
+  lastSavedAt: null
+
+};
+
+
+/* =========================================================
+   WRITING IDEAS
+   ========================================================= */
+
+const WRITING_IDEAS = [
+
+  {
+    emoji: "🏠",
+    title: "Membantu Keluarga",
+    prompt:
+      "Ceritakan bagaimana kamu membantu ahli keluarga di rumah.",
+    starters: [
+      "Pada suatu hari, saya...",
+      "Pada waktu pagi, saya...",
+      "Saya berasa gembira kerana..."
+    ]
+  },
+
+  {
+    emoji: "🏫",
+    title: "Hari di Sekolah",
+    prompt:
+      "Ceritakan satu pengalaman menarik yang berlaku di sekolah.",
+    starters: [
+      "Pada hari Isnin yang lalu...",
+      "Apabila saya tiba di sekolah...",
+      "Saya dan kawan-kawan..."
+    ]
+  },
+
+  {
+    emoji: "🌳",
+    title: "Menjaga Kebersihan",
+    prompt:
+      "Ceritakan bagaimana kamu menjaga kebersihan rumah atau sekolah.",
+    starters: [
+      "Kita mesti menjaga...",
+      "Pada hujung minggu...",
+      "Saya membantu membersihkan..."
+    ]
+  },
+
+  {
+    emoji: "🎁",
+    title: "Hari yang Menggembirakan",
+    prompt:
+      "Ceritakan satu peristiwa yang membuat kamu berasa gembira.",
+    starters: [
+      "Saya berasa sangat gembira apabila...",
+      "Pada hari itu...",
+      "Selepas itu, saya..."
+    ]
+  },
+
+  {
+    emoji: "🤝",
+    title: "Menolong Kawan",
+    prompt:
+      "Ceritakan bagaimana kamu membantu seorang kawan.",
+    starters: [
+      "Pada suatu hari di sekolah...",
+      "Saya ternampak kawan saya...",
+      "Saya segera membantu..."
+    ]
+  }
+
+];
+
+
+/* =========================================================
+   BIND WRITING
+   ========================================================= */
+
 function bindWriting() {
 
   const textarea =
@@ -7424,7 +7515,15 @@ function bindWriting() {
 
     textarea.addEventListener(
       "input",
-      updateWordCount
+      () => {
+
+        updateWordCount();
+
+        updateWritingStudioProgress();
+
+        autoSaveWritingDraft();
+
+      }
     );
 
   }
@@ -7449,10 +7548,933 @@ function bindWriting() {
 
   }
 
+
+  initializeWritingStudio();
+
 }
 
 
+/* =========================================================
+   INITIALIZE STUDIO
+   ========================================================= */
+
+function initializeWritingStudio() {
+
+  injectWritingStudioPanel();
+
+  updateWritingStudioPanel();
+
+  updateWritingStudioProgress();
+
+}
+
+
+/* =========================================================
+   INJECT GUIDED WRITING PANEL
+   ========================================================= */
+
+function injectWritingStudioPanel() {
+
+  const textarea =
+    byId(
+      "karanganInput"
+    );
+
+
+  if (!textarea) {
+
+    return;
+
+  }
+
+
+  if (
+    byId(
+      "writingStudioGuide"
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  const guide =
+    document.createElement(
+      "div"
+    );
+
+
+  guide.id =
+    "writingStudioGuide";
+
+
+  guide.style.cssText = `
+    margin-bottom:20px;
+  `;
+
+
+  textarea.parentNode.insertBefore(
+    guide,
+    textarea
+  );
+
+
+  const progress =
+    document.createElement(
+      "div"
+    );
+
+
+  progress.id =
+    "writingStudioProgressPanel";
+
+
+  progress.style.cssText = `
+    margin-top:14px;
+    margin-bottom:16px;
+  `;
+
+
+  textarea.parentNode.insertBefore(
+    progress,
+    textarea.nextSibling
+  );
+
+}
+
+
+/* =========================================================
+   UPDATE STUDIO GUIDE
+   ========================================================= */
+
+function updateWritingStudioPanel() {
+
+  const container =
+    byId(
+      "writingStudioGuide"
+    );
+
+
+  if (!container) {
+
+    return;
+
+  }
+
+
+  const idea =
+    WRITING_IDEAS[
+      writingStudioState.ideaIndex %
+      WRITING_IDEAS.length
+    ];
+
+
+  const vocabulary =
+    getWritingVocabularySuggestions();
+
+
+  const sentenceStarter =
+    idea.starters[
+      writingStudioState
+        .sentenceStarterIndex %
+      idea.starters.length
+    ];
+
+
+  container.innerHTML = `
+
+    <div style="
+      padding:18px;
+      border-radius:22px;
+      background:linear-gradient(
+        145deg,
+        #fff7e7,
+        #f4efff
+      );
+      border:1px solid #eee5d8;
+    ">
+
+      <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:flex-start;
+        gap:12px;
+      ">
+
+        <div>
+
+          <span style="
+            font-size:11px;
+            font-weight:900;
+            letter-spacing:.08em;
+            color:#d47a22;
+          ">
+            LANGKAH 6 · IDEA KARANGAN
+          </span>
+
+
+          <h3 style="
+            margin:7px 0 6px;
+            font-size:20px;
+          ">
+            ${idea.emoji}
+            ${escapeHtml(
+              idea.title
+            )}
+          </h3>
+
+        </div>
+
+
+        <button
+          id="changeWritingIdeaButton"
+          type="button"
+          style="
+            border:0;
+            background:white;
+            border-radius:12px;
+            padding:8px 10px;
+            font-weight:800;
+            color:#6c7580;
+          "
+        >
+          🎲 Idea Lain
+        </button>
+
+      </div>
+
+
+      <p style="
+        color:#626d74;
+        line-height:1.6;
+        margin:8px 0 16px;
+      ">
+        ${escapeHtml(
+          idea.prompt
+        )}
+      </p>
+
+
+      <div style="
+        padding:14px;
+        border-radius:16px;
+        background:rgba(
+          255,
+          255,
+          255,
+          .72
+        );
+        margin-bottom:14px;
+      ">
+
+        <div style="
+          font-size:11px;
+          font-weight:900;
+          color:#7a6d9e;
+          margin-bottom:6px;
+        ">
+          ✍️ MULA AYAT
+        </div>
+
+
+        <button
+          id="insertSentenceStarterButton"
+          type="button"
+          style="
+            width:100%;
+            text-align:left;
+            border:0;
+            background:transparent;
+            color:#433a65;
+            font-size:15px;
+            font-weight:800;
+            line-height:1.5;
+            padding:0;
+          "
+        >
+          “${escapeHtml(
+            sentenceStarter
+          )}”
+        </button>
+
+
+        <button
+          id="changeSentenceStarterButton"
+          type="button"
+          style="
+            margin-top:8px;
+            border:0;
+            background:transparent;
+            color:#82779f;
+            font-weight:750;
+            padding:0;
+          "
+        >
+          Tukar pembukaan →
+        </button>
+
+      </div>
+
+
+      <div>
+
+        <div style="
+          font-size:11px;
+          font-weight:900;
+          color:#6e7d73;
+          margin-bottom:8px;
+        ">
+          🧠 PERKATAAN YANG BOLEH DIGUNAKAN
+        </div>
+
+
+        <div style="
+          display:flex;
+          flex-wrap:wrap;
+          gap:8px;
+        ">
+
+          ${
+            vocabulary.length
+
+              ? vocabulary
+                  .map(
+                    word => `
+
+                      <button
+                        type="button"
+                        data-writing-word="${escapeAttribute(
+                          word
+                        )}"
+                        style="
+                          border:1px solid #ded9d1;
+                          background:white;
+                          border-radius:999px;
+                          padding:8px 11px;
+                          font-weight:800;
+                          color:#48545b;
+                        "
+                      >
+                        + ${escapeHtml(
+                          word
+                        )}
+                      </button>
+
+                    `
+                  )
+                  .join("")
+
+              : `
+
+                <span style="
+                  color:#899197;
+                  font-size:13px;
+                ">
+                  Simpan perkataan daripada Cerita untuk melihat cadangan di sini.
+                </span>
+
+              `
+          }
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  bindWritingStudioControls();
+
+}
+
+
+/* =========================================================
+   WRITING VOCABULARY SUGGESTIONS
+   ========================================================= */
+
+function getWritingVocabularySuggestions() {
+
+  let words =
+    [];
+
+
+  try {
+
+    words =
+      getVocabularyWords();
+
+  } catch (error) {
+
+    words =
+      [];
+
+  }
+
+
+  const suggestions =
+    words
+      .map(
+        item =>
+          String(
+            item.word || ""
+          ).trim()
+      )
+      .filter(Boolean);
+
+
+  /*
+    Include words from the previous memory task.
+  */
+
+  if (
+    typeof sentenceRecallState !==
+      "undefined" &&
+    Array.isArray(
+      sentenceRecallState.focusWords
+    )
+  ) {
+
+    suggestions.push(
+      ...sentenceRecallState.focusWords
+    );
+
+  }
+
+
+  /*
+    Include focus word from Bina Ayat.
+  */
+
+  if (
+    typeof sentenceBuilderState !==
+      "undefined" &&
+    sentenceBuilderState?.task?.focusWord
+  ) {
+
+    suggestions.push(
+      sentenceBuilderState.task.focusWord
+    );
+
+  }
+
+
+  const unique =
+    [];
+
+
+  suggestions.forEach(
+    word => {
+
+      if (
+        !unique.some(
+          existing =>
+            existing.toLowerCase() ===
+            word.toLowerCase()
+        )
+      ) {
+
+        unique.push(
+          word
+        );
+
+      }
+
+    }
+  );
+
+
+  return unique.slice(
+    0,
+    8
+  );
+
+}
+
+
+/* =========================================================
+   BIND STUDIO CONTROLS
+   ========================================================= */
+
+function bindWritingStudioControls() {
+
+  byId(
+    "changeWritingIdeaButton"
+  )?.addEventListener(
+    "click",
+    () => {
+
+      writingStudioState.ideaIndex =
+        (
+          writingStudioState.ideaIndex +
+          1
+        ) %
+        WRITING_IDEAS.length;
+
+
+      writingStudioState
+        .sentenceStarterIndex =
+        0;
+
+
+      updateWritingStudioPanel();
+
+    }
+  );
+
+
+  byId(
+    "changeSentenceStarterButton"
+  )?.addEventListener(
+    "click",
+    () => {
+
+      writingStudioState
+        .sentenceStarterIndex +=
+        1;
+
+
+      updateWritingStudioPanel();
+
+    }
+  );
+
+
+  byId(
+    "insertSentenceStarterButton"
+  )?.addEventListener(
+    "click",
+    insertCurrentSentenceStarter
+  );
+
+
+  $$(
+    "[data-writing-word]"
+  ).forEach(
+    button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          insertWritingWord(
+            button.dataset.writingWord
+          );
+
+        }
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   INSERT SENTENCE STARTER
+   ========================================================= */
+
+function insertCurrentSentenceStarter() {
+
+  const idea =
+    WRITING_IDEAS[
+      writingStudioState.ideaIndex %
+      WRITING_IDEAS.length
+    ];
+
+
+  const starter =
+    idea.starters[
+      writingStudioState
+        .sentenceStarterIndex %
+      idea.starters.length
+    ];
+
+
+  const textarea =
+    byId(
+      "karanganInput"
+    );
+
+
+  if (!textarea) {
+
+    return;
+
+  }
+
+
+  const current =
+    textarea.value.trim();
+
+
+  if (!current) {
+
+    textarea.value =
+      starter + " ";
+
+  } else {
+
+    textarea.value =
+      current +
+      "\n" +
+      starter +
+      " ";
+
+  }
+
+
+  textarea.focus();
+
+  updateWordCount();
+
+  updateWritingStudioProgress();
+
+}
+
+
+/* =========================================================
+   INSERT VOCABULARY WORD
+   ========================================================= */
+
+function insertWritingWord(
+  word
+) {
+
+  const textarea =
+    byId(
+      "karanganInput"
+    );
+
+
+  if (!textarea) {
+
+    return;
+
+  }
+
+
+  const start =
+    textarea.selectionStart ??
+    textarea.value.length;
+
+
+  const end =
+    textarea.selectionEnd ??
+    textarea.value.length;
+
+
+  const before =
+    textarea.value.slice(
+      0,
+      start
+    );
+
+
+  const after =
+    textarea.value.slice(
+      end
+    );
+
+
+  let prefix =
+    "";
+
+
+  if (
+    before &&
+    !/\s$/.test(
+      before
+    )
+  ) {
+
+    prefix =
+      " ";
+
+  }
+
+
+  textarea.value =
+    before +
+    prefix +
+    word +
+    " " +
+    after;
+
+
+  const newPosition =
+    (
+      before +
+      prefix +
+      word +
+      " "
+    ).length;
+
+
+  textarea.focus();
+
+  textarea.setSelectionRange(
+    newPosition,
+    newPosition
+  );
+
+
+  updateWordCount();
+
+  updateWritingStudioProgress();
+
+}
+
+
+/* =========================================================
+   WRITING PROGRESS
+   ========================================================= */
+
+function updateWritingStudioProgress() {
+
+  const panel =
+    byId(
+      "writingStudioProgressPanel"
+    );
+
+
+  const textarea =
+    byId(
+      "karanganInput"
+    );
+
+
+  if (
+    !panel ||
+    !textarea
+  ) {
+
+    return;
+
+  }
+
+
+  const text =
+    textarea.value.trim();
+
+
+  const words =
+    text
+      ? text
+          .split(/\s+/)
+          .filter(Boolean)
+      : [];
+
+
+  const sentences =
+    text
+      ? text
+          .split(
+            /[.!?]+/
+          )
+          .map(
+            item =>
+              item.trim()
+          )
+          .filter(Boolean)
+      : [];
+
+
+  const wordCount =
+    words.length;
+
+
+  const sentenceCount =
+    sentences.length;
+
+
+  const targetWords =
+    40;
+
+
+  const targetSentences =
+    4;
+
+
+  const progress =
+    Math.min(
+      100,
+      Math.round(
+        (
+          Math.min(
+            wordCount /
+            targetWords,
+            1
+          ) *
+          0.6 +
+
+          Math.min(
+            sentenceCount /
+            targetSentences,
+            1
+          ) *
+          0.4
+        ) *
+        100
+      )
+    );
+
+
+  const ready =
+    wordCount >= 20 &&
+    sentenceCount >= 2;
+
+
+  panel.innerHTML = `
+
+    <div style="
+      padding:15px 17px;
+      border-radius:18px;
+      background:#faf8f4;
+      border:1px solid #ece7df;
+    ">
+
+      <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:12px;
+        margin-bottom:9px;
+      ">
+
+        <strong style="
+          font-size:13px;
+          color:#4d5960;
+        ">
+          Kemajuan Karangan
+        </strong>
+
+
+        <span style="
+          font-size:13px;
+          font-weight:900;
+          color:${
+            ready
+              ? "#2e9a68"
+              : "#d07d25"
+          };
+        ">
+          ${progress}%
+        </span>
+
+      </div>
+
+
+      <div style="
+        height:7px;
+        background:#ece8e1;
+        border-radius:999px;
+        overflow:hidden;
+        margin-bottom:12px;
+      ">
+
+        <div style="
+          width:${progress}%;
+          height:100%;
+          border-radius:999px;
+          background:#ff9f43;
+        "></div>
+
+      </div>
+
+
+      <div style="
+        display:grid;
+        grid-template-columns:1fr 1fr 1fr;
+        gap:8px;
+        text-align:center;
+      ">
+
+        <div style="
+          padding:9px 4px;
+          background:white;
+          border-radius:12px;
+        ">
+
+          <strong>
+            ${wordCount}
+          </strong>
+
+          <div style="
+            font-size:10px;
+            color:#8b9498;
+            margin-top:2px;
+          ">
+            Perkataan
+          </div>
+
+        </div>
+
+
+        <div style="
+          padding:9px 4px;
+          background:white;
+          border-radius:12px;
+        ">
+
+          <strong>
+            ${sentenceCount}
+          </strong>
+
+          <div style="
+            font-size:10px;
+            color:#8b9498;
+            margin-top:2px;
+          ">
+            Ayat
+          </div>
+
+        </div>
+
+
+        <div style="
+          padding:9px 4px;
+          background:white;
+          border-radius:12px;
+        ">
+
+          <strong>
+            ${
+              ready
+                ? "✓"
+                : "…"
+            }
+          </strong>
+
+          <div style="
+            font-size:10px;
+            color:#8b9498;
+            margin-top:2px;
+          ">
+            Sedia Semak
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+
+/* =========================================================
+   FOCUS WRITING
+   ========================================================= */
+
 function focusWriting() {
+
+  initializeWritingStudio();
+
 
   setTimeout(
     () => {
@@ -7468,6 +8490,10 @@ function focusWriting() {
 }
 
 
+/* =========================================================
+   SAVE WRITING
+   ========================================================= */
+
 function saveWriting() {
 
   const textarea =
@@ -7477,12 +8503,18 @@ function saveWriting() {
 
 
   if (!textarea) {
+
     return;
+
   }
 
 
   appState.savedWriting =
     textarea.value;
+
+
+  writingStudioState.lastSavedAt =
+    new Date().toISOString();
 
 
   saveState();
@@ -7493,11 +8525,18 @@ function saveWriting() {
   );
 
 
+  updateWritingStudioProgress();
+
+
+  const stats =
+    getWritingStats(
+      textarea.value
+    );
+
+
   if (
-    textarea.value
-      .trim()
-      .length >=
-    20
+    stats.words >= 20 &&
+    stats.sentences >= 2
   ) {
 
     completeMission(
@@ -7508,6 +8547,105 @@ function saveWriting() {
 
 }
 
+
+/* =========================================================
+   AUTO SAVE
+   ========================================================= */
+
+let writingAutoSaveTimer =
+  null;
+
+
+function autoSaveWritingDraft() {
+
+  clearTimeout(
+    writingAutoSaveTimer
+  );
+
+
+  writingAutoSaveTimer =
+    setTimeout(
+      () => {
+
+        const textarea =
+          byId(
+            "karanganInput"
+          );
+
+
+        if (!textarea) {
+
+          return;
+
+        }
+
+
+        appState.savedWriting =
+          textarea.value;
+
+
+        writingStudioState.lastSavedAt =
+          new Date().toISOString();
+
+
+        saveState();
+
+      },
+      800
+    );
+
+}
+
+
+/* =========================================================
+   WRITING STATS
+   ========================================================= */
+
+function getWritingStats(
+  value
+) {
+
+  const text =
+    String(
+      value || ""
+    ).trim();
+
+
+  const words =
+    text
+      ? text
+          .split(/\s+/)
+          .filter(Boolean)
+          .length
+      : 0;
+
+
+  const sentences =
+    text
+      ? text
+          .split(
+            /[.!?]+/
+          )
+          .map(
+            item =>
+              item.trim()
+          )
+          .filter(Boolean)
+          .length
+      : 0;
+
+
+  return {
+    words,
+    sentences
+  };
+
+}
+
+
+/* =========================================================
+   UPDATE WRITING UI
+   ========================================================= */
 
 function updateWritingUI() {
 
@@ -7532,8 +8670,14 @@ function updateWritingUI() {
 
   updateWordCount();
 
+  updateWritingStudioProgress();
+
 }
 
+
+/* =========================================================
+   WORD COUNT
+   ========================================================= */
 
 function updateWordCount() {
 
@@ -7559,25 +8703,16 @@ function updateWordCount() {
   }
 
 
-  const text =
-    textarea.value.trim();
-
-
-  const count =
-    text
-      ? text
-          .split(/\s+/)
-          .filter(Boolean)
-          .length
-      : 0;
+  const stats =
+    getWritingStats(
+      textarea.value
+    );
 
 
   counter.textContent =
-    count;
+    stats.words;
 
 }
-
-
 /* =========================================================
    44. AI WRITING FEEDBACK
    ========================================================= */
