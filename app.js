@@ -8853,7 +8853,11 @@ function updateLearnUI() {
   }
 
 }
-{
+/* =========================================================
+   UPDATE ALL UI
+   ========================================================= */
+
+function updateAllUI() {
 
   updateHeader();
 
@@ -8868,31 +8872,6 @@ function updateLearnUI() {
   updateProgressUI();
 
   updateBadgeUI();
-
-}
-
-  const textarea =
-    byId(
-      "karanganInput"
-    );
-
-
-  if (
-    textarea &&
-    textarea.value !==
-      appState.savedWriting
-  ) {
-
-    textarea.value =
-      appState.savedWriting ||
-      "";
-
-  }
-
-
-  updateWordCount();
-
-  updateWritingStudioProgress();
 
 }
 
