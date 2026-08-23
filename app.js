@@ -8647,7 +8647,229 @@ function getWritingStats(
    UPDATE WRITING UI
    ========================================================= */
 
-function updateWritingUI() {
+function updateAllUI() 
+   
+/* =========================================================
+   LEARN SCREEN STATUS SYNC
+   ========================================================= */
+
+function updateLearnUI() {
+
+  const completed =
+    appState.completedMissions || [];
+
+
+  const total =
+    APP_CONFIG.missionOrder.length;
+
+
+  safeText(
+    byId("learnCompletedCount"),
+    completed.length
+  );
+
+
+  const progress =
+    Math.min(
+      100,
+      Math.round(
+        completed.length /
+        total *
+        100
+      )
+    );
+
+
+  const progressBar =
+    byId(
+      "learnProgressBar"
+    );
+
+
+  if (progressBar) {
+
+    progressBar.style.width =
+      `${progress}%`;
+
+  }
+
+
+  const nextMission =
+    APP_CONFIG.missionOrder.find(
+      mission =>
+        !completed.includes(
+          mission
+        )
+    );
+
+
+  $$("[data-learn-step]")
+    .forEach(
+      card => {
+
+        const mission =
+          card.dataset.learnStep;
+
+
+        const status =
+          card.querySelector(
+            "[data-learn-status]"
+          );
+
+
+        const isCompleted =
+          completed.includes(
+            mission
+          );
+
+
+        const isCurrent =
+          mission ===
+          nextMission;
+
+
+        /*
+          Reset appearance first
+        */
+
+        card.style.opacity =
+          "1";
+
+        card.style.borderColor =
+          "";
+
+        card.style.background =
+          "";
+
+
+        if (
+          isCompleted
+        ) {
+
+          card.classList.add(
+            "completed"
+          );
+
+
+          card.style.background =
+            "#f2fbf6";
+
+          card.style.borderColor =
+            "#bfe7d0";
+
+
+          if (status) {
+
+            status.textContent =
+              "✓ Selesai";
+
+            status.style.color =
+              "#2b9364";
+
+          }
+
+
+          return;
+
+        }
+
+
+        card.classList.remove(
+          "completed"
+        );
+
+
+        if (
+          isCurrent
+        ) {
+
+          card.style.background =
+            "#fff9ef";
+
+          card.style.borderColor =
+            "#f4c67b";
+
+
+          if (status) {
+
+            status.textContent =
+              "Sekarang →";
+
+            status.style.color =
+              "#d98222";
+
+          }
+
+
+          return;
+
+        }
+
+
+        /*
+          Future mission
+        */
+
+        card.style.opacity =
+          "0.72";
+
+
+        if (status) {
+
+          status.textContent =
+            "Seterusnya";
+
+          status.style.color =
+            "#98a0a5";
+
+        }
+
+      }
+    );
+
+
+  /*
+    If all missions completed
+  */
+
+  if (
+    !nextMission &&
+    total > 0
+  ) {
+
+    $$("[data-learn-status]")
+      .forEach(
+        status => {
+
+          status.textContent =
+            "✓ Selesai";
+
+          status.style.color =
+            "#2b9364";
+
+        }
+      );
+
+  }
+
+}
+{
+
+  updateHeader();
+
+  updateMissionUI();
+
+  updateLearnUI();
+
+  updateProfileUI();
+
+  updateWritingUI();
+
+  updateProgressUI();
+
+  updateBadgeUI();
+
+}
 
   const textarea =
     byId(
