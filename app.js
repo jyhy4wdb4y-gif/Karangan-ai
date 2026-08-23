@@ -8863,8 +8863,6 @@ function updateAllUI() {
 
   updateMissionUI();
 
-  updateLearnUI();
-
   updateProfileUI();
 
   updateWritingUI();
