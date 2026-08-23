@@ -1,1019 +1,1864 @@
 <!DOCTYPE html>
 <html lang="ms">
-
 <head>
-
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
 
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-  >
+  />
 
   <meta
-    name="apple-mobile-web-app-capable"
-    content="yes"
-  >
+    name="description"
+    content="Karangan AI - AI Bahasa Melayu Learning & Writing App for Year 3"
+  />
 
-  <meta
-    name="apple-mobile-web-app-status-bar-style"
-    content="default"
-  >
-
-  <meta
-    name="theme-color"
-    content="#5b5ce2"
-  >
+  <meta name="theme-color" content="#fff8ee" />
 
   <title>Karangan AI</title>
 
-  <!-- FULL VERSION CSS -->
-  <link
-    rel="stylesheet"
-    href="style.css"
-  >
-
+  <!-- Main stylesheet -->
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 
 <body>
 
-<div class="app">
+  <!-- =========================================================
+       APP ROOT
+       ========================================================= -->
+  <div id="app" class="app-shell">
 
+    <!-- =======================================================
+         TOP HEADER
+         ======================================================= -->
+    <header class="top-header">
 
-<!-- ==================================================
-     HEADER
-================================================== -->
+      <div class="brand-area">
+        <div class="brand-logo">
+          ✨
+        </div>
 
-<header class="top-header">
-
-  <div class="header-row">
-
-    <div class="brand">
-
-      <div class="logo">
-        ✨
+        <div class="brand-text">
+          <h1>Karangan AI</h1>
+          <p>Belajar • Tulis • Berkembang</p>
+        </div>
       </div>
 
-      <div class="brand-text">
+      <div class="header-actions">
 
-        <h1>
-          Karangan AI
-        </h1>
+        <button
+          id="streakButton"
+          class="header-pill"
+          type="button"
+          aria-label="Learning streak"
+        >
+          🔥
+          <span id="streakCount">3</span>
+        </button>
 
-        <p>
-          Belajar · Faham · Tulis
-        </p>
+        <button
+          id="xpButton"
+          class="header-pill xp-pill"
+          type="button"
+          aria-label="Experience points"
+        >
+          ⭐
+          <span id="xpCount">120</span>
+          XP
+        </button>
 
       </div>
 
-    </div>
+    </header>
 
 
-    <button
-      class="profile-button"
-      onclick="openPage(0)"
-      aria-label="Profil pelajar"
+    <!-- =======================================================
+         MAIN CONTENT
+         ======================================================= -->
+    <main id="mainContent" class="main-content">
+
+
+      <!-- =====================================================
+           HOME SCREEN
+           ===================================================== -->
+      <section
+        id="homeScreen"
+        class="screen active-screen"
+        data-screen="home"
+      >
+
+        <!-- Greeting / Mentor -->
+        <section class="hero-section">
+
+          <div class="hero-content">
+
+            <div class="hero-copy">
+
+              <span class="eyebrow">
+                🌞 Selamat datang kembali!
+              </span>
+
+              <h2>
+                Jom belajar Bahasa Melayu hari ini!
+              </h2>
+
+              <p>
+                Selesaikan misi hari ini dan bantu avatar kamu berkembang.
+              </p>
+
+              <button
+                id="startMissionButton"
+                class="primary-button"
+                type="button"
+                data-action="start-mission"
+              >
+                🚀 Mulakan Misi Hari Ini
+              </button>
+
+            </div>
+
+
+            <!-- AI Mentor -->
+            <div
+              id="mentorCard"
+              class="mentor-card"
+            >
+
+              <div class="mentor-avatar-wrap">
+
+                <!--
+                  IMPORTANT:
+                  Current project already has cikgu-aira.png.
+                  If your actual filename is different,
+                  we will adjust it later.
+                -->
+                <img
+                  id="mentorAvatar"
+                  class="mentor-avatar"
+                  src="cikgu-aira.png"
+                  alt="Cikgu Aira"
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                />
+
+                <div
+                  class="mentor-avatar-fallback"
+                  style="display:none;"
+                >
+                  👩‍🏫
+                </div>
+
+              </div>
+
+              <div class="mentor-message">
+                <span class="mentor-label">
+                  Cikgu Aira
+                </span>
+
+                <p id="mentorHomeMessage">
+                  Hai! Hari ini kita akan belajar perkataan baru,
+                  bina ayat dan tulis karangan bersama.
+                </p>
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- Today's Mission -->
+        <section class="content-section">
+
+          <div class="section-heading">
+
+            <div>
+              <span class="section-kicker">
+                MISI HARI INI
+              </span>
+
+              <h2>
+                Pengembaraan Bahasa
+              </h2>
+            </div>
+
+            <div class="mission-progress-label">
+              <span id="missionCompletedCount">0</span>
+              /
+              <span id="missionTotalCount">7</span>
+            </div>
+
+          </div>
+
+
+          <div class="mission-progress-track">
+            <div
+              id="missionProgressBar"
+              class="mission-progress-fill"
+              style="width: 0%;"
+            ></div>
+          </div>
+
+
+          <div class="mission-grid">
+
+            <!-- Story -->
+            <button
+              class="mission-card"
+              type="button"
+              data-module="story"
+            >
+              <div class="mission-icon story-icon">
+                📖
+              </div>
+
+              <div class="mission-info">
+                <span class="mission-step">
+                  Langkah 1
+                </span>
+
+                <h3>
+                  Cerita
+                </h3>
+
+                <p>
+                  Baca cerita dan fahami perkataan baru.
+                </p>
+              </div>
+
+              <span class="mission-status">
+                Mula →
+              </span>
+            </button>
+
+
+            <!-- Vocabulary -->
+            <button
+              class="mission-card"
+              type="button"
+              data-module="vocabulary"
+            >
+              <div class="mission-icon vocabulary-icon">
+                🧠
+              </div>
+
+              <div class="mission-info">
+                <span class="mission-step">
+                  Langkah 2
+                </span>
+
+                <h3>
+                  Buku Kosa Kata
+                </h3>
+
+                <p>
+                  Simpan dan ulang kaji perkataan penting.
+                </p>
+              </div>
+
+              <span class="mission-status">
+                Mula →
+              </span>
+            </button>
+
+
+            <!-- Sentence Builder -->
+            <button
+              class="mission-card"
+              type="button"
+              data-module="sentence-builder"
+            >
+              <div class="mission-icon sentence-icon">
+                🧩
+              </div>
+
+              <div class="mission-info">
+                <span class="mission-step">
+                  Langkah 3
+                </span>
+
+                <h3>
+                  Bina Ayat
+                </h3>
+
+                <p>
+                  Susun perkataan menjadi ayat yang betul.
+                </p>
+              </div>
+
+              <span class="mission-status">
+                Mula →
+              </span>
+            </button>
+
+
+            <!-- Grammar Rain -->
+            <button
+              class="mission-card"
+              type="button"
+              data-module="grammar-rain"
+            >
+              <div class="mission-icon grammar-icon">
+                🌧️
+              </div>
+
+              <div class="mission-info">
+                <span class="mission-step">
+                  Langkah 4
+                </span>
+
+                <h3>
+                  Grammar Rain
+                </h3>
+
+                <p>
+                  Tangkap jawapan yang betul sebelum ia jatuh!
+                </p>
+              </div>
+
+              <span class="mission-status">
+                Main →
+              </span>
+            </button>
+
+
+            <!-- Sentence Recall -->
+            <button
+              class="mission-card"
+              type="button"
+              data-module="sentence-recall"
+            >
+              <div class="mission-icon recall-icon">
+                💭
+              </div>
+
+              <div class="mission-info">
+                <span class="mission-step">
+                  Langkah 5
+                </span>
+
+                <h3>
+                  Ingat Ayat
+                </h3>
+
+                <p>
+                  Cuba ingat dan bina semula ayat.
+                </p>
+              </div>
+
+              <span class="mission-status">
+                Mula →
+              </span>
+            </button>
+
+
+            <!-- Creative Studio -->
+            <button
+              class="mission-card"
+              type="button"
+              data-module="creative-studio"
+            >
+              <div class="mission-icon creative-icon">
+                ✍️
+              </div>
+
+              <div class="mission-info">
+                <span class="mission-step">
+                  Langkah 6
+                </span>
+
+                <h3>
+                  Studio Karangan
+                </h3>
+
+                <p>
+                  Gunakan apa yang dipelajari untuk menulis.
+                </p>
+              </div>
+
+              <span class="mission-status">
+                Tulis →
+              </span>
+            </button>
+
+
+            <!-- AI Feedback -->
+            <button
+              class="mission-card"
+              type="button"
+              data-module="ai-feedback"
+            >
+              <div class="mission-icon ai-icon">
+                ✨
+              </div>
+
+              <div class="mission-info">
+                <span class="mission-step">
+                  Langkah 7
+                </span>
+
+                <h3>
+                  Semakan AI
+                </h3>
+
+                <p>
+                  Dapatkan cadangan daripada Cikgu Aira.
+                </p>
+              </div>
+
+              <span class="mission-status">
+                Semak →
+              </span>
+            </button>
+
+          </div>
+
+        </section>
+
+
+        <!-- Continue Learning -->
+        <section class="content-section">
+
+          <div class="section-heading">
+            <div>
+              <span class="section-kicker">
+                SAMBUNG BELAJAR
+              </span>
+
+              <h2>
+                Cerita Pilihan
+              </h2>
+            </div>
+
+            <button
+              class="text-button"
+              type="button"
+              data-nav="learn"
+            >
+              Lihat semua
+            </button>
+          </div>
+
+
+          <div
+            id="featuredStories"
+            class="story-preview-grid"
+          >
+
+            <button
+              class="story-preview-card"
+              type="button"
+              data-story-id="story-1"
+            >
+
+              <div class="story-preview-image">
+
+                <img
+                  src="2411F84C-22BF-4BE2-848E-BE95A12D02A9.png"
+                  alt="Cerita Bahasa Melayu"
+                />
+
+              </div>
+
+              <div class="story-preview-content">
+
+                <span class="story-level">
+                  Tahun 3
+                </span>
+
+                <h3>
+                  Pengembaraan Hari Ini
+                </h3>
+
+                <p>
+                  Baca, tekan perkataan dan belajar maksudnya.
+                </p>
+
+                <span class="story-cta">
+                  📖 Baca cerita
+                </span>
+
+              </div>
+
+            </button>
+
+          </div>
+
+        </section>
+
+
+        <!-- Quick Activities -->
+        <section class="content-section">
+
+          <div class="section-heading">
+
+            <div>
+              <span class="section-kicker">
+                LATIHAN PANTAS
+              </span>
+
+              <h2>
+                Main & Belajar
+              </h2>
+            </div>
+
+          </div>
+
+
+          <div class="quick-grid">
+
+            <button
+              class="quick-card"
+              type="button"
+              data-module="grammar-rain"
+            >
+              <span class="quick-icon">
+                🌧️
+              </span>
+
+              <strong>
+                Grammar Rain
+              </strong>
+
+              <span>
+                3 minit
+              </span>
+            </button>
+
+
+            <button
+              class="quick-card"
+              type="button"
+              data-module="sentence-builder"
+            >
+              <span class="quick-icon">
+                🧩
+              </span>
+
+              <strong>
+                Bina Ayat
+              </strong>
+
+              <span>
+                5 minit
+              </span>
+            </button>
+
+
+            <button
+              class="quick-card"
+              type="button"
+              data-module="sentence-recall"
+            >
+              <span class="quick-icon">
+                💭
+              </span>
+
+              <strong>
+                Ingat Ayat
+              </strong>
+
+              <span>
+                3 minit
+              </span>
+            </button>
+
+          </div>
+
+        </section>
+
+
+        <!-- Progress / Avatar -->
+        <section class="content-section">
+
+          <div class="section-heading">
+
+            <div>
+              <span class="section-kicker">
+                PERKEMBANGAN SAYA
+              </span>
+
+              <h2>
+                Avatar & XP
+              </h2>
+            </div>
+
+          </div>
+
+
+          <div
+            id="homeAvatarPanel"
+            class="home-avatar-panel"
+          >
+
+            <div
+              id="avatarPreview"
+              class="avatar-preview"
+            >
+              🧒
+            </div>
+
+
+            <div class="avatar-summary">
+
+              <span class="avatar-level-label">
+                Level
+                <strong id="avatarLevel">
+                  1
+                </strong>
+              </span>
+
+              <h3 id="avatarName">
+                Penjelajah Bahasa
+              </h3>
+
+              <p>
+                Teruskan belajar untuk membuka pakaian,
+                lencana dan dunia baru.
+              </p>
+
+
+              <div class="xp-progress">
+
+                <div class="xp-progress-track">
+                  <div
+                    id="avatarXpBar"
+                    class="xp-progress-fill"
+                    style="width: 35%;"
+                  ></div>
+                </div>
+
+                <span>
+                  <span id="currentAvatarXp">
+                    120
+                  </span>
+                  /
+                  <span id="nextAvatarXp">
+                    350
+                  </span>
+                  XP
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+      </section>
+
+
+      <!-- =====================================================
+           LEARN SCREEN
+           ===================================================== -->
+      <section
+        id="learnScreen"
+        class="screen"
+        data-screen="learn"
+        hidden
+      >
+
+        <section class="page-intro">
+
+          <span class="section-kicker">
+            BELAJAR
+          </span>
+
+          <h2>
+            Dunia Pembelajaran
+          </h2>
+
+          <p>
+            Pilih aktiviti untuk menguatkan kemahiran Bahasa Melayu.
+          </p>
+
+        </section>
+
+
+        <div class="module-grid">
+
+          <button
+            class="module-card"
+            type="button"
+            data-module="story"
+          >
+            <span class="module-icon">
+              📖
+            </span>
+
+            <div>
+              <h3>
+                Cerita
+              </h3>
+
+              <p>
+                Baca cerita interaktif dan tekan perkataan untuk melihat maksud.
+              </p>
+            </div>
+          </button>
+
+
+          <button
+            class="module-card"
+            type="button"
+            data-module="vocabulary"
+          >
+            <span class="module-icon">
+              🧠
+            </span>
+
+            <div>
+              <h3>
+                Buku Kosa Kata
+              </h3>
+
+              <p>
+                Kumpul perkataan baru yang telah dipelajari.
+              </p>
+            </div>
+          </button>
+
+
+          <button
+            class="module-card"
+            type="button"
+            data-module="sentence-builder"
+          >
+            <span class="module-icon">
+              🧩
+            </span>
+
+            <div>
+              <h3>
+                Bina Ayat
+              </h3>
+
+              <p>
+                Susun perkataan untuk membina ayat yang gramatis.
+              </p>
+            </div>
+          </button>
+
+
+          <button
+            class="module-card"
+            type="button"
+            data-module="grammar-rain"
+          >
+            <span class="module-icon">
+              🌧️
+            </span>
+
+            <div>
+              <h3>
+                Grammar Rain
+              </h3>
+
+              <p>
+                Permainan pantas untuk menguasai tatabahasa.
+              </p>
+            </div>
+          </button>
+
+
+          <button
+            class="module-card"
+            type="button"
+            data-module="sentence-recall"
+          >
+            <span class="module-icon">
+              💭
+            </span>
+
+            <div>
+              <h3>
+                Sentence Recall
+              </h3>
+
+              <p>
+                Latih ingatan aktif dengan membina semula ayat.
+              </p>
+            </div>
+          </button>
+
+
+          <button
+            class="module-card"
+            type="button"
+            data-module="ai-mentor"
+          >
+            <span class="module-icon">
+              👩‍🏫
+            </span>
+
+            <div>
+              <h3>
+                Cikgu Aira
+              </h3>
+
+              <p>
+                Tanya maksud perkataan dan dapatkan petunjuk pembelajaran.
+              </p>
+            </div>
+          </button>
+
+        </div>
+
+      </section>
+
+
+      <!-- =====================================================
+           CREATE SCREEN
+           ===================================================== -->
+      <section
+        id="createScreen"
+        class="screen"
+        data-screen="create"
+        hidden
+      >
+
+        <section class="page-intro">
+
+          <span class="section-kicker">
+            CIPTA
+          </span>
+
+          <h2>
+            Studio Karangan
+          </h2>
+
+          <p>
+            Gunakan idea, kosa kata dan ayat untuk mencipta tulisan sendiri.
+          </p>
+
+        </section>
+
+
+        <section class="writing-start-card">
+
+          <div class="writing-start-icon">
+            ✍️
+          </div>
+
+          <div>
+
+            <span class="section-kicker">
+              CREATIVE STUDIO
+            </span>
+
+            <h3>
+              Tulis Karangan Baru
+            </h3>
+
+            <p>
+              Cikgu Aira akan membantu dengan soalan,
+              petunjuk dan cadangan — bukan menulis semuanya untuk kamu.
+            </p>
+
+            <button
+              id="newWritingButton"
+              class="primary-button"
+              type="button"
+              data-module="creative-studio"
+            >
+              ✨ Mula Menulis
+            </button>
+
+          </div>
+
+        </section>
+
+
+        <section class="content-section">
+
+          <div class="section-heading">
+
+            <div>
+              <span class="section-kicker">
+                ALAT MENULIS
+              </span>
+
+              <h2>
+                Bantuan Karangan
+              </h2>
+            </div>
+
+          </div>
+
+
+          <div class="create-tool-grid">
+
+            <button
+              class="create-tool-card"
+              type="button"
+              data-tool="idea"
+            >
+              💡
+
+              <strong>
+                Idea
+              </strong>
+
+              <span>
+                Cari idea untuk mula menulis
+              </span>
+            </button>
+
+
+            <button
+              class="create-tool-card"
+              type="button"
+              data-tool="vocabulary"
+            >
+              🧠
+
+              <strong>
+                Kosa Kata
+              </strong>
+
+              <span>
+                Pilih perkataan yang lebih menarik
+              </span>
+            </button>
+
+
+            <button
+              class="create-tool-card"
+              type="button"
+              data-tool="sentence"
+            >
+              🧩
+
+              <strong>
+                Bina Ayat
+              </strong>
+
+              <span>
+                Perbaiki struktur ayat
+              </span>
+            </button>
+
+
+            <button
+              class="create-tool-card"
+              type="button"
+              data-module="ai-feedback"
+            >
+              ✨
+
+              <strong>
+                Semakan AI
+              </strong>
+
+              <span>
+                Semak tulisan bersama Cikgu Aira
+              </span>
+            </button>
+
+          </div>
+
+        </section>
+
+
+        <!-- Writing workspace -->
+        <section
+          id="writingWorkspace"
+          class="writing-workspace"
+        >
+
+          <div class="writing-toolbar">
+
+            <span id="writingTopic">
+              Tajuk: Pengalaman Saya
+            </span>
+
+            <span>
+              <span id="writingWordCount">
+                0
+              </span>
+              perkataan
+            </span>
+
+          </div>
+
+
+          <textarea
+            id="karanganInput"
+            class="karangan-textarea"
+            placeholder="Mulakan karangan kamu di sini..."
+            aria-label="Karangan writing area"
+          ></textarea>
+
+
+          <div class="writing-actions">
+
+            <button
+              id="saveWritingButton"
+              class="secondary-button"
+              type="button"
+            >
+              💾 Simpan
+            </button>
+
+
+            <button
+              id="checkWritingButton"
+              class="primary-button"
+              type="button"
+              data-module="ai-feedback"
+            >
+              ✨ Semak dengan Cikgu Aira
+            </button>
+
+          </div>
+
+        </section>
+
+
+        <!-- AI Feedback Result -->
+        <section
+          id="aiFeedbackPanel"
+          class="ai-feedback-panel"
+          hidden
+        >
+
+          <div class="feedback-header">
+
+            <div class="feedback-mentor">
+              👩‍🏫
+            </div>
+
+            <div>
+              <span class="section-kicker">
+                CIKGU AIRA
+              </span>
+
+              <h3>
+                Mari kita perbaiki bersama
+              </h3>
+            </div>
+
+          </div>
+
+
+          <div id="aiFeedbackContent">
+
+            <p>
+              Tulis karangan dahulu. Cikgu Aira akan memberi
+              petunjuk apabila kamu meminta semakan.
+            </p>
+
+          </div>
+
+        </section>
+
+      </section>
+
+
+      <!-- =====================================================
+           ME SCREEN
+           ===================================================== -->
+      <section
+        id="meScreen"
+        class="screen"
+        data-screen="me"
+        hidden
+      >
+
+        <section class="profile-hero">
+
+          <div
+            id="profileAvatar"
+            class="profile-avatar"
+          >
+            🧒
+          </div>
+
+          <div class="profile-info">
+
+            <span class="section-kicker">
+              PROFIL SAYA
+            </span>
+
+            <h2 id="studentDisplayName">
+              Penjelajah Bahasa
+            </h2>
+
+            <p>
+              Tahun 3
+            </p>
+
+          </div>
+
+        </section>
+
+
+        <!-- Stats -->
+        <section class="stats-grid">
+
+          <div class="stat-card">
+
+            <span class="stat-icon">
+              ⭐
+            </span>
+
+            <strong id="profileXp">
+              120
+            </strong>
+
+            <span>
+              XP
+            </span>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <span class="stat-icon">
+              🔥
+            </span>
+
+            <strong id="profileStreak">
+              3
+            </strong>
+
+            <span>
+              Hari
+            </span>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <span class="stat-icon">
+              📖
+            </span>
+
+            <strong id="storiesCompleted">
+              1
+            </strong>
+
+            <span>
+              Cerita
+            </span>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <span class="stat-icon">
+              🏆
+            </span>
+
+            <strong id="badgeCount">
+              0
+            </strong>
+
+            <span>
+              Lencana
+            </span>
+
+          </div>
+
+        </section>
+
+
+        <!-- Avatar -->
+        <section class="content-section">
+
+          <div class="section-heading">
+
+            <div>
+              <span class="section-kicker">
+                AVATAR
+              </span>
+
+              <h2>
+                Avatar Saya
+              </h2>
+            </div>
+
+          </div>
+
+
+          <div
+            id="avatarContainer"
+            class="avatar-container"
+          >
+
+            <!-- avatar.js can render here -->
+
+          </div>
+
+        </section>
+
+
+        <!-- Learning Progress -->
+        <section class="content-section">
+
+          <div class="section-heading">
+
+            <div>
+              <span class="section-kicker">
+                KEMAJUAN
+              </span>
+
+              <h2>
+                Perjalanan Pembelajaran
+              </h2>
+            </div>
+
+          </div>
+
+
+          <div class="progress-list">
+
+            <div class="progress-item">
+
+              <div class="progress-copy">
+
+                <span>
+                  📖 Membaca
+                </span>
+
+                <strong id="readingProgressText">
+                  20%
+                </strong>
+
+              </div>
+
+              <div class="progress-track">
+
+                <div
+                  id="readingProgressBar"
+                  class="progress-fill"
+                  style="width:20%;"
+                ></div>
+
+              </div>
+
+            </div>
+
+
+            <div class="progress-item">
+
+              <div class="progress-copy">
+
+                <span>
+                  🧠 Kosa Kata
+                </span>
+
+                <strong id="vocabProgressText">
+                  10%
+                </strong>
+
+              </div>
+
+              <div class="progress-track">
+
+                <div
+                  id="vocabProgressBar"
+                  class="progress-fill"
+                  style="width:10%;"
+                ></div>
+
+              </div>
+
+            </div>
+
+
+            <div class="progress-item">
+
+              <div class="progress-copy">
+
+                <span>
+                  ✍️ Karangan
+                </span>
+
+                <strong id="writingProgressText">
+                  5%
+                </strong>
+
+              </div>
+
+              <div class="progress-track">
+
+                <div
+                  id="writingProgressBar"
+                  class="progress-fill"
+                  style="width:5%;"
+                ></div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- Achievements -->
+        <section class="content-section">
+
+          <div class="section-heading">
+
+            <div>
+              <span class="section-kicker">
+                PENCAPAIAN
+              </span>
+
+              <h2>
+                Lencana Saya
+              </h2>
+            </div>
+
+          </div>
+
+
+          <div
+            id="badgeGrid"
+            class="badge-grid"
+          >
+
+            <div class="badge-card unlocked">
+
+              <span class="badge-icon">
+                🌱
+              </span>
+
+              <strong>
+                Langkah Pertama
+              </strong>
+
+              <span>
+                Mulakan pembelajaran pertama
+              </span>
+
+            </div>
+
+
+            <div class="badge-card locked">
+
+              <span class="badge-icon">
+                🔒
+              </span>
+
+              <strong>
+                Pembaca Hebat
+              </strong>
+
+              <span>
+                Selesaikan 5 cerita
+              </span>
+
+            </div>
+
+
+            <div class="badge-card locked">
+
+              <span class="badge-icon">
+                🔒
+              </span>
+
+              <strong>
+                Penulis Muda
+              </strong>
+
+              <span>
+                Selesaikan karangan pertama
+              </span>
+
+            </div>
+
+          </div>
+
+        </section>
+
+      </section>
+
+
+      <!-- =====================================================
+           IMMERSIVE MODULE SCREEN
+           Story / Games / Mission modules
+           Bottom nav can be hidden by JS when this opens
+           ===================================================== -->
+      <section
+        id="moduleScreen"
+        class="screen immersive-screen"
+        data-screen="module"
+        hidden
+      >
+
+        <header class="immersive-header">
+
+          <button
+            id="moduleBackButton"
+            class="icon-button"
+            type="button"
+            aria-label="Back"
+          >
+            ←
+          </button>
+
+
+          <div class="immersive-progress-wrap">
+
+            <div class="immersive-progress-track">
+
+              <div
+                id="moduleProgressBar"
+                class="immersive-progress-fill"
+                style="width:10%;"
+              ></div>
+
+            </div>
+
+          </div>
+
+
+          <button
+            id="moduleCloseButton"
+            class="icon-button"
+            type="button"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+
+        </header>
+
+
+        <div
+          id="moduleContent"
+          class="module-content"
+        >
+
+          <!-- Dynamic module content injected here -->
+
+        </div>
+
+      </section>
+
+
+      <!-- =====================================================
+           STORY READER SCREEN
+           Existing stories.js can render content here
+           ===================================================== -->
+      <section
+        id="storyScreen"
+        class="screen immersive-screen"
+        data-screen="story"
+        hidden
+      >
+
+        <header class="immersive-header">
+
+          <button
+            id="storyBackButton"
+            class="icon-button"
+            type="button"
+            aria-label="Back"
+          >
+            ←
+          </button>
+
+
+          <div class="story-header-title">
+
+            <span>
+              Cerita
+            </span>
+
+            <strong id="storyHeaderTitle">
+              Pengembaraan Bahasa
+            </strong>
+
+          </div>
+
+
+          <button
+            id="storyBookmarkButton"
+            class="icon-button"
+            type="button"
+            aria-label="Bookmark story"
+          >
+            ♡
+          </button>
+
+        </header>
+
+
+        <article
+          id="storyReader"
+          class="story-reader"
+        >
+
+          <!--
+            stories.js can insert:
+            image
+            title
+            story paragraphs
+            clickable words
+          -->
+
+        </article>
+
+
+        <!-- Translation popup -->
+        <div
+          id="translationPopup"
+          class="translation-popup"
+          hidden
+        >
+
+          <button
+            id="translationCloseButton"
+            class="translation-close"
+            type="button"
+            aria-label="Close translation"
+          >
+            ✕
+          </button>
+
+
+          <span
+            id="translationWord"
+            class="translation-word"
+          ></span>
+
+
+          <strong
+            id="translationMeaning"
+            class="translation-meaning"
+          ></strong>
+
+
+          <p
+            id="translationExample"
+            class="translation-example"
+          ></p>
+
+
+          <button
+            id="saveVocabularyButton"
+            class="secondary-button"
+            type="button"
+          >
+            ＋ Simpan ke Buku Kosa Kata
+          </button>
+
+        </div>
+
+      </section>
+
+
+      <!-- =====================================================
+           AI MENTOR FLOATING BUTTON
+           ===================================================== -->
+      <button
+        id="mentorFloatingButton"
+        class="mentor-floating-button"
+        type="button"
+        aria-label="Open Cikgu Aira"
+      >
+        <span class="mentor-floating-icon">
+          👩‍🏫
+        </span>
+
+        <span class="mentor-floating-label">
+          Tanya Cikgu Aira
+        </span>
+      </button>
+
+
+      <!-- =====================================================
+           AI MENTOR PANEL
+           ===================================================== -->
+      <aside
+        id="mentorPanel"
+        class="mentor-panel"
+        hidden
+      >
+
+        <div class="mentor-panel-header">
+
+          <div class="mentor-panel-profile">
+
+            <div class="mentor-small-avatar">
+              👩‍🏫
+            </div>
+
+            <div>
+              <strong>
+                Cikgu Aira
+              </strong>
+
+              <span>
+                AI Mentor
+              </span>
+            </div>
+
+          </div>
+
+
+          <button
+            id="mentorPanelClose"
+            class="icon-button"
+            type="button"
+            aria-label="Close mentor"
+          >
+            ✕
+          </button>
+
+        </div>
+
+
+        <div
+          id="mentorChat"
+          class="mentor-chat"
+        >
+
+          <div class="mentor-bubble">
+
+            Hai! 👋 Saya Cikgu Aira.
+
+            Tanya saya tentang perkataan,
+            ayat atau karangan kamu.
+
+          </div>
+
+        </div>
+
+
+        <div class="mentor-quick-prompts">
+
+          <button
+            type="button"
+            data-mentor-prompt="meaning"
+          >
+            📖 Apa maksud perkataan ini?
+          </button>
+
+
+          <button
+            type="button"
+            data-mentor-prompt="sentence"
+          >
+            🧩 Bantu saya bina ayat
+          </button>
+
+
+          <button
+            type="button"
+            data-mentor-prompt="idea"
+          >
+            💡 Beri saya petunjuk
+          </button>
+
+        </div>
+
+
+        <form
+          id="mentorForm"
+          class="mentor-input-wrap"
+        >
+
+          <input
+            id="mentorInput"
+            type="text"
+            placeholder="Tanya Cikgu Aira..."
+            autocomplete="off"
+          />
+
+          <button
+            id="mentorSendButton"
+            type="submit"
+            aria-label="Send message"
+          >
+            ➤
+          </button>
+
+        </form>
+
+      </aside>
+
+
+      <!-- =====================================================
+           MODAL
+           ===================================================== -->
+      <div
+        id="appModal"
+        class="app-modal"
+        hidden
+      >
+
+        <div class="modal-backdrop"></div>
+
+
+        <div class="modal-card">
+
+          <button
+            id="modalCloseButton"
+            class="modal-close"
+            type="button"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+
+
+          <div
+            id="modalContent"
+            class="modal-content"
+          ></div>
+
+        </div>
+
+      </div>
+
+
+      <!-- =====================================================
+           TOAST
+           ===================================================== -->
+      <div
+        id="toast"
+        class="toast"
+        role="status"
+        aria-live="polite"
+        hidden
+      >
+        <span id="toastMessage">
+          Selesai!
+        </span>
+      </div>
+
+    </main>
+
+
+    <!-- =======================================================
+         BOTTOM NAVIGATION
+         PRD: HOME / LEARN / CREATE / ME
+         ======================================================= -->
+    <nav
+      id="bottomNavigation"
+      class="bottom-navigation"
+      aria-label="Main navigation"
     >
-      👦🏻
-    </button>
+
+      <button
+        class="nav-item active"
+        type="button"
+        data-nav="home"
+      >
+
+        <span class="nav-icon">
+          🏠
+        </span>
+
+        <span class="nav-label">
+          Home
+        </span>
+
+      </button>
+
+
+      <button
+        class="nav-item"
+        type="button"
+        data-nav="learn"
+      >
+
+        <span class="nav-icon">
+          📚
+        </span>
+
+        <span class="nav-label">
+          Learn
+        </span>
+
+      </button>
+
+
+      <button
+        class="nav-item nav-create"
+        type="button"
+        data-nav="create"
+      >
+
+        <span class="nav-icon">
+          ✍️
+        </span>
+
+        <span class="nav-label">
+          Create
+        </span>
+
+      </button>
+
+
+      <button
+        class="nav-item"
+        type="button"
+        data-nav="me"
+      >
+
+        <span class="nav-icon">
+          🧒
+        </span>
+
+        <span class="nav-label">
+          Me
+        </span>
+
+      </button>
+
+    </nav>
 
   </div>
 
-</header>
 
+  <!-- =========================================================
+       APP LOADING SCREEN
+       ========================================================= -->
+  <div
+    id="loadingScreen"
+    class="loading-screen"
+  >
 
+    <div class="loading-logo">
+      ✨
+    </div>
 
-<!-- ==================================================
-     PROGRESS
-================================================== -->
-
-<section class="progress-section">
-
-  <div class="progress-info">
+    <strong>
+      Karangan AI
+    </strong>
 
     <span>
-      Kemajuan Pembelajaran
-    </span>
-
-    <span id="progressLabel">
-      17%
+      Sedang menyediakan pengembaraan...
     </span>
 
   </div>
 
 
-  <div class="progress-track">
-
-    <div
-      class="progress-fill"
-      id="progressFill"
-    ></div>
-
-  </div>
-
-</section>
-
-
-
-<!-- ==================================================
-     MAIN NAVIGATION
-================================================== -->
-
-<nav class="lesson-nav">
-
-  <button
-    class="nav-button active"
-    onclick="openPage(0)"
-  >
-    🏠 Utama
-  </button>
-
-
-  <button
-    class="nav-button"
-    onclick="openPage(1)"
-  >
-    📚 Cerita
-  </button>
-
-
-  <button
-    class="nav-button"
-    onclick="openPage(2)"
-  >
-    🖼️ Bergambar
-  </button>
-
-
-  <button
-    class="nav-button"
-    onclick="openPage(3)"
-  >
-    📖 Bacaan
-  </button>
-
-
-  <button
-    class="nav-button"
-    onclick="openPage(4)"
-  >
-    🎨 Tatabahasa
-  </button>
-
-
-  <button
-    class="nav-button"
-    onclick="openPage(5)"
-  >
-    🧠 Latihan
-  </button>
-
-
-  <button
-    class="nav-button"
-    onclick="openPage(6)"
-  >
-    ✍️ Karangan
-  </button>
-
-</nav>
-
-
-
-<!-- ==================================================
-     PAGE 0
-     DASHBOARD
-================================================== -->
-
-<main>
-
-
-<section class="page active">
-
-  <div class="welcome-card">
-
-    <h2>
-      Selamat datang! 👋
-    </h2>
-
-    <p>
-      Mari tingkatkan kemahiran Bahasa Melayu
-      dan belajar menulis karangan dengan
-      lebih yakin.
-    </p>
-
-
-    <div class="stats-grid">
-
-      <div class="stat">
-
-        <span
-          class="stat-number"
-          id="statLessons"
-        >
-          0
-        </span>
-
-        <span class="stat-label">
-          Pelajaran
-        </span>
-
-      </div>
-
-
-      <div class="stat">
-
-        <span
-          class="stat-number"
-          id="statStars"
-        >
-          0
-        </span>
-
-        <span class="stat-label">
-          ⭐ Bintang
-        </span>
-
-      </div>
-
-
-      <div class="stat">
-
-        <span
-          class="stat-number"
-          id="statEssays"
-        >
-          0
-        </span>
-
-        <span class="stat-label">
-          Karangan
-        </span>
-
-      </div>
-
-    </div>
-
-  </div>
-
-
-
-  <div class="card">
-
-    <div class="card-title">
-      📚 Pelajaran Saya
-    </div>
-
-    <p
-      class="card-subtitle"
-      id="welcomeProgress"
-    >
-      0 pelajaran telah selesai.
-    </p>
-
-
-    <div style="margin-top:16px;">
-
-      <button
-        class="primary-button full-button"
-        onclick="openPage(1)"
-      >
-        Mula Belajar →
-      </button>
-
-    </div>
-
-  </div>
-
-
-
-  <div class="card">
-
-    <div class="card-title">
-      🏆 Pencapaian
-    </div>
-
-    <p class="card-subtitle">
-      Lengkapkan pelajaran untuk
-      mengumpul bintang.
-    </p>
-
-
-    <div
-      class="badge-grid"
-      style="margin-top:16px;"
-    >
-
-      <div class="badge">
-
-        <div class="badge-icon">
-          📖
-        </div>
-
-        <div class="badge-name">
-          Pembaca Hebat
-        </div>
-
-      </div>
-
-
-      <div class="badge">
-
-        <div class="badge-icon">
-          ✍️
-        </div>
-
-        <div class="badge-name">
-          Penulis Muda
-        </div>
-
-      </div>
-
-
-      <div class="badge">
-
-        <div class="badge-icon">
-          🌟
-        </div>
-
-        <div class="badge-name">
-          Bintang Bahasa
-        </div>
-
-      </div>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-
-<!-- ==================================================
-     PAGE 1
-     STORY LIBRARY
-================================================== -->
-
-<section class="page">
-
-  <div class="card">
-
-    <div class="card-title">
-      📚 Pilih Cerita
-    </div>
-
-    <p class="card-subtitle">
-      Pilih satu cerita bergambar
-      untuk memulakan pembelajaran.
-    </p>
-
-  </div>
-
-
-  <div
-    class="story-library"
-    id="storyLibrary"
-  >
-  </div>
-
-</section>
-
-
-
-<!-- ==================================================
-     PAGE 2
-     PICTURE STORY
-================================================== -->
-
-<section class="page">
-
-  <div class="card">
-
-    <span
-      class="story-level"
-      id="lessonLevel"
-    >
-      Tahun 4
-    </span>
-
-
-    <div
-      class="card-title"
-      id="lessonTitle"
-    >
-      Gotong-royong di Taman
-    </div>
-
-
-    <p
-      class="card-subtitle"
-      id="lessonTheme"
-    >
-      Kebersihan dan Alam Sekitar
-    </p>
-
-  </div>
-
-
-
-  <div class="card">
-
-    <div class="card-title">
-      🖼️ Cerita Bergambar
-    </div>
-
-    <p class="card-subtitle">
-      Lihat setiap gambar dan cuba
-      ceritakan apa yang sedang berlaku.
-    </p>
-
-
-    <div
-      class="picture-stage"
-      id="pictureStage"
-    >
-      👨‍👩‍👧‍👦🌳
-    </div>
-
-
-    <div
-      class="picture-number"
-      id="pictureNumber"
-      style="
-        position:static;
-        display:inline-block;
-        margin-bottom:10px;
-      "
-    >
-      Gambar 1 / 6
-    </div>
-
-
-    <p
-      class="card-subtitle"
-      id="pictureCaption"
-      style="
-        font-size:17px;
-        color:#334155;
-      "
-    >
-      Amir dan keluarganya tiba
-      di taman rekreasi.
-    </p>
-
-
-    <div class="picture-controls">
-
-      <button
-        class="secondary-button"
-        id="previousPicture"
-        onclick="previousPicture()"
-      >
-        ← Sebelum
-      </button>
-
-
-      <button
-        class="primary-button"
-        id="nextPicture"
-        onclick="nextPicture()"
-      >
-        Seterusnya →
-      </button>
-
-    </div>
-
-  </div>
-
-
-
-  <div class="card">
-
-    <div class="card-title">
-      💡 Cuba Fikir
-    </div>
-
-    <p class="card-subtitle">
-      Siapakah yang kamu lihat?
-      Apakah yang sedang dilakukan?
-      Bagaimanakah keadaan tempat itu?
-    </p>
-
-
-    <div style="margin-top:15px;">
-
-      <button
-        class="primary-button"
-        onclick="openPage(3)"
-      >
-        Baca Cerita →
-      </button>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-
-<!-- ==================================================
-     PAGE 3
-     READING + TRANSLATION
-================================================== -->
-
-<section class="page">
-
-  <div class="card">
-
-    <div class="card-title">
-      📖 Baca Cerita
-    </div>
-
-    <p class="card-subtitle">
-      Tekan mana-mana perkataan
-      untuk melihat maksudnya dalam
-      Bahasa Cina.
-    </p>
-
-
-    <div style="margin-top:15px;">
-
-      <button
-        class="primary-button"
-        onclick="readCurrentStory()"
-      >
-        🔊 Dengar Cerita
-      </button>
-
-
-      <button
-        class="secondary-button"
-        onclick="stopReading()"
-      >
-        ⏹ Berhenti
-      </button>
-
-    </div>
-
-  </div>
-
-
-
-  <div class="card">
-
-    <div
-      class="story-text"
-      id="storyText"
-    >
-    </div>
-
-
-    <div
-      class="translation-popup"
-      id="translationPopup"
-    >
-
-      <div
-        class="translation-word"
-        id="translationWord"
-      >
-      </div>
-
-
-      <div
-        class="translation-chinese"
-        id="translationChinese"
-      >
-      </div>
-
-
-      <div
-        class="translation-example"
-        id="translationExample"
-      >
-      </div>
-
-    </div>
-
-  </div>
-
-
-
-  <div class="card">
-
-    <div class="card-title">
-      🎯 Seterusnya
-    </div>
-
-    <p class="card-subtitle">
-      Sudah faham cerita?
-      Mari belajar tatabahasa
-      yang digunakan.
-    </p>
-
-
-    <div style="margin-top:15px;">
-
-      <button
-        class="primary-button"
-        onclick="openPage(4)"
-      >
-        Belajar Tatabahasa →
-      </button>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-
-<!-- ==================================================
-     PAGE 4
-     GRAMMAR
-================================================== -->
-
-<section class="page">
-
-  <div class="card">
-
-    <div class="card-title">
-      🎨 Kenali Tatabahasa
-    </div>
-
-    <p class="card-subtitle">
-      Pilih kategori untuk melihat
-      perkataan tersebut dalam cerita.
-    </p>
-
-
-    <div class="grammar-buttons">
-
-      <button
-        class="secondary-button"
-        onclick="highlightGrammar('verb')"
-      >
-        🟢 Kata Kerja
-      </button>
-
-
-      <button
-        class="secondary-button"
-        onclick="highlightGrammar('adjective')"
-      >
-        🟡 Kata Adjektif
-      </button>
-
-
-      <button
-        class="secondary-button"
-        onclick="highlightGrammar('number')"
-      >
-        🔵 Kata Bilangan
-      </button>
-
-
-      <button
-        class="secondary-button"
-        onclick="highlightGrammar('noun')"
-      >
-        🟣 Kata Nama
-      </button>
-
-
-      <button
-        class="secondary-button"
-        onclick="clearGrammarHighlight()"
-      >
-        ✖ Padam Warna
-      </button>
-
-    </div>
-
-
-
-    <div class="grammar-legend">
-
-      <span
-        class="legend-item"
-        style="
-          background:#dcfce7;
-          color:#166534;
-        "
-      >
-        Kata Kerja
-      </span>
-
-
-      <span
-        class="legend-item"
-        style="
-          background:#fef3c7;
-          color:#92400e;
-        "
-      >
-        Kata Adjektif
-      </span>
-
-
-      <span
-        class="legend-item"
-        style="
-          background:#dbeafe;
-          color:#1d4ed8;
-        "
-      >
-        Kata Bilangan
-      </span>
-
-
-      <span
-        class="legend-item"
-        style="
-          background:#f3e8ff;
-          color:#7e22ce;
-        "
-      >
-        Kata Nama
-      </span>
-
-    </div>
-
-  </div>
-
-
-
-  <div class="card">
-
-    <div
-      class="story-text"
-      id="grammarStory"
-    >
-    </div>
-
-  </div>
-
-
-
-  <div class="card">
-
-    <button
-      class="primary-button full-button"
-      onclick="openPage(5)"
-    >
-      Cuba Latihan →
-    </button>
-
-  </div>
-
-</section>
-
-
-
-<!-- ==================================================
-     PAGE 5
-     QUIZ
-================================================== -->
-
-<section class="page">
-
-  <div class="card">
-
-    <div class="card-title">
-      🧠 Latihan
-    </div>
-
-    <p class="card-subtitle">
-      Jawab soalan berdasarkan
-      cerita yang telah dibaca.
-    </p>
-
-  </div>
-
-
-
-  <div id="quizContainer">
-  </div>
-
-
-
-  <div class="card">
-
-    <div
-      id="quizFinalResult"
-      style="
-        text-align:center;
-        line-height:1.7;
-        margin-bottom:15px;
-      "
-    >
-      Jawab semua soalan untuk
-      melihat keputusan.
-    </div>
-
-
-    <button
-      class="primary-button full-button"
-      onclick="openPage(6)"
-    >
-      ✍️ Mula Menulis →
-    </button>
-
-  </div>
-
-</section>
-
-
-
-<!-- ==================================================
-     PAGE 6
-     WRITING
-================================================== -->
-
-<section class="page">
-
-  <div class="card">
-
-    <div
-      class="card-title"
-      id="writingTitle"
-    >
-      ✍️ Mari Menulis
-    </div>
-
-
-    <p class="card-subtitle">
-      Gunakan gambar, cerita dan
-      perkataan yang telah dipelajari
-      untuk menghasilkan karangan sendiri.
-    </p>
-
-
-    <div
-      class="writing-guide"
-      id="writingGuide"
-    >
-    </div>
-
-  </div>
-
-
-
-  <div class="card">
-
-    <div class="card-title">
-      💡 Perkataan Berguna
-    </div>
-
-
-    <div
-      class="grammar-legend"
-      id="usefulWords"
-    >
-    </div>
-
-  </div>
-
-
-
-  <div class="card">
-
-    <textarea
-      id="essay"
-      placeholder="Mula menulis karangan kamu di sini..."
-      oninput="updateWordCount()"
-    ></textarea>
-
-
-    <div class="writing-info">
-
-      <span id="wordCount">
-        0 perkataan
-      </span>
-
-      <span id="writingTarget">
-        Sasaran: 80–120 perkataan
-      </span>
-
-    </div>
-
-
-    <div style="margin-top:16px;">
-
-      <button
-        class="primary-button"
-        id="aiCheckButton"
-        onclick="checkEssay()"
-      >
-        ✨ Semak dengan AI
-      </button>
-
-
-      <button
-        class="secondary-button"
-        onclick="clearEssay()"
-      >
-        🗑 Padam
-      </button>
-
-    </div>
-
-
-    <div
-      class="ai-feedback"
-      id="aiFeedback"
-    >
-    </div>
-
-  </div>
-
-
-
-  <div class="card">
-
-    <div class="card-title">
-      🏆 Selesai?
-    </div>
-
-    <p class="card-subtitle">
-      Selepas membaca, membuat latihan
-      dan menulis karangan, tandakan
-      pelajaran ini sebagai selesai.
-    </p>
-
-
-    <div style="margin-top:15px;">
-
-      <button
-        class="success-button full-button"
-        onclick="finishLesson()"
-      >
-        ✓ Selesaikan Pelajaran & Dapat 3 ⭐
-      </button>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-</main>
-
-
-
-<!-- ==================================================
-     FOOTER
-================================================== -->
-
-<footer class="app-footer">
-
-  <strong>
-    Karangan AI
-  </strong>
-
-  <br>
-
-  Full Version V1 ·
-  Bahasa Melayu Writing Companion
-
-</footer>
-
-
-</div>
-
-
-
-<!-- ==================================================
-     DATABASE
-================================================== -->
-
-<script src="stories.js"></script>
-
-
-<!-- ==================================================
-     APP ENGINE
-================================================== -->
-
-<script src="app.js"></script>
-<script src="avatar.js"></script>
-<script>
-  window.addEventListener("load", () => {
-    setTimeout(() => {
-      if (window.AvatarTutor) {
-        AvatarTutor.welcome();
-      }
-    }, 1200);
-  });
-</script>
-  
-
+  <!-- =========================================================
+       JAVASCRIPT
+
+       IMPORTANT:
+       Keep order:
+       stories.js
+       avatar.js
+       app.js
+       ========================================================= -->
+
+  <script src="stories.js"></script>
+  <script src="avatar.js"></script>
+  <script src="app.js"></script>
 
 </body>
-  
-
 </html>
