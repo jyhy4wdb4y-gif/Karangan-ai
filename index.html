@@ -81,574 +81,920 @@
       <!-- =====================================================
            HOME SCREEN
            ===================================================== -->
-      <section
-        id="homeScreen"
-        class="screen active-screen"
-        data-screen="home"
+     <!-- =========================================================
+     HOME SCREEN
+     FULL DAILY LEARNING DASHBOARD
+     ========================================================= -->
+
+<section
+  id="homeScreen"
+  class="screen active-screen"
+  data-screen="home"
+>
+
+  <!-- HERO / DAILY WELCOME -->
+
+  <section class="hero-section">
+
+    <div class="hero-content">
+
+      <div class="hero-copy">
+
+        <span class="eyebrow">
+          🌞 Selamat datang kembali!
+        </span>
+
+        <h2>
+          Jom belajar Bahasa Melayu hari ini!
+        </h2>
+
+        <p>
+          Selesaikan misi hari ini, kumpul XP dan bantu avatar kamu berkembang.
+        </p>
+
+        <div
+          style="
+            display:flex;
+            flex-wrap:wrap;
+            gap:10px;
+            margin-top:18px;
+          "
+        >
+
+          <button
+            id="startMissionButton"
+            class="primary-button"
+            type="button"
+          >
+            🚀 Mulakan Misi Hari Ini
+          </button>
+
+          <button
+            type="button"
+            class="secondary-button"
+            data-nav="learn"
+          >
+            📚 Lihat Semua Aktiviti
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- CIKGU AIRA CARD -->
+
+      <div
+        style="
+          background:rgba(255,255,255,.82);
+          border-radius:24px;
+          padding:18px;
+          display:flex;
+          align-items:center;
+          gap:14px;
+          min-width:260px;
+        "
       >
 
-        <!-- Greeting / Mentor -->
-        <section class="hero-section">
-
-          <div class="hero-content">
-
-            <div class="hero-copy">
-
-              <span class="eyebrow">
-                🌞 Selamat datang kembali!
-              </span>
-
-              <h2>
-                Jom belajar Bahasa Melayu hari ini!
-              </h2>
-
-              <p>
-                Selesaikan misi hari ini dan bantu avatar kamu berkembang.
-              </p>
-
-              <button
-                id="startMissionButton"
-                class="primary-button"
-                type="button"
-                data-action="start-mission"
-              >
-                🚀 Mulakan Misi Hari Ini
-              </button>
-
-            </div>
-
-
-            <!-- AI Mentor -->
-            <div
-              id="mentorCard"
-              class="mentor-card"
-            >
-
-              <div class="mentor-avatar-wrap">
-
-                <!--
-                  IMPORTANT:
-                  Current project already has cikgu-aira.png.
-                  If your actual filename is different,
-                  we will adjust it later.
-                -->
-                <img
-                  id="mentorAvatar"
-                  class="mentor-avatar"
-                  src="cikgu-aira.png"
-                  alt="Cikgu Aira"
-                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-                />
-
-                <div
-                  class="mentor-avatar-fallback"
-                  style="display:none;"
-                >
-                  👩‍🏫
-                </div>
-
-              </div>
-
-              <div class="mentor-message">
-                <span class="mentor-label">
-                  Cikgu Aira
-                </span>
-
-                <p id="mentorHomeMessage">
-                  Hai! Hari ini kita akan belajar perkataan baru,
-                  bina ayat dan tulis karangan bersama.
-                </p>
-              </div>
-
-            </div>
-
-          </div>
-
-        </section>
-
-
-        <!-- Today's Mission -->
-        <section class="content-section">
-
-          <div class="section-heading">
-
-            <div>
-              <span class="section-kicker">
-                MISI HARI INI
-              </span>
-
-              <h2>
-                Pengembaraan Bahasa
-              </h2>
-            </div>
-
-            <div class="mission-progress-label">
-              <span id="missionCompletedCount">0</span>
-              /
-              <span id="missionTotalCount">7</span>
-            </div>
-
-          </div>
-
-
-          <div class="mission-progress-track">
-            <div
-              id="missionProgressBar"
-              class="mission-progress-fill"
-              style="width: 0%;"
-            ></div>
-          </div>
-
-
-          <div class="mission-grid">
-
-            <!-- Story -->
-            <button
-              class="mission-card"
-              type="button"
-              data-module="story"
-            >
-              <div class="mission-icon story-icon">
-                📖
-              </div>
-
-              <div class="mission-info">
-                <span class="mission-step">
-                  Langkah 1
-                </span>
-
-                <h3>
-                  Cerita
-                </h3>
-
-                <p>
-                  Baca cerita dan fahami perkataan baru.
-                </p>
-              </div>
-
-              <span class="mission-status">
-                Mula →
-              </span>
-            </button>
-
-
-            <!-- Vocabulary -->
-            <button
-              class="mission-card"
-              type="button"
-              data-module="vocabulary"
-            >
-              <div class="mission-icon vocabulary-icon">
-                🧠
-              </div>
-
-              <div class="mission-info">
-                <span class="mission-step">
-                  Langkah 2
-                </span>
-
-                <h3>
-                  Buku Kosa Kata
-                </h3>
-
-                <p>
-                  Simpan dan ulang kaji perkataan penting.
-                </p>
-              </div>
-
-              <span class="mission-status">
-                Mula →
-              </span>
-            </button>
-
-
-            <!-- Sentence Builder -->
-            <button
-              class="mission-card"
-              type="button"
-              data-module="sentence-builder"
-            >
-              <div class="mission-icon sentence-icon">
-                🧩
-              </div>
-
-              <div class="mission-info">
-                <span class="mission-step">
-                  Langkah 3
-                </span>
-
-                <h3>
-                  Bina Ayat
-                </h3>
-
-                <p>
-                  Susun perkataan menjadi ayat yang betul.
-                </p>
-              </div>
-
-              <span class="mission-status">
-                Mula →
-              </span>
-            </button>
-
-
-            <!-- Grammar Rain -->
-            <button
-              class="mission-card"
-              type="button"
-              data-module="grammar-rain"
-            >
-              <div class="mission-icon grammar-icon">
-                🌧️
-              </div>
-
-              <div class="mission-info">
-                <span class="mission-step">
-                  Langkah 4
-                </span>
-
-                <h3>
-                  Grammar Rain
-                </h3>
-
-                <p>
-                  Tangkap jawapan yang betul sebelum ia jatuh!
-                </p>
-              </div>
-
-              <span class="mission-status">
-                Main →
-              </span>
-            </button>
-
-
-            <!-- Sentence Recall -->
-            <button
-              class="mission-card"
-              type="button"
-              data-module="sentence-recall"
-            >
-              <div class="mission-icon recall-icon">
-                💭
-              </div>
-
-              <div class="mission-info">
-                <span class="mission-step">
-                  Langkah 5
-                </span>
-
-                <h3>
-                  Ingat Ayat
-                </h3>
-
-                <p>
-                  Cuba ingat dan bina semula ayat.
-                </p>
-              </div>
-
-              <span class="mission-status">
-                Mula →
-              </span>
-            </button>
-
-
-            <!-- Creative Studio -->
-            <button
-              class="mission-card"
-              type="button"
-              data-module="creative-studio"
-            >
-              <div class="mission-icon creative-icon">
-                ✍️
-              </div>
-
-              <div class="mission-info">
-                <span class="mission-step">
-                  Langkah 6
-                </span>
-
-                <h3>
-                  Studio Karangan
-                </h3>
-
-                <p>
-                  Gunakan apa yang dipelajari untuk menulis.
-                </p>
-              </div>
-
-              <span class="mission-status">
-                Tulis →
-              </span>
-            </button>
-
-
-            <!-- AI Feedback -->
-            <button
-              class="mission-card"
-              type="button"
-              data-module="ai-feedback"
-            >
-              <div class="mission-icon ai-icon">
-                ✨
-              </div>
-
-              <div class="mission-info">
-                <span class="mission-step">
-                  Langkah 7
-                </span>
-
-                <h3>
-                  Semakan AI
-                </h3>
-
-                <p>
-                  Dapatkan cadangan daripada Cikgu Aira.
-                </p>
-              </div>
-
-              <span class="mission-status">
-                Semak →
-              </span>
-            </button>
-
-          </div>
-
-        </section>
-
-
-        <!-- Continue Learning -->
-        <section class="content-section">
-
-          <div class="section-heading">
-            <div>
-              <span class="section-kicker">
-                SAMBUNG BELAJAR
-              </span>
-
-              <h2>
-                Cerita Pilihan
-              </h2>
-            </div>
-
-            <button
-              class="text-button"
-              type="button"
-              data-nav="learn"
-            >
-              Lihat semua
-            </button>
-          </div>
-
-
-          <div
-            id="featuredStories"
-            class="story-preview-grid"
+        <div
+          style="
+            width:72px;
+            height:72px;
+            border-radius:20px;
+            background:#eee9ff;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:38px;
+            flex:0 0 72px;
+          "
+        >
+          👩‍🏫
+        </div>
+
+        <div>
+
+          <strong
+            style="
+              display:block;
+              color:#6d55df;
+              font-size:17px;
+              margin-bottom:5px;
+            "
           >
+            Cikgu Aira
+          </strong>
 
-            <button
-              class="story-preview-card"
-              type="button"
-              data-story-id="story-1"
-            >
-
-              <div class="story-preview-image">
-
-                <img
-                  src="2411F84C-22BF-4BE2-848E-BE95A12D02A9.png"
-                  alt="Cerita Bahasa Melayu"
-                />
-
-              </div>
-
-              <div class="story-preview-content">
-
-                <span class="story-level">
-                  Tahun 3
-                </span>
-
-                <h3>
-                  Pengembaraan Hari Ini
-                </h3>
-
-                <p>
-                  Baca, tekan perkataan dan belajar maksudnya.
-                </p>
-
-                <span class="story-cta">
-                  📖 Baca cerita
-                </span>
-
-              </div>
-
-            </button>
-
-          </div>
-
-        </section>
-
-
-        <!-- Quick Activities -->
-        <section class="content-section">
-
-          <div class="section-heading">
-
-            <div>
-              <span class="section-kicker">
-                LATIHAN PANTAS
-              </span>
-
-              <h2>
-                Main & Belajar
-              </h2>
-            </div>
-
-          </div>
-
-
-          <div class="quick-grid">
-
-            <button
-              class="quick-card"
-              type="button"
-              data-module="grammar-rain"
-            >
-              <span class="quick-icon">
-                🌧️
-              </span>
-
-              <strong>
-                Grammar Rain
-              </strong>
-
-              <span>
-                3 minit
-              </span>
-            </button>
-
-
-            <button
-              class="quick-card"
-              type="button"
-              data-module="sentence-builder"
-            >
-              <span class="quick-icon">
-                🧩
-              </span>
-
-              <strong>
-                Bina Ayat
-              </strong>
-
-              <span>
-                5 minit
-              </span>
-            </button>
-
-
-            <button
-              class="quick-card"
-              type="button"
-              data-module="sentence-recall"
-            >
-              <span class="quick-icon">
-                💭
-              </span>
-
-              <strong>
-                Ingat Ayat
-              </strong>
-
-              <span>
-                3 minit
-              </span>
-            </button>
-
-          </div>
-
-        </section>
-
-
-        <!-- Progress / Avatar -->
-        <section class="content-section">
-
-          <div class="section-heading">
-
-            <div>
-              <span class="section-kicker">
-                PERKEMBANGAN SAYA
-              </span>
-
-              <h2>
-                Avatar & XP
-              </h2>
-            </div>
-
-          </div>
-
-
-          <div
-            id="homeAvatarPanel"
-            class="home-avatar-panel"
+          <p
+            style="
+              margin:0;
+              color:#5f6b72;
+              line-height:1.55;
+              font-size:14px;
+            "
           >
+            Hari ini kita akan baca, belajar perkataan, bina ayat dan menulis bersama.
+          </p>
 
-            <div
-              id="avatarPreview"
-              class="avatar-preview"
-            >
-              🧒
-            </div>
+        </div>
 
+      </div>
 
-            <div class="avatar-summary">
+    </div>
 
-              <span class="avatar-level-label">
-                Level
-                <strong id="avatarLevel">
-                  1
-                </strong>
-              </span>
-
-              <h3 id="avatarName">
-                Penjelajah Bahasa
-              </h3>
-
-              <p>
-                Teruskan belajar untuk membuka pakaian,
-                lencana dan dunia baru.
-              </p>
+  </section>
 
 
-              <div class="xp-progress">
+  <!-- DAILY MISSION HEADER -->
 
-                <div class="xp-progress-track">
-                  <div
-                    id="avatarXpBar"
-                    class="xp-progress-fill"
-                    style="width: 35%;"
-                  ></div>
-                </div>
+  <section
+    style="
+      margin-top:30px;
+    "
+  >
 
-                <span>
-                  <span id="currentAvatarXp">
-                    120
-                  </span>
-                  /
-                  <span id="nextAvatarXp">
-                    350
-                  </span>
-                  XP
-                </span>
+    <div
+      style="
+        display:flex;
+        justify-content:space-between;
+        align-items:flex-end;
+        gap:14px;
+        margin-bottom:12px;
+      "
+    >
 
-              </div>
+      <div>
 
-            </div>
+        <span class="section-kicker">
+          MISI HARI INI
+        </span>
 
-          </div>
+        <h2
+          style="
+            margin:5px 0 0;
+          "
+        >
+          Pengembaraan Bahasa
+        </h2>
 
-        </section>
+      </div>
 
-      </section>
 
+      <div
+        style="
+          padding:8px 13px;
+          border-radius:999px;
+          background:#eaf8f1;
+          color:#24875d;
+          font-weight:900;
+          white-space:nowrap;
+        "
+      >
+        <span id="missionCompletedCount">0</span>
+        /
+        <span id="missionTotalCount">7</span>
+      </div>
+
+    </div>
+
+
+    <div
+      style="
+        height:9px;
+        background:#ebe8e2;
+        border-radius:999px;
+        overflow:hidden;
+        margin-bottom:20px;
+      "
+    >
+
+      <div
+        id="missionProgressBar"
+        style="
+          width:0%;
+          height:100%;
+          background:linear-gradient(
+            90deg,
+            #ff9f43,
+            #ffc94d
+          );
+          border-radius:999px;
+          transition:width .3s ease;
+        "
+      ></div>
+
+    </div>
+
+  </section>
+
+
+  <!-- MISSION GRID -->
+
+  <section
+    style="
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:14px;
+      padding-bottom:28px;
+    "
+  >
+
+    <!-- 1. STORY -->
+
+    <button
+      type="button"
+      class="mission-card"
+      data-module="story"
+      style="
+        text-align:left;
+        width:100%;
+      "
+    >
+
+      <div
+        style="
+          display:flex;
+          align-items:center;
+          gap:13px;
+        "
+      >
+
+        <div
+          style="
+            width:52px;
+            height:52px;
+            border-radius:16px;
+            background:#fff1d9;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:25px;
+            flex:0 0 52px;
+          "
+        >
+          📖
+        </div>
+
+        <div style="flex:1;">
+
+          <small
+            style="
+              display:block;
+              color:#8a9398;
+              font-weight:900;
+              letter-spacing:.05em;
+              margin-bottom:4px;
+            "
+          >
+            LANGKAH 1
+          </small>
+
+          <strong
+            style="
+              display:block;
+              font-size:17px;
+            "
+          >
+            Cerita
+          </strong>
+
+          <span
+            style="
+              display:block;
+              color:#6e797f;
+              font-size:13px;
+              line-height:1.45;
+              margin-top:4px;
+            "
+          >
+            Baca cerita dan fahami perkataan baharu.
+          </span>
+
+        </div>
+
+        <span
+          class="mission-status"
+          style="
+            font-weight:850;
+            color:#df8525;
+            white-space:nowrap;
+          "
+        >
+          Mula →
+        </span>
+
+      </div>
+
+    </button>
+
+
+    <!-- 2. VOCABULARY -->
+
+    <button
+      type="button"
+      class="mission-card"
+      data-module="vocabulary"
+      style="
+        text-align:left;
+        width:100%;
+      "
+    >
+
+      <div
+        style="
+          display:flex;
+          align-items:center;
+          gap:13px;
+        "
+      >
+
+        <div
+          style="
+            width:52px;
+            height:52px;
+            border-radius:16px;
+            background:#e7f8f1;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:25px;
+            flex:0 0 52px;
+          "
+        >
+          🧠
+        </div>
+
+        <div style="flex:1;">
+
+          <small
+            style="
+              display:block;
+              color:#8a9398;
+              font-weight:900;
+              letter-spacing:.05em;
+              margin-bottom:4px;
+            "
+          >
+            LANGKAH 2
+          </small>
+
+          <strong
+            style="
+              display:block;
+              font-size:17px;
+            "
+          >
+            Buku Kosa Kata
+          </strong>
+
+          <span
+            style="
+              display:block;
+              color:#6e797f;
+              font-size:13px;
+              line-height:1.45;
+              margin-top:4px;
+            "
+          >
+            Simpan dan ulang kaji perkataan penting.
+          </span>
+
+        </div>
+
+        <span
+          class="mission-status"
+          style="
+            font-weight:850;
+            color:#df8525;
+            white-space:nowrap;
+          "
+        >
+          Mula →
+        </span>
+
+      </div>
+
+    </button>
+
+
+    <!-- 3. SENTENCE BUILDER -->
+
+    <button
+      type="button"
+      class="mission-card"
+      data-module="sentence-builder"
+      style="
+        text-align:left;
+        width:100%;
+      "
+    >
+
+      <div
+        style="
+          display:flex;
+          align-items:center;
+          gap:13px;
+        "
+      >
+
+        <div
+          style="
+            width:52px;
+            height:52px;
+            border-radius:16px;
+            background:#eaf1ff;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:25px;
+            flex:0 0 52px;
+          "
+        >
+          🧩
+        </div>
+
+        <div style="flex:1;">
+
+          <small
+            style="
+              display:block;
+              color:#8a9398;
+              font-weight:900;
+              letter-spacing:.05em;
+              margin-bottom:4px;
+            "
+          >
+            LANGKAH 3
+          </small>
+
+          <strong
+            style="
+              display:block;
+              font-size:17px;
+            "
+          >
+            Bina Ayat
+          </strong>
+
+          <span
+            style="
+              display:block;
+              color:#6e797f;
+              font-size:13px;
+              line-height:1.45;
+              margin-top:4px;
+            "
+          >
+            Susun perkataan menjadi ayat yang betul.
+          </span>
+
+        </div>
+
+        <span
+          class="mission-status"
+          style="
+            font-weight:850;
+            color:#df8525;
+            white-space:nowrap;
+          "
+        >
+          Mula →
+        </span>
+
+      </div>
+
+    </button>
+
+
+    <!-- 4. GRAMMAR RAIN -->
+
+    <button
+      type="button"
+      class="mission-card"
+      data-module="grammar-rain"
+      style="
+        text-align:left;
+        width:100%;
+      "
+    >
+
+      <div
+        style="
+          display:flex;
+          align-items:center;
+          gap:13px;
+        "
+      >
+
+        <div
+          style="
+            width:52px;
+            height:52px;
+            border-radius:16px;
+            background:#eeeaff;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:25px;
+            flex:0 0 52px;
+          "
+        >
+          🌧️
+        </div>
+
+        <div style="flex:1;">
+
+          <small
+            style="
+              display:block;
+              color:#8a9398;
+              font-weight:900;
+              letter-spacing:.05em;
+              margin-bottom:4px;
+            "
+          >
+            LANGKAH 4
+          </small>
+
+          <strong
+            style="
+              display:block;
+              font-size:17px;
+            "
+          >
+            Grammar Rain
+          </strong>
+
+          <span
+            style="
+              display:block;
+              color:#6e797f;
+              font-size:13px;
+              line-height:1.45;
+              margin-top:4px;
+            "
+          >
+            Pilih jawapan yang tepat dalam permainan grammar.
+          </span>
+
+        </div>
+
+        <span
+          class="mission-status"
+          style="
+            font-weight:850;
+            color:#df8525;
+            white-space:nowrap;
+          "
+        >
+          Main →
+        </span>
+
+      </div>
+
+    </button>
+
+
+    <!-- 5. SENTENCE RECALL -->
+
+    <button
+      type="button"
+      class="mission-card"
+      data-module="sentence-recall"
+      style="
+        text-align:left;
+        width:100%;
+      "
+    >
+
+      <div
+        style="
+          display:flex;
+          align-items:center;
+          gap:13px;
+        "
+      >
+
+        <div
+          style="
+            width:52px;
+            height:52px;
+            border-radius:16px;
+            background:#fff7cf;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:25px;
+            flex:0 0 52px;
+          "
+        >
+          💭
+        </div>
+
+        <div style="flex:1;">
+
+          <small
+            style="
+              display:block;
+              color:#8a9398;
+              font-weight:900;
+              letter-spacing:.05em;
+              margin-bottom:4px;
+            "
+          >
+            LANGKAH 5
+          </small>
+
+          <strong
+            style="
+              display:block;
+              font-size:17px;
+            "
+          >
+            Ingat Ayat
+          </strong>
+
+          <span
+            style="
+              display:block;
+              color:#6e797f;
+              font-size:13px;
+              line-height:1.45;
+              margin-top:4px;
+            "
+          >
+            Ingat dan bina semula ayat yang dipelajari.
+          </span>
+
+        </div>
+
+        <span
+          class="mission-status"
+          style="
+            font-weight:850;
+            color:#df8525;
+            white-space:nowrap;
+          "
+        >
+          Mula →
+        </span>
+
+      </div>
+
+    </button>
+
+
+    <!-- 6. CREATIVE STUDIO -->
+
+    <button
+      type="button"
+      class="mission-card"
+      data-module="creative-studio"
+      style="
+        text-align:left;
+        width:100%;
+      "
+    >
+
+      <div
+        style="
+          display:flex;
+          align-items:center;
+          gap:13px;
+        "
+      >
+
+        <div
+          style="
+            width:52px;
+            height:52px;
+            border-radius:16px;
+            background:#ffe8ef;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:25px;
+            flex:0 0 52px;
+          "
+        >
+          ✍️
+        </div>
+
+        <div style="flex:1;">
+
+          <small
+            style="
+              display:block;
+              color:#8a9398;
+              font-weight:900;
+              letter-spacing:.05em;
+              margin-bottom:4px;
+            "
+          >
+            LANGKAH 6
+          </small>
+
+          <strong
+            style="
+              display:block;
+              font-size:17px;
+            "
+          >
+            Studio Karangan
+          </strong>
+
+          <span
+            style="
+              display:block;
+              color:#6e797f;
+              font-size:13px;
+              line-height:1.45;
+              margin-top:4px;
+            "
+          >
+            Gunakan idea dan kosa kata untuk menulis.
+          </span>
+
+        </div>
+
+        <span
+          class="mission-status"
+          style="
+            font-weight:850;
+            color:#df8525;
+            white-space:nowrap;
+          "
+        >
+          Tulis →
+        </span>
+
+      </div>
+
+    </button>
+
+
+    <!-- 7. AI FEEDBACK -->
+
+    <button
+      type="button"
+      class="mission-card"
+      data-module="ai-feedback"
+      style="
+        text-align:left;
+        width:100%;
+        grid-column:1 / -1;
+      "
+    >
+
+      <div
+        style="
+          display:flex;
+          align-items:center;
+          gap:13px;
+        "
+      >
+
+        <div
+          style="
+            width:52px;
+            height:52px;
+            border-radius:16px;
+            background:#f0eaff;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:25px;
+            flex:0 0 52px;
+          "
+        >
+          ✨
+        </div>
+
+        <div style="flex:1;">
+
+          <small
+            style="
+              display:block;
+              color:#8a9398;
+              font-weight:900;
+              letter-spacing:.05em;
+              margin-bottom:4px;
+            "
+          >
+            LANGKAH 7
+          </small>
+
+          <strong
+            style="
+              display:block;
+              font-size:17px;
+            "
+          >
+            Cikgu Aira AI Feedback
+          </strong>
+
+          <span
+            style="
+              display:block;
+              color:#6e797f;
+              font-size:13px;
+              line-height:1.45;
+              margin-top:4px;
+            "
+          >
+            Semak karangan dan dapatkan cadangan untuk menjadi penulis yang lebih baik.
+          </span>
+
+        </div>
+
+        <span
+          class="mission-status"
+          style="
+            font-weight:850;
+            color:#7b61e8;
+            white-space:nowrap;
+          "
+        >
+          Semak →
+        </span>
+
+      </div>
+
+    </button>
+
+  </section>
+
+
+  <!-- DAILY SUMMARY -->
+
+  <section
+    style="
+      margin-bottom:120px;
+      padding:18px;
+      border-radius:22px;
+      background:linear-gradient(
+        145deg,
+        #fff7e7,
+        #f4efff
+      );
+      border:1px solid #eee5da;
+    "
+  >
+
+    <div
+      style="
+        display:flex;
+        align-items:center;
+        gap:13px;
+      "
+    >
+
+      <div
+        style="
+          width:50px;
+          height:50px;
+          border-radius:16px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          background:white;
+          font-size:25px;
+          flex:0 0 50px;
+        "
+      >
+        🎯
+      </div>
+
+
+      <div>
+
+        <strong
+          style="
+            display:block;
+            font-size:16px;
+          "
+        >
+          Matlamat Hari Ini
+        </strong>
+
+        <p
+          style="
+            margin:4px 0 0;
+            color:#68747a;
+            font-size:13px;
+            line-height:1.5;
+          "
+        >
+          Selesaikan 7 langkah untuk melengkapkan satu pengembaraan pembelajaran Bahasa Melayu.
+        </p>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</section>
 
       <!-- =====================================================
            LEARN SCREEN
