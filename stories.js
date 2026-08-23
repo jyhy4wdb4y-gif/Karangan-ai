@@ -29,7 +29,7 @@ const KARANGAN_STORIES = [
 
     pictures: [
       {
-        emoji: "👨‍👩‍👧‍👦🌳",
+        image: "images/2411F84C-22BF-4BE2-848E-BE95A12D02A9.png",
         caption:
           "Amir dan keluarganya tiba di taman rekreasi."
       },
