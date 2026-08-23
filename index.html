@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
   <title>Karangan AI</title>
 
@@ -22,10 +23,11 @@
     }
 
     .app {
-      max-width: 900px;
+      max-width: 920px;
       margin: auto;
       min-height: 100vh;
       background: white;
+      padding-bottom: 80px;
     }
 
     header {
@@ -35,164 +37,359 @@
     }
 
     header h1 {
-      font-size: 32px;
+      font-size: 31px;
       margin-bottom: 6px;
     }
 
     header p {
       opacity: 0.9;
-      font-size: 17px;
+      font-size: 15px;
     }
 
-    main {
-      padding: 24px;
+    .progress-wrap {
+      padding: 16px 20px 8px;
+      background: #fff;
     }
 
-    .welcome {
-      margin-bottom: 24px;
+    .progress-bar {
+      width: 100%;
+      height: 9px;
+      background: #e5e7eb;
+      border-radius: 20px;
+      overflow: hidden;
     }
 
-    .welcome h2 {
-      font-size: 25px;
-      margin-bottom: 8px;
+    .progress {
+      height: 100%;
+      width: 20%;
+      background: linear-gradient(90deg,#6366f1,#8b5cf6);
+      transition: 0.3s;
     }
 
-    .welcome p {
-      color: #6b7280;
-      line-height: 1.5;
+    .tabs {
+      display: flex;
+      gap: 8px;
+      padding: 14px 16px;
+      overflow-x: auto;
+      background: #fff;
+      border-bottom: 1px solid #eee;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .tab {
+      white-space: nowrap;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 14px;
+      background: #eef2ff;
+      color: #4338ca;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      color: white;
+      background: #4f46e5;
+    }
+
+    .page {
+      display: none;
+      padding: 22px;
+    }
+
+    .page.active {
+      display: block;
     }
 
     .card {
-      border-radius: 22px;
-      padding: 22px;
-      margin-bottom: 18px;
-      background: #f8fafc;
+      background: white;
       border: 1px solid #e5e7eb;
+      border-radius: 22px;
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.045);
     }
 
-    .card-icon {
-      font-size: 42px;
-      margin-bottom: 12px;
-    }
-
-    .card h3 {
-      font-size: 21px;
+    .card h2 {
+      font-size: 23px;
       margin-bottom: 8px;
     }
 
-    .card p {
+    .card h3 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    .muted {
       color: #6b7280;
-      line-height: 1.5;
-      margin-bottom: 18px;
+      line-height: 1.55;
     }
 
-    button {
-      border: none;
-      background: #4f46e5;
-      color: white;
-      padding: 14px 22px;
-      border-radius: 14px;
-      font-size: 17px;
-      font-weight: 600;
-      cursor: pointer;
+    .hero-picture {
       width: 100%;
-    }
-
-    button:active {
-      transform: scale(0.98);
-    }
-
-    #lesson {
-      display: none;
-    }
-
-    .story-image {
-      background: #eef2ff;
+      min-height: 255px;
       border-radius: 20px;
-      min-height: 250px;
+      background:
+        linear-gradient(rgba(255,255,255,.1),rgba(255,255,255,.1)),
+        linear-gradient(135deg,#bae6fd,#bbf7d0);
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
-      font-size: 80px;
+      font-size: 90px;
       margin: 18px 0;
-      padding: 20px;
     }
 
     .story {
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      padding: 20px;
-      border-radius: 18px;
-      font-size: 19px;
-      line-height: 1.8;
-      margin-bottom: 18px;
+      font-size: 21px;
+      line-height: 2.15;
+      letter-spacing: 0.1px;
     }
 
     .word {
-      color: #4f46e5;
-      font-weight: 600;
+      display: inline-block;
       cursor: pointer;
-      border-bottom: 2px dotted #4f46e5;
+      border-radius: 7px;
+      padding: 0 2px;
+      transition: .15s;
     }
 
-    .translation {
-      display: none;
+    .word:active {
+      transform: scale(.96);
+      background: #e0e7ff;
+    }
+
+    .word.verb.highlight {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .word.adjective.highlight {
       background: #fef3c7;
-      padding: 14px;
-      border-radius: 12px;
-      margin-top: 12px;
+      color: #92400e;
+    }
+
+    .word.number.highlight {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .translation-box {
+      display: none;
+      margin-top: 18px;
+      background: #eef2ff;
+      border-radius: 18px;
+      padding: 18px;
+      border: 1px solid #c7d2fe;
+    }
+
+    .translation-box.show {
+      display: block;
+    }
+
+    .translation-ms {
+      font-size: 23px;
+      font-weight: 800;
+      color: #4338ca;
+      margin-bottom: 5px;
+    }
+
+    .translation-cn {
+      font-size: 19px;
+      font-weight: 700;
+    }
+
+    .translation-note {
+      color: #6b7280;
+      margin-top: 6px;
+      font-size: 14px;
+    }
+
+    button {
+      font-family: inherit;
+    }
+
+    .primary-btn {
+      border: none;
+      background: #4f46e5;
+      color: white;
+      border-radius: 14px;
+      padding: 13px 18px;
+      font-weight: 750;
       font-size: 16px;
+      cursor: pointer;
+      margin: 5px 4px 5px 0;
+    }
+
+    .secondary-btn {
+      border: 1px solid #c7d2fe;
+      color: #4338ca;
+      background: #eef2ff;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      margin: 5px 4px 5px 0;
+    }
+
+    .grammar-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 15px 0;
+    }
+
+    .legend {
+      margin-top: 12px;
+      font-size: 14px;
+      line-height: 2;
+    }
+
+    .legend span {
+      border-radius: 8px;
+      padding: 5px 9px;
+      margin-right: 7px;
+    }
+
+    .verb-legend {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .adj-legend {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .num-legend {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .question {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 15px;
+    }
+
+    .answers {
+      display: grid;
+      gap: 10px;
+    }
+
+    .answer {
+      text-align: left;
+      border: 1px solid #d1d5db;
+      background: #fff;
+      border-radius: 14px;
+      padding: 13px 15px;
+      font-size: 16px;
+    }
+
+    .answer.correct {
+      background: #dcfce7;
+      border-color: #22c55e;
+    }
+
+    .answer.wrong {
+      background: #fee2e2;
+      border-color: #ef4444;
     }
 
     textarea {
       width: 100%;
-      min-height: 180px;
-      border-radius: 16px;
-      border: 2px solid #e5e7eb;
+      min-height: 250px;
+      resize: vertical;
+      border-radius: 18px;
+      border: 1px solid #d1d5db;
       padding: 16px;
       font-size: 17px;
+      line-height: 1.7;
+      outline: none;
       font-family: inherit;
-      margin: 14px 0;
-      resize: vertical;
     }
 
     textarea:focus {
-      outline: none;
-      border-color: #4f46e5;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99,102,241,.12);
     }
 
-    #feedback {
-      margin-top: 16px;
-      padding: 18px;
-      border-radius: 16px;
-      background: #ecfdf5;
-      display: none;
+    .writing-stats {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .hint {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      padding: 14px;
+      border-radius: 15px;
+      margin: 10px 0;
       line-height: 1.6;
     }
 
-    .back {
-      background: #e5e7eb;
-      color: #374151;
-      margin-bottom: 18px;
+    .feedback {
+      display: none;
+      margin-top: 18px;
+      border-radius: 18px;
+      padding: 18px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      line-height: 1.7;
+      white-space: pre-wrap;
     }
 
-    .badge {
-      display: inline-block;
-      background: #ede9fe;
-      color: #6d28d9;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 12px;
+    .feedback.show {
+      display: block;
     }
 
-    footer {
+    .score {
+      font-size: 27px;
+      font-weight: 800;
+      color: #16a34a;
+      margin-bottom: 8px;
+    }
+
+    .loading {
+      opacity: .65;
+      pointer-events: none;
+    }
+
+    .footer-note {
       text-align: center;
-      padding: 25px;
       color: #9ca3af;
-      font-size: 14px;
+      font-size: 13px;
+      padding: 25px;
+    }
+
+    @media (max-width: 600px) {
+      header {
+        padding: 22px 18px;
+      }
+
+      header h1 {
+        font-size: 27px;
+      }
+
+      .page {
+        padding: 16px;
+      }
+
+      .story {
+        font-size: 19px;
+      }
+
+      .hero-picture {
+        font-size: 72px;
+        min-height: 210px;
+      }
     }
   </style>
 </head>
@@ -202,194 +399,925 @@
 <div class="app">
 
   <header>
-    <h1>✏️ Karangan AI</h1>
-    <p>Belajar menulis Bahasa Melayu dengan AI</p>
+    <h1>Karangan AI ✨</h1>
+    <p>Belajar Bahasa Melayu dengan cerita, kosa kata dan AI</p>
   </header>
 
-  <main>
+  <div class="progress-wrap">
+    <div class="progress-bar">
+      <div class="progress" id="progress"></div>
+    </div>
+  </div>
 
-    <section id="home">
+  <div class="tabs">
+    <button class="tab active" onclick="openPage(0)">📖 Cerita</button>
+    <button class="tab" onclick="openPage(1)">🌏 Terjemahan</button>
+    <button class="tab" onclick="openPage(2)">🎨 Tatabahasa</button>
+    <button class="tab" onclick="openPage(3)">🧠 Latihan</button>
+    <button class="tab" onclick="openPage(4)">✍️ Karangan</button>
+  </div>
 
-      <div class="welcome">
-        <h2>Selamat datang! 👋</h2>
-        <p>
-          Mari belajar menulis karangan dengan cara yang mudah,
-          interaktif dan menyeronokkan.
-        </p>
+
+  <!-- PAGE 1 -->
+  <section class="page active">
+
+    <div class="card">
+      <h2>Cerita Bergambar</h2>
+      <p class="muted">
+        Baca cerita di bawah. Tekan mana-mana perkataan untuk melihat maksudnya dalam Bahasa Cina.
+      </p>
+
+      <div class="hero-picture">
+        👦🏻🌳🧹🍂
       </div>
 
-      <div class="card">
-        <div class="card-icon">🖼️</div>
-
-        <span class="badge">Modul 1</span>
-
-        <h3>Cerita Bergambar</h3>
-
-        <p>
-          Lihat gambar, pelajari perkataan baharu dan tulis cerita
-          berdasarkan situasi yang diberikan.
-        </p>
-
-        <button onclick="startLesson()">
-          Mula Belajar
-        </button>
-      </div>
-
-      <div class="card">
-        <div class="card-icon">📚</div>
-
-        <span class="badge">Akan datang</span>
-
-        <h3>Latihan Tatabahasa</h3>
-
-        <p>
-          Pelajari Kata Kerja, Kata Adjektif dan struktur ayat
-          melalui latihan interaktif.
-        </p>
-      </div>
-
-    </section>
-
-
-    <section id="lesson">
-
-      <button class="back" onclick="goHome()">
-        ← Kembali
-      </button>
-
-      <span class="badge">Cerita Bergambar</span>
-
-      <h2>Hari di Taman</h2>
-
-      <div class="story-image">
-        👧🌳🦋🌸
-      </div>
-
-      <div class="story">
-
-        Pada hari Ahad, Aina pergi ke
-        <span class="word" onclick="showTranslation()">
-          taman
-        </span>
-        bersama keluarganya.
-
-        Dia melihat bunga-bunga yang cantik dan seekor rama-rama
-        sedang terbang.
-
-        Aina berasa sangat gembira.
-
-        <div id="translation" class="translation">
-          <strong>taman</strong><br>
-          中文：公园<br>
-          English: park
-        </div>
-
-      </div>
-
-      <button onclick="speakStory()">
+      <button class="primary-btn" onclick="readStory()">
         🔊 Dengar Cerita
       </button>
 
+      <button class="secondary-btn" onclick="stopReading()">
+        ⏹ Berhenti
+      </button>
+    </div>
 
-      <div class="card" style="margin-top:20px">
+    <div class="card">
+      <h3>Gotong-royong di Taman</h3>
 
-        <h3>✍️ Giliran Anda</h3>
+      <div class="story" id="story">
+        Pada hari Sabtu, Amir dan keluarganya pergi ke taman rekreasi.
+        Mereka menyertai aktiviti gotong-royong bersama penduduk di kawasan itu.
+        Amir menyapu daun-daun kering dengan menggunakan penyapu.
+        Kakaknya pula mengutip sampah lalu memasukkannya ke dalam beg plastik.
+        Ayah Amir memotong beberapa dahan pokok yang panjang manakala ibunya menanam tiga pokok bunga yang cantik.
+        Selepas selesai bekerja, taman itu menjadi bersih dan indah.
+        Amir berasa sangat gembira kerana dapat menjaga kebersihan alam sekitar.
+      </div>
 
-        <p>
-          Cuba tulis cerita pendek berdasarkan gambar di atas.
-        </p>
+      <div class="translation-box" id="translationBox">
+        <div class="translation-ms" id="selectedWord"></div>
+        <div class="translation-cn" id="chineseMeaning"></div>
+        <div class="translation-note" id="translationNote"></div>
+      </div>
+    </div>
 
-        <textarea
-          id="studentWriting"
-          placeholder="Tulis karangan anda di sini..."
-        ></textarea>
+  </section>
 
-        <button onclick="checkWriting()">
-          ✨ Semak dengan AI
+
+  <!-- PAGE 2 -->
+  <section class="page">
+
+    <div class="card">
+      <h2>🌏 Terjemahan Perkataan</h2>
+      <p class="muted">
+        在故事中点击任何马来文单词，就可以查看中文意思。
+      </p>
+
+      <div class="hint">
+        💡 <b>使用方法：</b><br>
+        回到「Cerita」，直接点击例如
+        <b>keluarganya、menyapu、kering、pokok、bersih、gembira</b>
+        等单词。
+      </div>
+
+      <button class="primary-btn" onclick="openPage(0)">
+        ← Kembali ke Cerita
+      </button>
+    </div>
+
+    <div class="card">
+      <h3>Perkataan terakhir</h3>
+
+      <div class="translation-box show">
+        <div class="translation-ms" id="historyWord">Belum dipilih</div>
+        <div class="translation-cn" id="historyChinese">
+          还没有选择单词
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+
+  <!-- PAGE 3 -->
+  <section class="page">
+
+    <div class="card">
+      <h2>🎨 Kenali Tatabahasa</h2>
+
+      <p class="muted">
+        Tekan kategori di bawah untuk melihat jenis perkataan dalam cerita.
+      </p>
+
+      <div class="grammar-controls">
+
+        <button class="secondary-btn"
+                onclick="highlightGrammar('verb')">
+          🟢 Kata Kerja
         </button>
 
-        <div id="feedback"></div>
+        <button class="secondary-btn"
+                onclick="highlightGrammar('adjective')">
+          🟡 Kata Adjektif
+        </button>
+
+        <button class="secondary-btn"
+                onclick="highlightGrammar('number')">
+          🔵 Kata Bilangan
+        </button>
+
+        <button class="secondary-btn"
+                onclick="clearHighlights()">
+          Padam Warna
+        </button>
 
       </div>
 
-    </section>
+      <div class="legend">
+        <span class="verb-legend">Kata Kerja</span>
+        <span class="adj-legend">Kata Adjektif</span>
+        <span class="num-legend">Kata Bilangan</span>
+      </div>
+    </div>
 
-  </main>
+    <div class="card">
+      <h3>Cerita</h3>
 
-  <footer>
-    Karangan AI • Versi Percubaan
-  </footer>
+      <div class="story" id="grammarStory"></div>
+    </div>
+
+  </section>
+
+
+  <!-- PAGE 4 -->
+  <section class="page">
+
+    <div class="card">
+      <h2>🧠 Latihan Kosa Kata</h2>
+
+      <div class="question">
+        Apakah maksud perkataan “gembira”?
+      </div>
+
+      <div class="answers">
+
+        <button class="answer"
+                onclick="answerQuestion(this,false)">
+          生气
+        </button>
+
+        <button class="answer"
+                onclick="answerQuestion(this,true)">
+          高兴 / 开心
+        </button>
+
+        <button class="answer"
+                onclick="answerQuestion(this,false)">
+          疲倦
+        </button>
+
+        <button class="answer"
+                onclick="answerQuestion(this,false)">
+          害怕
+        </button>
+
+      </div>
+
+      <p id="quizResult"
+         style="margin-top:15px;font-weight:700;"></p>
+
+    </div>
+
+
+    <div class="card">
+
+      <div class="question">
+        Yang manakah Kata Kerja?
+      </div>
+
+      <div class="answers">
+
+        <button class="answer"
+                onclick="answerQuestion2(this,false)">
+          cantik
+        </button>
+
+        <button class="answer"
+                onclick="answerQuestion2(this,false)">
+          tiga
+        </button>
+
+        <button class="answer"
+                onclick="answerQuestion2(this,true)">
+          menyapu
+        </button>
+
+        <button class="answer"
+                onclick="answerQuestion2(this,false)">
+          gembira
+        </button>
+
+      </div>
+
+      <p id="quizResult2"
+         style="margin-top:15px;font-weight:700;"></p>
+
+    </div>
+
+  </section>
+
+
+  <!-- PAGE 5 -->
+  <section class="page">
+
+    <div class="card">
+
+      <h2>✍️ Mari Menulis</h2>
+
+      <p class="muted">
+        Tulis sebuah karangan berdasarkan cerita
+        <b>“Gotong-royong di Taman”</b>.
+      </p>
+
+      <div class="hint">
+        <b>Panduan:</b><br>
+        1. Bilakah aktiviti itu diadakan?<br>
+        2. Siapakah yang terlibat?<br>
+        3. Apakah aktiviti yang dilakukan?<br>
+        4. Bagaimanakah keadaan taman selepas gotong-royong?<br>
+        5. Apakah perasaan Amir?
+      </div>
+
+      <textarea
+        id="essay"
+        placeholder="Pada hari Sabtu, saya dan keluarga..."
+        oninput="updateWordCount()"></textarea>
+
+      <div class="writing-stats">
+        <span id="wordCount">0 perkataan</span>
+        <span>Sasaran: 80–120 perkataan</span>
+      </div>
+
+      <div style="margin-top:15px;">
+
+        <button
+          class="primary-btn"
+          id="aiButton"
+          onclick="checkEssay()">
+          ✨ Semak dengan AI
+        </button>
+
+        <button
+          class="secondary-btn"
+          onclick="clearEssay()">
+          Padam
+        </button>
+
+      </div>
+
+      <div class="feedback" id="feedback"></div>
+
+    </div>
+
+  </section>
+
+  <div class="footer-note">
+    Karangan AI · Versi Percubaan
+  </div>
 
 </div>
 
 
 <script>
 
-function startLesson() {
-  document.getElementById("home").style.display = "none";
-  document.getElementById("lesson").style.display = "block";
-  window.scrollTo(0, 0);
+const pages = document.querySelectorAll(".page");
+const tabs = document.querySelectorAll(".tab");
+const progress = document.getElementById("progress");
+
+function openPage(index) {
+
+  pages.forEach(page => page.classList.remove("active"));
+  tabs.forEach(tab => tab.classList.remove("active"));
+
+  pages[index].classList.add("active");
+  tabs[index].classList.add("active");
+
+  progress.style.width = ((index + 1) * 20) + "%";
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
 }
 
-function goHome() {
-  document.getElementById("lesson").style.display = "none";
-  document.getElementById("home").style.display = "block";
-  window.scrollTo(0, 0);
+
+// ======================================================
+// CERITA
+// ======================================================
+
+const storyText =
+`Pada hari Sabtu, Amir dan keluarganya pergi ke taman rekreasi.
+Mereka menyertai aktiviti gotong-royong bersama penduduk di kawasan itu.
+Amir menyapu daun-daun kering dengan menggunakan penyapu.
+Kakaknya pula mengutip sampah lalu memasukkannya ke dalam beg plastik.
+Ayah Amir memotong beberapa dahan pokok yang panjang manakala ibunya menanam tiga pokok bunga yang cantik.
+Selepas selesai bekerja, taman itu menjadi bersih dan indah.
+Amir berasa sangat gembira kerana dapat menjaga kebersihan alam sekitar.`;
+
+
+// ======================================================
+// KAMUS BM → 中文
+// ======================================================
+
+const dictionary = {
+
+  "pada":"在 / 于",
+  "hari":"日子 / 天",
+  "sabtu":"星期六",
+
+  "amir":"阿米尔",
+
+  "dan":"和",
+  "keluarganya":"他的家人",
+  "keluarga":"家庭 / 家人",
+
+  "pergi":"去",
+  "ke":"到 / 去",
+  "taman":"公园",
+  "rekreasi":"休闲 / 康乐",
+
+  "mereka":"他们",
+  "menyertai":"参加",
+  "aktiviti":"活动",
+  "gotong-royong":"大扫除 / 集体劳动",
+  "bersama":"一起",
+  "penduduk":"居民",
+  "di":"在",
+  "kawasan":"地区 / 区域",
+  "itu":"那个",
+
+  "menyapu":"扫",
+  "daun-daun":"树叶",
+  "daun":"叶子",
+  "kering":"干的",
+  "dengan":"用 / 和",
+  "menggunakan":"使用",
+  "penyapu":"扫把",
+
+  "kakaknya":"他的姐姐",
+  "kakak":"哥哥 / 姐姐",
+  "pula":"则 / 另一方面",
+  "mengutip":"捡拾",
+  "sampah":"垃圾",
+  "lalu":"然后",
+  "memasukkannya":"把它放进去",
+  "memasukkan":"放入",
+  "dalam":"里面",
+  "beg":"袋子",
+  "plastik":"塑料",
+
+  "ayah":"父亲",
+  "memotong":"剪 / 切",
+  "beberapa":"几个 / 一些",
+  "dahan":"树枝",
+  "pokok":"树 / 植物",
+  "yang":"……的 / 那个",
+  "panjang":"长的",
+  "manakala":"而 / 与此同时",
+
+  "ibunya":"他的母亲",
+  "ibu":"母亲",
+  "menanam":"种植",
+  "tiga":"三",
+  "bunga":"花",
+  "cantik":"漂亮的",
+
+  "selepas":"之后",
+  "selesai":"完成",
+  "bekerja":"工作",
+
+  "menjadi":"变成",
+  "bersih":"干净的",
+  "indah":"美丽的",
+
+  "berasa":"感到",
+  "sangat":"非常",
+  "gembira":"高兴 / 开心",
+  "kerana":"因为",
+  "dapat":"能够",
+  "menjaga":"照顾 / 维护",
+  "kebersihan":"清洁",
+  "alam":"自然",
+  "sekitar":"周围 / 环境",
+  "alam sekitar":"环境"
+};
+
+
+// ======================================================
+// TATABAHASA
+// ======================================================
+
+const grammar = {
+
+  verb: [
+    "pergi",
+    "menyertai",
+    "menyapu",
+    "menggunakan",
+    "mengutip",
+    "memasukkannya",
+    "memotong",
+    "menanam",
+    "bekerja",
+    "menjadi",
+    "berasa",
+    "menjaga"
+  ],
+
+  adjective: [
+    "kering",
+    "panjang",
+    "cantik",
+    "bersih",
+    "indah",
+    "gembira"
+  ],
+
+  number: [
+    "beberapa",
+    "tiga"
+  ]
+
+};
+
+
+// ======================================================
+// JADIKAN SETIAP PERKATAAN BOLEH DITEKAN
+// ======================================================
+
+function normalizeWord(word) {
+
+  return word
+    .toLowerCase()
+    .replace(/[.,!?;:"”“'()]/g, "")
+    .trim();
 }
 
-function showTranslation() {
-  const box = document.getElementById("translation");
 
-  if (box.style.display === "block") {
-    box.style.display = "none";
-  } else {
-    box.style.display = "block";
+function findGrammarClass(word) {
+
+  const clean = normalizeWord(word);
+
+  if (grammar.verb.includes(clean)) {
+    return "verb";
   }
+
+  if (grammar.adjective.includes(clean)) {
+    return "adjective";
+  }
+
+  if (grammar.number.includes(clean)) {
+    return "number";
+  }
+
+  return "";
 }
 
-function speakStory() {
 
-  const text =
-    "Pada hari Ahad, Aina pergi ke taman bersama keluarganya. " +
-    "Dia melihat bunga-bunga yang cantik dan seekor rama-rama sedang terbang. " +
-    "Aina berasa sangat gembira.";
+function makeClickableStory(elementId) {
 
-  const speech = new SpeechSynthesisUtterance(text);
+  const container = document.getElementById(elementId);
 
-  speech.lang = "ms-MY";
-  speech.rate = 0.85;
+  const parts = storyText.split(/(\s+)/);
 
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(speech);
+  container.innerHTML = parts.map(part => {
+
+    if (/^\s+$/.test(part)) {
+      return part;
+    }
+
+    const clean = normalizeWord(part);
+    const grammarClass = findGrammarClass(clean);
+
+    return `<span
+      class="word ${grammarClass}"
+      onclick="translateWord('${clean.replace(/'/g,"\\'")}')"
+    >${part}</span>`;
+
+  }).join("");
 }
 
-function checkWriting() {
 
-  const writing =
-    document.getElementById("studentWriting").value.trim();
+makeClickableStory("story");
+makeClickableStory("grammarStory");
 
-  const feedback =
-    document.getElementById("feedback");
 
-  feedback.style.display = "block";
+// ======================================================
+// TERJEMAHAN
+// ======================================================
 
-  if (writing.length < 20) {
+function translateWord(word) {
 
-    feedback.innerHTML =
-      "💡 Cuba tulis sedikit lagi. " +
-      "Gunakan sekurang-kurangnya 2 atau 3 ayat.";
+  if (!word) return;
+
+  const box = document.getElementById("translationBox");
+
+  const selectedWord =
+    document.getElementById("selectedWord");
+
+  const chineseMeaning =
+    document.getElementById("chineseMeaning");
+
+  const note =
+    document.getElementById("translationNote");
+
+  selectedWord.textContent = word;
+
+  if (dictionary[word]) {
+
+    chineseMeaning.textContent =
+      "中文：" + dictionary[word];
+
+    note.textContent =
+      "Tekan perkataan lain untuk melihat maksudnya.";
+
+  } else {
+
+    chineseMeaning.textContent =
+      "中文：暂无内置翻译";
+
+    note.textContent =
+      "Perkataan ini belum dimasukkan ke dalam kamus percubaan.";
+
+  }
+
+  box.classList.add("show");
+
+  document.getElementById("historyWord").textContent =
+    word;
+
+  document.getElementById("historyChinese").textContent =
+    dictionary[word]
+      ? dictionary[word]
+      : "暂无内置翻译";
+
+}
+
+
+// ======================================================
+// BACA CERITA
+// ======================================================
+
+function readStory() {
+
+  if (!("speechSynthesis" in window)) {
+
+    alert("Peranti ini tidak menyokong fungsi bacaan.");
 
     return;
   }
 
+  speechSynthesis.cancel();
+
+  const speech =
+    new SpeechSynthesisUtterance(storyText);
+
+  speech.lang = "ms-MY";
+  speech.rate = 0.85;
+  speech.pitch = 1;
+
+  const voices =
+    speechSynthesis.getVoices();
+
+  const malayVoice =
+    voices.find(v =>
+      v.lang &&
+      v.lang.toLowerCase().startsWith("ms")
+    );
+
+  if (malayVoice) {
+    speech.voice = malayVoice;
+  }
+
+  speechSynthesis.speak(speech);
+}
+
+
+function stopReading() {
+
+  if ("speechSynthesis" in window) {
+    speechSynthesis.cancel();
+  }
+
+}
+
+
+// ======================================================
+// HIGHLIGHT TATABAHASA
+// ======================================================
+
+function clearHighlights() {
+
+  document
+    .querySelectorAll("#grammarStory .word")
+    .forEach(word => {
+      word.classList.remove("highlight");
+    });
+
+}
+
+
+function highlightGrammar(type) {
+
+  clearHighlights();
+
+  document
+    .querySelectorAll("#grammarStory ." + type)
+    .forEach(word => {
+      word.classList.add("highlight");
+    });
+
+}
+
+
+// ======================================================
+// LATIHAN
+// ======================================================
+
+function answerQuestion(button, correct) {
+
+  const buttons =
+    button.parentElement.querySelectorAll(".answer");
+
+  buttons.forEach(btn => {
+    btn.disabled = true;
+  });
+
+  if (correct) {
+
+    button.classList.add("correct");
+
+    document.getElementById("quizResult")
+      .textContent =
+      "✅ Betul! Gembira bermaksud 高兴 / 开心.";
+
+  } else {
+
+    button.classList.add("wrong");
+
+    document.getElementById("quizResult")
+      .textContent =
+      "❌ Cuba lagi. Maksud gembira ialah 高兴 / 开心.";
+
+  }
+
+}
+
+
+function answerQuestion2(button, correct) {
+
+  const buttons =
+    button.parentElement.querySelectorAll(".answer");
+
+  buttons.forEach(btn => {
+    btn.disabled = true;
+  });
+
+  if (correct) {
+
+    button.classList.add("correct");
+
+    document.getElementById("quizResult2")
+      .textContent =
+      "✅ Betul! “menyapu” ialah Kata Kerja.";
+
+  } else {
+
+    button.classList.add("wrong");
+
+    document.getElementById("quizResult2")
+      .textContent =
+      "❌ Jawapan yang betul ialah “menyapu”.";
+
+  }
+
+}
+
+
+// ======================================================
+// KARANGAN
+// ======================================================
+
+function updateWordCount() {
+
+  const text =
+    document.getElementById("essay")
+      .value
+      .trim();
+
+  const words =
+    text
+      ? text.split(/\s+/).length
+      : 0;
+
+  document.getElementById("wordCount")
+    .textContent =
+    words + " perkataan";
+
+}
+
+
+function clearEssay() {
+
+  document.getElementById("essay").value = "";
+
+  document.getElementById("feedback")
+    .classList.remove("show");
+
+  updateWordCount();
+
+}
+
+
+// ======================================================
+// AI SEMAKAN
+// ======================================================
+
+async function checkEssay() {
+
+  const essay =
+    document.getElementById("essay")
+      .value
+      .trim();
+
+  const feedback =
+    document.getElementById("feedback");
+
+  const button =
+    document.getElementById("aiButton");
+
+  if (essay.length < 20) {
+
+    feedback.innerHTML =
+      "✏️ Tulis karangan yang lebih panjang dahulu sebelum meminta AI menyemak.";
+
+    feedback.classList.add("show");
+
+    return;
+  }
+
+  button.classList.add("loading");
+  button.textContent = "⏳ AI sedang menyemak...";
+
   feedback.innerHTML =
-    "<strong>🌟 Bagus!</strong><br><br>" +
-    "Karangan anda sudah mempunyai idea yang baik.<br><br>" +
-    "Cadangan AI:<br>" +
-    "• Gunakan kata adjektif untuk menjadikan cerita lebih menarik.<br>" +
-    "• Cuba gunakan perkataan seperti <strong>cantik</strong>, " +
-    "<strong>gembira</strong> atau <strong>indah</strong>.<br>" +
-    "• Pastikan setiap ayat bermula dengan huruf besar.";
+    "AI sedang membaca karangan kamu...";
+
+  feedback.classList.add("show");
+
+  try {
+
+    const response =
+      await fetch("/api/ai", {
+
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+          essay: essay
+        })
+
+      });
+
+
+    if (!response.ok) {
+      throw new Error("AI API tidak tersedia");
+    }
+
+
+    const data =
+      await response.json();
+
+
+    const result =
+      data.feedback ||
+      data.result ||
+      data.message ||
+      data.text;
+
+
+    if (!result) {
+      throw new Error("Tiada jawapan AI");
+    }
+
+
+    feedback.innerHTML =
+      "<div class='score'>🌟 Semakan AI</div>" +
+      escapeHTML(result)
+        .replace(/\n/g,"<br>");
+
+
+  } catch (error) {
+
+    offlineFeedback(essay);
+
+  } finally {
+
+    button.classList.remove("loading");
+    button.textContent = "✨ Semak dengan AI";
+
+  }
+
+}
+
+
+// ======================================================
+// FALLBACK JIKA AI BELUM TERHUBUNG
+// ======================================================
+
+function offlineFeedback(essay) {
+
+  const feedback =
+    document.getElementById("feedback");
+
+  const words =
+    essay.split(/\s+/).length;
+
+  let score = 60;
+
+  if (words >= 50) score += 10;
+  if (words >= 80) score += 10;
+
+  if (
+    essay.toLowerCase().includes("selain itu") ||
+    essay.toLowerCase().includes("kemudian") ||
+    essay.toLowerCase().includes("selepas")
+  ) {
+    score += 5;
+  }
+
+  if (
+    essay.toLowerCase().includes("gembira") ||
+    essay.toLowerCase().includes("bangga")
+  ) {
+    score += 5;
+  }
+
+  if (score > 90) score = 90;
+
+
+  feedback.innerHTML = `
+
+    <div class="score">
+      ⭐ ${score}/100
+    </div>
+
+    <b>Bilangan perkataan:</b>
+    ${words} perkataan
+
+    <br><br>
+
+    <b>👍 Kekuatan:</b><br>
+    Kamu telah cuba menerangkan aktiviti gotong-royong dengan baik.
+
+    <br><br>
+
+    <b>🔧 Boleh diperbaiki:</b><br>
+    Gunakan penanda wacana seperti
+    “Kemudian”, “Selain itu”, “Seterusnya”
+    dan “Akhir sekali”.
+
+    <br><br>
+
+    <b>💡 Cadangan:</b><br>
+    Tambahkan ayat tentang perasaan dan nilai murni
+    pada bahagian penutup.
+
+    <br><br>
+
+    <small>
+      Mod semakan asas digunakan kerana sambungan AI belum tersedia.
+    </small>
+
+  `;
+
+}
+
+
+// ======================================================
+// KESELAMATAN PAPARAN
+// ======================================================
+
+function escapeHTML(text) {
+
+  const div =
+    document.createElement("div");
+
+  div.textContent = text;
+
+  return div.innerHTML;
+
 }
 
 </script>
