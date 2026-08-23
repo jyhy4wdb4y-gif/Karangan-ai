@@ -1097,3 +1097,210 @@ textarea:focus {
   }
 
 }
+/* ======================================
+   Karangan AI - Cikgu Aira Avatar Tutor
+   ====================================== */
+
+.ai-tutor {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 9999;
+
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+
+  opacity: 0;
+  transform: translateY(30px) scale(0.95);
+  pointer-events: none;
+
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.ai-tutor.show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* Avatar */
+
+.avatar-character {
+  position: relative;
+
+  width: 92px;
+  height: 92px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background:
+    linear-gradient(
+      145deg,
+      #fff7d6,
+      #ffd86b
+    );
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.18);
+
+  border: 4px solid white;
+}
+
+.avatar-face {
+  font-size: 54px;
+  line-height: 1;
+
+  animation: avatarFloat 3s ease-in-out infinite;
+}
+
+.avatar-status {
+  position: absolute;
+
+  right: 2px;
+  bottom: 8px;
+
+  width: 18px;
+  height: 18px;
+
+  border-radius: 50%;
+
+  background: #36c96f;
+
+  border: 3px solid white;
+}
+
+/* Speech Bubble */
+
+.avatar-dialog {
+  width: min(360px, calc(100vw - 150px));
+
+  padding: 16px 18px;
+
+  border-radius: 22px 22px 8px 22px;
+
+  background: rgba(255, 255, 255, 0.96);
+
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+
+  box-shadow:
+    0 14px 40px rgba(0, 0, 0, 0.16);
+
+  border: 1px solid rgba(255, 255, 255, 0.75);
+}
+
+.avatar-name {
+  font-size: 13px;
+  font-weight: 800;
+
+  color: #6d5dfc;
+
+  margin-bottom: 6px;
+
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.avatar-message {
+  font-size: 17px;
+  line-height: 1.45;
+
+  font-weight: 600;
+
+  color: #263238;
+}
+
+/* Buttons */
+
+.avatar-actions {
+  display: flex;
+  gap: 8px;
+
+  margin-top: 12px;
+}
+
+.avatar-btn {
+  border: none;
+
+  padding: 9px 14px;
+
+  border-radius: 12px;
+
+  background: #6d5dfc;
+  color: white;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.avatar-btn:active {
+  transform: scale(0.96);
+}
+
+.avatar-btn.secondary {
+  background: #eef0f5;
+  color: #5c6470;
+}
+
+/* Animation */
+
+@keyframes avatarFloat {
+  0% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-5px);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* iPad / smaller screens */
+
+@media (max-width: 768px) {
+
+  .ai-tutor {
+    right: 14px;
+    bottom: 16px;
+
+    gap: 8px;
+  }
+
+  .avatar-character {
+    width: 72px;
+    height: 72px;
+  }
+
+  .avatar-face {
+    font-size: 42px;
+  }
+
+  .avatar-dialog {
+    width: min(
+      300px,
+      calc(100vw - 105px)
+    );
+
+    padding: 14px;
+  }
+
+  .avatar-message {
+    font-size: 15px;
+  }
+}
