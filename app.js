@@ -8875,7 +8875,32 @@ function updateAllUI() {
 
 }
 
+function updateWritingUI() {
 
+  const textarea =
+    byId(
+      "karanganInput"
+    );
+
+
+  if (
+    textarea &&
+    textarea.value !==
+      appState.savedWriting
+  ) {
+
+    textarea.value =
+      appState.savedWriting ||
+      "";
+
+  }
+
+
+  updateWordCount();
+
+  updateWritingStudioProgress();
+
+}
 /* =========================================================
    WORD COUNT
    ========================================================= */
