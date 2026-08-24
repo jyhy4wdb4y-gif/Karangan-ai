@@ -1144,4 +1144,26 @@ console.log(
   "Karangan AI Story Database loaded:",
   getStoryCount(),
   "stories"
+   /* =====================================================
+   APP.JS COMPATIBILITY
+   Expose story database to Karangan AI app controller
+===================================================== */
+
+window.KARANGAN_STORIES =
+  KARANGAN_STORIES;
+
+window.stories =
+  KARANGAN_STORIES;
+
+window.STORIES =
+  KARANGAN_STORIES;
+
+window.storyData =
+  KARANGAN_STORIES;
+
+console.log(
+  "✅ Story database connected to app.js:",
+  KARANGAN_STORIES.length,
+  "stories"
+);
 );
