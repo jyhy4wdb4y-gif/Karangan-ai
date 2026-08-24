@@ -11948,3 +11948,852 @@ Do not use markdown.
 /* =========================================================
    END KARANGAN AI v3.7
    ========================================================= */
+/* =========================================================
+   KARANGAN AI v3.8
+   UNIVERSAL AI WORD TRANSLATION
+
+   Priority:
+   1. Complete translation cache
+   2. Vocabulary engine complete entry
+   3. Local story Chinese hint
+   4. AI structured translation
+   5. Safe fallback
+   ========================================================= */
+
+(() => {
+
+  "use strict";
+
+  const TRANSLATION_CACHE_KEY =
+    "karanganAI_translation_v38";
+
+
+  /* =======================================================
+     1. CACHE
+     ======================================================= */
+
+  function getTranslationCacheV38() {
+
+    try {
+
+      return JSON.parse(
+        localStorage.getItem(
+          TRANSLATION_CACHE_KEY
+        ) || "{}"
+      );
+
+    } catch (error) {
+
+      return {};
+
+    }
+
+  }
+
+
+  function saveTranslationCacheV38(
+    cache
+  ) {
+
+    try {
+
+      localStorage.setItem(
+        TRANSLATION_CACHE_KEY,
+        JSON.stringify(cache)
+      );
+
+    } catch (error) {
+
+      console.warn(
+        "Translation cache error:",
+        error
+      );
+
+    }
+
+  }
+
+
+  /* =======================================================
+     2. CLEAN WORD
+     ======================================================= */
+
+  function cleanWordV38(
+    rawWord
+  ) {
+
+    return String(
+      rawWord || ""
+    )
+      .toLowerCase()
+      .trim()
+      .replace(
+        /^[^a-zA-ZÀ-ÿ]+|[^a-zA-ZÀ-ÿ'-]+$/g,
+        ""
+      );
+
+  }
+
+
+  /* =======================================================
+     3. LOCAL STORY LOOKUP
+     ======================================================= */
+
+  function getStoryDictionaryValueV38(
+    word
+  ) {
+
+    if (
+      currentStory?.dictionary?.[
+        word
+      ]
+    ) {
+
+      return currentStory
+        .dictionary[
+          word
+        ];
+
+    }
+
+
+    const stories =
+      Array.isArray(
+        window.KARANGAN_STORIES
+      )
+        ? window.KARANGAN_STORIES
+        : [];
+
+
+    for (
+      const story of stories
+    ) {
+
+      const value =
+        story?.dictionary?.[
+          word
+        ];
+
+
+      if (value) {
+
+        return value;
+
+      }
+
+    }
+
+
+    return "";
+
+  }
+
+
+  /* =======================================================
+     4. VOCABULARY ENGINE LOOKUP
+     ======================================================= */
+
+  function getVocabularyEntryV38(
+    word
+  ) {
+
+    try {
+
+      const engine =
+        window.KaranganVocabulary;
+
+
+      if (
+        !engine ||
+        typeof engine.lookupWord !==
+          "function"
+      ) {
+
+        return null;
+
+      }
+
+
+      return (
+        engine.lookupWord(
+          word
+        ) ||
+        null
+      );
+
+    } catch (error) {
+
+      console.warn(
+        "Vocabulary lookup error:",
+        error
+      );
+
+
+      return null;
+
+    }
+
+  }
+
+
+  /* =======================================================
+     5. GET STORY SENTENCE
+     ======================================================= */
+
+  function getSentenceV38(
+    word
+  ) {
+
+    if (
+      typeof findStorySentenceContainingWord ===
+        "function"
+    ) {
+
+      return (
+        findStorySentenceContainingWord(
+          word
+        ) ||
+        ""
+      );
+
+    }
+
+
+    return "";
+
+  }
+
+
+  /* =======================================================
+     6. SHOW LOADING POPUP
+     ======================================================= */
+
+  function showTranslationLoadingV38(
+    word,
+    localChinese,
+    sentence
+  ) {
+
+    currentTranslationWord =
+      word;
+
+
+    const popup =
+      byId(
+        "translationPopup"
+      );
+
+
+    if (popup) {
+
+      popup.hidden =
+        false;
+
+    }
+
+
+    safeText(
+      byId(
+        "translationWord"
+      ),
+      word
+    );
+
+
+    safeText(
+      byId(
+        "translationMeaning"
+      ),
+      localChinese
+        ? `${localChinese} · Loading English...`
+        : "正在查询翻译..."
+    );
+
+
+    safeText(
+      byId(
+        "translationDefinition"
+      ),
+      "Cikgu Aira sedang melengkapkan maksud..."
+    );
+
+
+    safeText(
+      byId(
+        "translationExample"
+      ),
+      sentence ||
+      `Perkataan: ${word}`
+    );
+
+  }
+
+
+  /* =======================================================
+     7. DISPLAY COMPLETE RESULT
+     ======================================================= */
+
+  function showTranslationResultV38(
+    word,
+    data,
+    sentence
+  ) {
+
+    const zh =
+      String(
+        data.zh || ""
+      ).trim();
+
+
+    const en =
+      String(
+        data.en || ""
+      ).trim();
+
+
+    const meaning =
+      String(
+        data.meaning || ""
+      ).trim();
+
+
+    currentTranslationWord =
+      word;
+
+
+    currentTranslationData = {
+
+      word,
+
+      translation:
+        `${zh} · ${en}`,
+
+      meaning:
+        meaning,
+
+      zh,
+
+      en,
+
+      example:
+        sentence,
+
+      storyId:
+        currentStory?.id ||
+        null
+
+    };
+
+
+    const popup =
+      byId(
+        "translationPopup"
+      );
+
+
+    if (popup) {
+
+      popup.hidden =
+        false;
+
+    }
+
+
+    safeText(
+      byId(
+        "translationWord"
+      ),
+      word
+    );
+
+
+    safeText(
+      byId(
+        "translationMeaning"
+      ),
+      `🇨🇳 ${zh}   ·   🇬🇧 ${en}`
+    );
+
+
+    safeText(
+      byId(
+        "translationDefinition"
+      ),
+      meaning
+        ? `🇲🇾 ${meaning}`
+        : ""
+    );
+
+
+    safeText(
+      byId(
+        "translationExample"
+      ),
+      sentence ||
+      `Perkataan: ${word}`
+    );
+
+
+    if (
+      typeof updateSaveVocabularyButton ===
+        "function"
+    ) {
+
+      updateSaveVocabularyButton();
+
+    }
+
+  }
+
+
+  /* =======================================================
+     8. AI STRUCTURED TRANSLATION
+     ======================================================= */
+
+  async function requestAITranslationV38(
+    word,
+    sentence,
+    localChinese = ""
+  ) {
+
+    const response =
+      await callAI({
+
+        type:
+          "translate",
+
+        word,
+
+        context:
+          sentence,
+
+        knownChinese:
+          localChinese
+
+      });
+
+
+    /*
+      New API format:
+      {
+        type: "translate",
+        word: "...",
+        zh: "...",
+        en: "...",
+        meaning: "...",
+        answer: "..."
+      }
+    */
+
+    const zh =
+      String(
+        response?.zh ||
+        localChinese ||
+        ""
+      ).trim();
+
+
+    const en =
+      String(
+        response?.en ||
+        ""
+      ).trim();
+
+
+    const meaning =
+      String(
+        response?.meaning ||
+        ""
+      ).trim();
+
+
+    if (
+      !zh ||
+      !en
+    ) {
+
+      throw new Error(
+        "Incomplete structured translation"
+      );
+
+    }
+
+
+    return {
+
+      zh,
+
+      en,
+
+      meaning
+
+    };
+
+  }
+
+
+  /* =======================================================
+     9. OVERRIDE translateWord
+     ======================================================= */
+
+  translateWord =
+    async function(
+      rawWord
+    ) {
+
+      const word =
+        cleanWordV38(
+          rawWord
+        );
+
+
+      if (!word) {
+
+        return;
+
+      }
+
+
+      const sentence =
+        getSentenceV38(
+          word
+        );
+
+
+      const cache =
+        getTranslationCacheV38();
+
+
+      /* ---------------------------------------------------
+         STEP 1 — Complete cache
+         --------------------------------------------------- */
+
+      const cached =
+        cache[word];
+
+
+      if (
+        cached?.zh &&
+        cached?.en
+      ) {
+
+        showTranslationResultV38(
+          word,
+          cached,
+          sentence
+        );
+
+
+        return;
+
+      }
+
+
+      /* ---------------------------------------------------
+         STEP 2 — Vocabulary v2 complete entry
+         --------------------------------------------------- */
+
+      const vocabulary =
+        getVocabularyEntryV38(
+          word
+        );
+
+
+      if (
+        vocabulary?.zh &&
+        vocabulary?.en
+      ) {
+
+        const complete = {
+
+          zh:
+            vocabulary.zh,
+
+          en:
+            vocabulary.en,
+
+          meaning:
+            vocabulary.meaning ||
+            ""
+
+        };
+
+
+        cache[word] =
+          complete;
+
+
+        saveTranslationCacheV38(
+          cache
+        );
+
+
+        showTranslationResultV38(
+          word,
+          complete,
+          sentence
+        );
+
+
+        return;
+
+      }
+
+
+      /* ---------------------------------------------------
+         STEP 3 — Morphology complete result
+         --------------------------------------------------- */
+
+      if (
+        window.KaranganMalay &&
+        typeof window.KaranganMalay.lookup ===
+          "function"
+      ) {
+
+        try {
+
+          const morphology =
+            window.KaranganMalay.lookup(
+              word
+            );
+
+
+          /*
+            v3.6 often returns:
+            "颜色 · colour / color"
+          */
+
+          if (
+            morphology?.translation &&
+            morphology.translation.includes(
+              "·"
+            )
+          ) {
+
+            const parts =
+              morphology.translation
+                .split("·")
+                .map(
+                  value =>
+                    value.trim()
+                );
+
+
+            if (
+              parts[0] &&
+              parts[1]
+            ) {
+
+              const complete = {
+
+                zh:
+                  parts[0],
+
+                en:
+                  parts
+                    .slice(1)
+                    .join(" · "),
+
+                meaning:
+                  morphology.meaning ||
+                  ""
+
+              };
+
+
+              cache[word] =
+                complete;
+
+
+              saveTranslationCacheV38(
+                cache
+              );
+
+
+              showTranslationResultV38(
+                word,
+                complete,
+                sentence
+              );
+
+
+              return;
+
+            }
+
+          }
+
+        } catch (error) {
+
+          console.warn(
+            "Morphology lookup failed:",
+            error
+          );
+
+        }
+
+      }
+
+
+      /* ---------------------------------------------------
+         STEP 4 — Story dictionary Chinese hint
+
+         IMPORTANT:
+         Do NOT return here.
+         Story dictionary is usually Chinese only.
+         --------------------------------------------------- */
+
+      const localChinese =
+        getStoryDictionaryValueV38(
+          word
+        );
+
+
+      showTranslationLoadingV38(
+        word,
+        localChinese,
+        sentence
+      );
+
+
+      /* ---------------------------------------------------
+         STEP 5 — AI
+         --------------------------------------------------- */
+
+      try {
+
+        const complete =
+          await requestAITranslationV38(
+            word,
+            sentence,
+            localChinese
+          );
+
+
+        cache[word] =
+          complete;
+
+
+        saveTranslationCacheV38(
+          cache
+        );
+
+
+        showTranslationResultV38(
+          word,
+          complete,
+          sentence
+        );
+
+
+      } catch (error) {
+
+        console.warn(
+          "AI translation v3.8 failed:",
+          word,
+          error
+        );
+
+
+        /*
+          We intentionally do NOT call the
+          old translateWord anymore.
+
+          Old translation patches can return:
+          "belum ada dalam kamus tempatan"
+          before AI has a chance to complete it.
+        */
+
+
+        currentTranslationData = {
+
+          word,
+
+          translation:
+            localChinese ||
+            "",
+
+          meaning:
+            "",
+
+          example:
+            sentence,
+
+          storyId:
+            currentStory?.id ||
+            null
+
+        };
+
+
+        safeText(
+          byId(
+            "translationMeaning"
+          ),
+          localChinese
+            ? `🇨🇳 ${localChinese}`
+            : "Terjemahan AI tidak tersedia buat sementara."
+        );
+
+
+        safeText(
+          byId(
+            "translationDefinition"
+          ),
+          "Cuba lagi sebentar."
+        );
+
+
+        if (
+          typeof updateSaveVocabularyButton ===
+            "function"
+        ) {
+
+          updateSaveVocabularyButton();
+
+        }
+
+      }
+
+    };
+
+
+  /* =======================================================
+     10. DEBUG
+     ======================================================= */
+
+  window.KaranganTranslationV38 = {
+
+    clearCache() {
+
+      localStorage.removeItem(
+        TRANSLATION_CACHE_KEY
+      );
+
+      console.log(
+        "✅ v3.8 translation cache cleared"
+      );
+
+    },
+
+
+    getCache() {
+
+      return getTranslationCacheV38();
+
+    }
+
+  };
+
+
+  console.log(
+    "✅ Karangan AI v3.8 Universal AI Translation loaded"
+  );
+
+
+})();
+
+
+/* =========================================================
+   END KARANGAN AI v3.8
+   ========================================================= */
