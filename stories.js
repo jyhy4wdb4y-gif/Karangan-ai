@@ -1167,3 +1167,32 @@ console.log(
   "stories"
 );
 );
+/* =====================================================
+   FORCE EXPORT STORY DATABASE
+===================================================== */
+
+window.KARANGAN_STORIES =
+  KARANGAN_STORIES;
+
+window.stories =
+  KARANGAN_STORIES;
+
+window.STORIES =
+  KARANGAN_STORIES;
+
+window.storyData =
+  KARANGAN_STORIES;
+
+window.getAllStories =
+  getAllStories;
+
+window.getStoryById =
+  getStoryById;
+
+window.setCurrentStory =
+  setCurrentStory;
+
+console.log(
+  "✅ STORIES EXPORTED:",
+  window.KARANGAN_STORIES.length
+);
