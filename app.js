@@ -9883,3 +9883,1229 @@ window.KaranganAI = {
 /* =========================================================
    END KARANGAN AI v3.5
    ========================================================= */
+/* =========================================================
+   KARANGAN AI v3.6
+   MALAY WORD MORPHOLOGY + TRANSLATION FALLBACK
+   ========================================================= */
+
+(() => {
+
+  "use strict";
+
+
+  /* =======================================================
+     1. SPECIAL MALAY WORD FORMS
+     High-confidence derived-word mappings.
+     ======================================================= */
+
+  const MALAY_WORD_FORMS = {
+
+    /* Learning */
+
+    mempelajari: [
+      "belajar",
+      "pelajar"
+    ],
+
+    pembelajaran: [
+      "belajar"
+    ],
+
+    pelajaran: [
+      "belajar"
+    ],
+
+    belajar: [
+      "belajar"
+    ],
+
+
+    /* Colour */
+
+    berwarna: [
+      "warna"
+    ],
+
+    mewarnai: [
+      "warna"
+    ],
+
+    mewarnakan: [
+      "warna"
+    ],
+
+
+    /* Clean */
+
+    membersihkan: [
+      "bersih"
+    ],
+
+    kebersihan: [
+      "bersih"
+    ],
+
+
+    /* Happy */
+
+    menggembirakan: [
+      "gembira"
+    ],
+
+    kegembiraan: [
+      "gembira"
+    ],
+
+
+    /* Prepare */
+
+    menyiapkan: [
+      "siap"
+    ],
+
+    disiapkan: [
+      "siap"
+    ],
+
+    persiapan: [
+      "siap"
+    ],
+
+
+    /* Help */
+
+    membantu: [
+      "bantu"
+    ],
+
+    bantuan: [
+      "bantu"
+    ],
+
+
+    /* Care */
+
+    menjaga: [
+      "jaga"
+    ],
+
+    penjagaan: [
+      "jaga"
+    ],
+
+
+    /* Read */
+
+    membaca: [
+      "baca"
+    ],
+
+    bacaan: [
+      "baca"
+    ],
+
+
+    /* Write */
+
+    menulis: [
+      "tulis"
+    ],
+
+    tulisan: [
+      "tulis"
+    ],
+
+    penulis: [
+      "tulis"
+    ],
+
+
+    /* Play */
+
+    bermain: [
+      "main"
+    ],
+
+    permainan: [
+      "main"
+    ],
+
+
+    /* Work */
+
+    bekerja: [
+      "kerja"
+    ],
+
+    pekerjaan: [
+      "kerja"
+    ],
+
+
+    /* Success */
+
+    berjaya: [
+      "jaya"
+    ],
+
+    kejayaan: [
+      "jaya"
+    ],
+
+
+    /* Spirit */
+
+    bersemangat: [
+      "semangat"
+    ],
+
+
+    /* Beautiful */
+
+    mencantikkan: [
+      "cantik"
+    ],
+
+
+    /* Long */
+
+    memanjangkan: [
+      "panjang"
+    ],
+
+
+    /* Short */
+
+    memendekkan: [
+      "pendek"
+    ],
+
+
+    /* Big */
+
+    membesarkan: [
+      "besar"
+    ],
+
+
+    /* Small */
+
+    mengecilkan: [
+      "kecil"
+    ]
+
+  };
+
+
+  /* =======================================================
+     2. BUILT-IN TRANSLATION SAFETY NET
+     ======================================================= */
+
+  const MALAY_ROOT_DICTIONARY = {
+
+    warna: {
+      zh: "颜色",
+      en: "colour / color",
+      meaning:
+        "Rupa sesuatu berdasarkan warna seperti merah, biru atau hijau."
+    },
+
+    berwarna: {
+      zh: "有颜色的 / 彩色的",
+      en: "coloured / colored",
+      meaning:
+        "Mempunyai warna."
+    },
+
+    belajar: {
+      zh: "学习",
+      en: "study / learn",
+      meaning:
+        "Berusaha mendapatkan ilmu atau kemahiran."
+    },
+
+    mempelajari: {
+      zh: "学习 / 研习",
+      en: "study / learn",
+      meaning:
+        "Belajar atau mengkaji sesuatu dengan lebih mendalam."
+    },
+
+    pelajar: {
+      zh: "学生",
+      en: "student",
+      meaning:
+        "Orang yang belajar."
+    },
+
+    bersih: {
+      zh: "干净",
+      en: "clean",
+      meaning:
+        "Tidak kotor."
+    },
+
+    membersihkan: {
+      zh: "清理 / 打扫",
+      en: "clean",
+      meaning:
+        "Menjadikan sesuatu bersih."
+    },
+
+    gembira: {
+      zh: "开心 / 高兴",
+      en: "happy",
+      meaning:
+        "Berasa senang dan bahagia."
+    },
+
+    siap: {
+      zh: "准备好 / 完成",
+      en: "ready / complete",
+      meaning:
+        "Sudah selesai atau sudah tersedia."
+    },
+
+    bantu: {
+      zh: "帮助",
+      en: "help",
+      meaning:
+        "Memberikan pertolongan."
+    },
+
+    jaga: {
+      zh: "照顾 / 保护",
+      en: "take care / protect",
+      meaning:
+        "Memelihara atau memastikan sesuatu dalam keadaan baik."
+    },
+
+    baca: {
+      zh: "阅读",
+      en: "read",
+      meaning:
+        "Melihat dan memahami tulisan."
+    },
+
+    tulis: {
+      zh: "写",
+      en: "write",
+      meaning:
+        "Menghasilkan huruf atau perkataan."
+    },
+
+    main: {
+      zh: "玩",
+      en: "play",
+      meaning:
+        "Melakukan sesuatu untuk berseronok."
+    },
+
+    kerja: {
+      zh: "工作",
+      en: "work",
+      meaning:
+        "Melakukan sesuatu tugas."
+    },
+
+    jaya: {
+      zh: "成功",
+      en: "success / succeed",
+      meaning:
+        "Berhasil mencapai sesuatu."
+    },
+
+    semangat: {
+      zh: "精神 / 热情",
+      en: "spirit / enthusiasm",
+      meaning:
+        "Perasaan kuat untuk melakukan sesuatu."
+    },
+
+    cantik: {
+      zh: "漂亮",
+      en: "beautiful",
+      meaning:
+        "Indah atau elok dipandang."
+    },
+
+    panjang: {
+      zh: "长",
+      en: "long",
+      meaning:
+        "Mempunyai ukuran yang jauh dari satu hujung ke hujung yang lain."
+    },
+
+    pendek: {
+      zh: "短",
+      en: "short",
+      meaning:
+        "Tidak panjang."
+    },
+
+    besar: {
+      zh: "大",
+      en: "big / large",
+      meaning:
+        "Mempunyai saiz yang besar."
+    },
+
+    kecil: {
+      zh: "小",
+      en: "small",
+      meaning:
+        "Tidak besar."
+    }
+
+  };
+
+
+  /* =======================================================
+     3. NORMALISE
+     ======================================================= */
+
+  function normalizeMalayLookupWord(
+    value
+  ) {
+
+    return String(
+      value || ""
+    )
+      .toLowerCase()
+      .trim()
+      .replace(
+        /^[^a-zA-ZÀ-ÿ]+|[^a-zA-ZÀ-ÿ'-]+$/g,
+        ""
+      );
+
+  }
+
+
+  /* =======================================================
+     4. GENERATE MALAY ROOT CANDIDATES
+     ======================================================= */
+
+  function getMalayRootCandidates(
+    rawWord
+  ) {
+
+    const word =
+      normalizeMalayLookupWord(
+        rawWord
+      );
+
+
+    const candidates =
+      new Set();
+
+
+    if (!word) {
+
+      return [];
+
+    }
+
+
+    /*
+      Always try exact word first.
+    */
+
+    candidates.add(
+      word
+    );
+
+
+    /*
+      High-confidence mapping.
+    */
+
+    const special =
+      MALAY_WORD_FORMS[
+        word
+      ];
+
+
+    if (
+      Array.isArray(
+        special
+      )
+    ) {
+
+      special.forEach(
+        item =>
+          candidates.add(
+            item
+          )
+      );
+
+    }
+
+
+    /*
+      Possessive suffix:
+      rumahnya -> rumah
+      bukunya -> buku
+    */
+
+    if (
+      word.endsWith("nya") &&
+      word.length > 5
+    ) {
+
+      candidates.add(
+        word.slice(
+          0,
+          -3
+        )
+      );
+
+    }
+
+
+    /*
+      -kan
+    */
+
+    if (
+      word.endsWith("kan") &&
+      word.length > 6
+    ) {
+
+      candidates.add(
+        word.slice(
+          0,
+          -3
+        )
+      );
+
+    }
+
+
+    /*
+      -i
+    */
+
+    if (
+      word.endsWith("i") &&
+      word.length > 5
+    ) {
+
+      candidates.add(
+        word.slice(
+          0,
+          -1
+        )
+      );
+
+    }
+
+
+    /*
+      ber-
+      berwarna -> warna
+      bermain -> main
+    */
+
+    if (
+      word.startsWith("ber") &&
+      word.length > 6
+    ) {
+
+      candidates.add(
+        word.slice(3)
+      );
+
+    }
+
+
+    /*
+      ter-
+    */
+
+    if (
+      word.startsWith("ter") &&
+      word.length > 6
+    ) {
+
+      candidates.add(
+        word.slice(3)
+      );
+
+    }
+
+
+    /*
+      di-
+    */
+
+    if (
+      word.startsWith("di") &&
+      word.length > 5
+    ) {
+
+      candidates.add(
+        word.slice(2)
+      );
+
+    }
+
+
+    /*
+      memper-
+      mempelajari is handled by
+      special mapping above.
+    */
+
+    if (
+      word.startsWith("memper") &&
+      word.length > 8
+    ) {
+
+      candidates.add(
+        word.slice(6)
+      );
+
+    }
+
+
+    /*
+      meng-
+    */
+
+    if (
+      word.startsWith("meng") &&
+      word.length > 7
+    ) {
+
+      candidates.add(
+        word.slice(4)
+      );
+
+    }
+
+
+    /*
+      meny-
+      Malay root may begin with s.
+
+      menyapu -> sapu
+    */
+
+    if (
+      word.startsWith("meny") &&
+      word.length > 7
+    ) {
+
+      const remainder =
+        word.slice(4);
+
+
+      candidates.add(
+        remainder
+      );
+
+
+      candidates.add(
+        "s" + remainder
+      );
+
+    }
+
+
+    /*
+      men-
+      root may begin with t.
+
+      menulis -> tulis
+    */
+
+    if (
+      word.startsWith("men") &&
+      word.length > 6
+    ) {
+
+      const remainder =
+        word.slice(3);
+
+
+      candidates.add(
+        remainder
+      );
+
+
+      candidates.add(
+        "t" + remainder
+      );
+
+    }
+
+
+    /*
+      mem-
+      root may begin with p.
+
+      memilih -> pilih
+    */
+
+    if (
+      word.startsWith("mem") &&
+      word.length > 6
+    ) {
+
+      const remainder =
+        word.slice(3);
+
+
+      candidates.add(
+        remainder
+      );
+
+
+      candidates.add(
+        "p" + remainder
+      );
+
+    }
+
+
+    /*
+      me-
+    */
+
+    if (
+      word.startsWith("me") &&
+      word.length > 5
+    ) {
+
+      candidates.add(
+        word.slice(2)
+      );
+
+    }
+
+
+    /*
+      peN- noun forms.
+    */
+
+    [
+      "peng",
+      "peny",
+      "pen",
+      "pem",
+      "pe"
+    ].forEach(
+      prefix => {
+
+        if (
+          word.startsWith(
+            prefix
+          ) &&
+          word.length >
+            prefix.length + 2
+        ) {
+
+          candidates.add(
+            word.slice(
+              prefix.length
+            )
+          );
+
+        }
+
+      }
+    );
+
+
+    return Array.from(
+      candidates
+    );
+
+  }
+
+
+  /* =======================================================
+     5. SEARCH STORY DATABASE
+     ======================================================= */
+
+  function searchStoryDictionaryV36(
+    word
+  ) {
+
+    const stories =
+      Array.isArray(
+        window.KARANGAN_STORIES
+      )
+        ? window.KARANGAN_STORIES
+        : [];
+
+
+    for (
+      const story of stories
+    ) {
+
+      if (
+        !story ||
+        !story.dictionary
+      ) {
+
+        continue;
+
+      }
+
+
+      const result =
+        story.dictionary[
+          word
+        ];
+
+
+      if (result) {
+
+        return {
+
+          word,
+
+          translation:
+            result,
+
+          meaning:
+            result,
+
+          source:
+            "story"
+
+        };
+
+      }
+
+    }
+
+
+    return null;
+
+  }
+
+
+  /* =======================================================
+     6. LOOKUP ROOT DICTIONARY
+     ======================================================= */
+
+  function searchRootDictionaryV36(
+    word
+  ) {
+
+    const result =
+      MALAY_ROOT_DICTIONARY[
+        word
+      ];
+
+
+    if (!result) {
+
+      return null;
+
+    }
+
+
+    return {
+
+      word,
+
+      translation:
+        [
+          result.zh,
+          result.en
+        ]
+          .filter(Boolean)
+          .join(" · "),
+
+      meaning:
+        result.meaning ||
+        "",
+
+      source:
+        "morphology"
+
+    };
+
+  }
+
+
+  /* =======================================================
+     7. MASTER V3.6 LOOKUP
+     ======================================================= */
+
+  function lookupMalayWordV36(
+    rawWord
+  ) {
+
+    const original =
+      normalizeMalayLookupWord(
+        rawWord
+      );
+
+
+    if (!original) {
+
+      return null;
+
+    }
+
+
+    const candidates =
+      getMalayRootCandidates(
+        original
+      );
+
+
+    /*
+      Exact built-in definition first.
+    */
+
+    const exact =
+      searchRootDictionaryV36(
+        original
+      );
+
+
+    if (exact) {
+
+      return {
+        ...exact,
+        originalWord:
+          original
+      };
+
+    }
+
+
+    /*
+      Search candidates.
+    */
+
+    for (
+      const candidate of candidates
+    ) {
+
+      /*
+        Search story dictionaries.
+      */
+
+      const storyResult =
+        searchStoryDictionaryV36(
+          candidate
+        );
+
+
+      if (
+        storyResult
+      ) {
+
+        return {
+
+          ...storyResult,
+
+          originalWord:
+            original,
+
+          matchedWord:
+            candidate
+
+        };
+
+      }
+
+
+      /*
+        Search morphology dictionary.
+      */
+
+      const rootResult =
+        searchRootDictionaryV36(
+          candidate
+        );
+
+
+      if (
+        rootResult
+      ) {
+
+        return {
+
+          ...rootResult,
+
+          originalWord:
+            original,
+
+          matchedWord:
+            candidate
+
+        };
+
+      }
+
+    }
+
+
+    return null;
+
+  }
+
+
+  /* =======================================================
+     8. CONNECT TO v3.5
+     ======================================================= */
+
+  if (
+    window.KaranganTranslation
+  ) {
+
+    const oldLookup =
+      window.KaranganTranslation
+        .lookup;
+
+
+    window.KaranganTranslation
+      .lookupV35 =
+        oldLookup;
+
+
+    window.KaranganTranslation
+      .lookupMorphology =
+        lookupMalayWordV36;
+
+
+    window.KaranganTranslation
+      .getRootCandidates =
+        getMalayRootCandidates;
+
+  }
+
+
+  /* =======================================================
+     9. PATCH BASIC DICTIONARY
+     Allows old translateWord() paths to benefit too.
+     ======================================================= */
+
+  if (
+    typeof BASIC_DICTIONARY !==
+      "undefined"
+  ) {
+
+    Object.entries(
+      MALAY_ROOT_DICTIONARY
+    ).forEach(
+      ([
+        word,
+        data
+      ]) => {
+
+        if (
+          !BASIC_DICTIONARY[
+            word
+          ]
+        ) {
+
+          BASIC_DICTIONARY[
+            word
+          ] = {
+
+            zh:
+              data.zh,
+
+            en:
+              data.en,
+
+            meaning:
+              data.meaning
+
+          };
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     10. WRAP TRANSLATE WORD
+     Morphology check before v3.5 fallback.
+     ======================================================= */
+
+  if (
+    typeof translateWord ===
+      "function"
+  ) {
+
+    const translateWordV35 =
+      translateWord;
+
+
+    translateWord =
+      async function(
+        rawWord
+      ) {
+
+        const word =
+          normalizeMalayLookupWord(
+            rawWord
+          );
+
+
+        /*
+          Try v3.6 morphology.
+        */
+
+        const result =
+          lookupMalayWordV36(
+            word
+          );
+
+
+        if (
+          !result
+        ) {
+
+          /*
+            Let v3.5 continue normally,
+            including AI fallback.
+          */
+
+          return translateWordV35(
+            rawWord
+          );
+
+        }
+
+
+        currentTranslationWord =
+          word;
+
+
+        const sentence =
+          typeof findStorySentenceContainingWord ===
+            "function"
+            ? findStorySentenceContainingWord(
+                word
+              )
+            : "";
+
+
+        currentTranslationData = {
+
+          word,
+
+          translation:
+            result.translation,
+
+          meaning:
+            result.meaning ||
+            result.translation,
+
+          example:
+            sentence,
+
+          storyId:
+            currentStory?.id ||
+            null
+
+        };
+
+
+        const popup =
+          byId(
+            "translationPopup"
+          );
+
+
+        if (
+          popup
+        ) {
+
+          popup.hidden =
+            false;
+
+        }
+
+
+        safeText(
+          byId(
+            "translationWord"
+          ),
+          word
+        );
+
+
+        safeText(
+          byId(
+            "translationMeaning"
+          ),
+          result.translation
+        );
+
+
+        safeText(
+          byId(
+            "translationDefinition"
+          ),
+          result.meaning ||
+          ""
+        );
+
+
+        safeText(
+          byId(
+            "translationExample"
+          ),
+          sentence ||
+          `Perkataan: ${word}`
+        );
+
+
+        if (
+          typeof updateSaveVocabularyButton ===
+            "function"
+        ) {
+
+          updateSaveVocabularyButton();
+
+        }
+
+      };
+
+  }
+
+
+  /* =======================================================
+     11. DEBUG API
+     ======================================================= */
+
+  window.KaranganMalay =
+    {
+
+      lookup:
+        lookupMalayWordV36,
+
+      roots:
+        getMalayRootCandidates,
+
+      forms:
+        MALAY_WORD_FORMS
+
+    };
+
+
+  console.log(
+    "✅ Karangan AI v3.6 Malay Morphology loaded"
+  );
+
+
+})();
+
+
+/* =========================================================
+   END KARANGAN AI v3.6
+   ========================================================= */
