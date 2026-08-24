@@ -1136,7 +1136,7 @@ function getGrammarType(word) {
 }
 
 
-/* =====================================================
+/* /* =====================================================
    INITIAL DATABASE CHECK
 ===================================================== */
 
@@ -1144,7 +1144,10 @@ console.log(
   "Karangan AI Story Database loaded:",
   getStoryCount(),
   "stories"
-   /* =====================================================
+);
+
+
+/* =====================================================
    APP.JS COMPATIBILITY
    Expose story database to Karangan AI app controller
 ===================================================== */
@@ -1161,27 +1164,10 @@ window.STORIES =
 window.storyData =
   KARANGAN_STORIES;
 
-console.log(
-  "✅ Story database connected to app.js:",
-  KARANGAN_STORIES.length,
-  "stories"
-);
-);
+
 /* =====================================================
-   FORCE EXPORT STORY DATABASE
+   EXPOSE STORY HELPER FUNCTIONS
 ===================================================== */
-
-window.KARANGAN_STORIES =
-  KARANGAN_STORIES;
-
-window.stories =
-  KARANGAN_STORIES;
-
-window.STORIES =
-  KARANGAN_STORIES;
-
-window.storyData =
-  KARANGAN_STORIES;
 
 window.getAllStories =
   getAllStories;
@@ -1189,10 +1175,56 @@ window.getAllStories =
 window.getStoryById =
   getStoryById;
 
+window.getStoriesByYear =
+  getStoriesByYear;
+
+window.getStoryCount =
+  getStoryCount;
+
+window.getCurrentStory =
+  getCurrentStory;
+
 window.setCurrentStory =
   setCurrentStory;
 
+window.getStudentProgress =
+  getStudentProgress;
+
+window.saveStudentProgress =
+  saveStudentProgress;
+
+window.completeLesson =
+  completeLesson;
+
+window.addQuizCorrect =
+  addQuizCorrect;
+
+window.addEssayWritten =
+  addEssayWritten;
+
+window.normalizeMalayWord =
+  normalizeMalayWord;
+
+window.getTranslation =
+  getTranslation;
+
+window.getGrammarType =
+  getGrammarType;
+
+
+/* =====================================================
+   STORY DATABASE READY
+===================================================== */
+
 console.log(
   "✅ STORIES EXPORTED:",
-  window.KARANGAN_STORIES.length
+  window.KARANGAN_STORIES.length,
+  "stories"
+);
+
+console.log(
+  "✅ Story IDs:",
+  window.KARANGAN_STORIES.map(
+    story => story.id
+  )
 );
