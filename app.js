@@ -5459,477 +5459,314 @@ window.KaranganAI = {
    KARANGAN AI v3.0
    ========================================================= */
 /* =========================================================
-   KARANGAN AI v3.1
-   STORY VOICE UPGRADE
+   KARANGAN AI v5.1
+   NATURAL AI VOICE UPGRADE
+   - OpenAI TTS first
+   - Malaysian Malay teacher-style instructions
+   - Browser speechSynthesis fallback
    ========================================================= */
 
 (() => {
 
   "use strict";
 
-
-  /* =======================================================
-     STORY SPEECH STATE
-     ======================================================= */
+  const AUDIO_ENDPOINT = "/api/speech";
 
   let storySpeech = {
     speaking: false,
     paused: false,
-    utterance: null
+    audio: null,
+    objectUrl: ""
   };
 
-
-  /* =======================================================
-     GET MALAY VOICE
-     ======================================================= */
+  const audioCache = new Map();
 
   function getMalayVoice() {
+    if (!("speechSynthesis" in window)) return null;
 
-    if (
-      !("speechSynthesis" in window)
-    ) {
-      return null;
-    }
-
-
-    const voices =
-      window.speechSynthesis
-        .getVoices();
-
+    const voices = window.speechSynthesis.getVoices();
 
     return (
-
-      voices.find(
-        voice =>
-          String(
-            voice.lang || ""
-          )
-            .toLowerCase() ===
-          "ms-my"
-      )
-
-      ||
-
-      voices.find(
-        voice =>
-          String(
-            voice.lang || ""
-          )
-            .toLowerCase()
-            .startsWith("ms")
-      )
-
-      ||
-
+      voices.find(voice =>
+        String(voice.lang || "").toLowerCase() === "ms-my"
+      ) ||
+      voices.find(voice =>
+        String(voice.lang || "").toLowerCase().startsWith("ms")
+      ) ||
       null
-
     );
-
   }
 
-
-  /* =======================================================
-     SPEAK MALAY
-     ======================================================= */
-
-  function speakMalay(
-    text,
-    options = {}
-  ) {
-
+  function fallbackSpeak(text, options = {}) {
     if (
       !("speechSynthesis" in window) ||
-      typeof SpeechSynthesisUtterance ===
-        "undefined"
+      typeof SpeechSynthesisUtterance === "undefined"
     ) {
-
-      showToast(
-        "🔇 Peranti ini tidak menyokong bacaan suara."
-      );
-
+      showToast?.("🔇 Peranti ini tidak menyokong bacaan suara.");
       return null;
-
     }
 
+    try {
+      if (options.stopExisting !== false) {
+        window.speechSynthesis.cancel();
+      }
 
-    const speech =
-      window.speechSynthesis;
+      const utterance = new SpeechSynthesisUtterance(String(text || ""));
+      utterance.lang = "ms-MY";
+      utterance.rate = options.rate || 0.86;
+      utterance.pitch = options.pitch || 1;
+      utterance.volume = 1;
 
+      const voice = getMalayVoice();
+      if (voice) utterance.voice = voice;
 
-    if (
-      options.stopExisting !== false
-    ) {
+      if (typeof options.onstart === "function") {
+        utterance.onstart = options.onstart;
+      }
 
-      speech.cancel();
+      if (typeof options.onend === "function") {
+        utterance.onend = options.onend;
+      }
 
-    }
-
-
-    const utterance =
-      new SpeechSynthesisUtterance(
-        String(text || "")
-      );
-
-
-    utterance.lang =
-      "ms-MY";
-
-
-    utterance.rate =
-      options.rate || 0.88;
-
-
-    utterance.pitch =
-      options.pitch || 1;
-
-
-    const voice =
-      getMalayVoice();
-
-
-    if (voice) {
-
-      utterance.voice =
-        voice;
-
-    }
-
-
-    if (
-      typeof options.onstart ===
-      "function"
-    ) {
-
-      utterance.onstart =
-        options.onstart;
-
-    }
-
-
-    if (
-      typeof options.onend ===
-      "function"
-    ) {
-
-      utterance.onend =
-        options.onend;
-
-    }
-
-
-    utterance.onerror =
-      () => {
-
-        storySpeech.speaking =
-          false;
-
-        storySpeech.paused =
-          false;
-
+      utterance.onerror = () => {
+        storySpeech.speaking = false;
+        storySpeech.paused = false;
         updateStoryVoiceButtons();
-
       };
 
+      window.speechSynthesis.speak(utterance);
+      return utterance;
 
-    speech.speak(
-      utterance
-    );
-
-
-    return utterance;
-
+    } catch (error) {
+      console.warn("System Malay voice unavailable:", error);
+      return null;
+    }
   }
 
+  async function getAIAudioUrl(text, mode = "word") {
+    const clean = String(text || "").trim();
+    if (!clean) throw new Error("Empty speech text");
 
-  /* =======================================================
-     GET STORY TEXT
-     ======================================================= */
-
-  function getStoryVoiceText() {
-
-    if (!currentStory) {
-
-      return "";
-
+    const cacheKey = `${mode}:${clean}`;
+    if (audioCache.has(cacheKey)) {
+      return audioCache.get(cacheKey);
     }
 
+    const response = await fetch(AUDIO_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        text: clean,
+        mode
+      })
+    });
 
-    const paragraphs =
-      Array.isArray(
-        currentStory.paragraphs
-      )
-        ? currentStory.paragraphs
-        : [];
+    if (!response.ok) {
+      let details = "";
+      try {
+        const data = await response.json();
+        details = data?.error || "";
+      } catch (_) {}
 
+      throw new Error(details || `Speech API ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    audioCache.set(cacheKey, url);
+    return url;
+  }
+
+  function stopAudioElement() {
+    const audio = storySpeech.audio;
+
+    if (audio) {
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+      } catch (_) {}
+    }
+
+    storySpeech.audio = null;
+    storySpeech.objectUrl = "";
+  }
+
+  async function playAIVoice(text, options = {}) {
+    const mode = options.mode || "word";
+
+    try {
+      if (options.stopExisting !== false) {
+        stopAudioElement();
+        if ("speechSynthesis" in window) {
+          window.speechSynthesis.cancel();
+        }
+      }
+
+      const url = await getAIAudioUrl(text, mode);
+      const audio = new Audio(url);
+
+      if (mode === "story") {
+        storySpeech.audio = audio;
+        storySpeech.objectUrl = url;
+      }
+
+      audio.onplay = () => {
+        if (mode === "story") {
+          storySpeech.speaking = true;
+          storySpeech.paused = false;
+          updateStoryVoiceButtons();
+        }
+        options.onstart?.();
+      };
+
+      audio.onended = () => {
+        if (mode === "story") {
+          storySpeech.speaking = false;
+          storySpeech.paused = false;
+          storySpeech.audio = null;
+          updateStoryVoiceButtons();
+        }
+        options.onend?.();
+      };
+
+      audio.onerror = () => {
+        if (mode === "story") {
+          storySpeech.speaking = false;
+          storySpeech.paused = false;
+          updateStoryVoiceButtons();
+        }
+      };
+
+      await audio.play();
+      return audio;
+
+    } catch (error) {
+      console.warn("AI voice unavailable; using system fallback:", error);
+
+      return fallbackSpeak(text, {
+        stopExisting: options.stopExisting,
+        rate: mode === "word" ? 0.76 : 0.88,
+        onstart: options.onstart,
+        onend: options.onend
+      });
+    }
+  }
+
+  function getStoryVoiceText() {
+    if (!currentStory) return "";
+
+    const paragraphs = Array.isArray(currentStory.paragraphs)
+      ? currentStory.paragraphs
+      : [];
 
     return [
-
       currentStory.title || "",
-
       ...paragraphs
-
     ]
       .filter(Boolean)
       .join(". ");
-
   }
 
-
-  /* =======================================================
-     START READING STORY
-     ======================================================= */
-
-  function startStoryVoice() {
-
-    const text =
-      getStoryVoiceText();
-
+  async function startStoryVoice() {
+    const text = getStoryVoiceText();
 
     if (!text) {
-
-      showToast(
-        "📖 Tiada cerita untuk dibaca."
-      );
-
+      showToast?.("📖 Tiada cerita untuk dibaca.");
       return;
-
     }
 
+    stopStoryVoice(false);
 
-    stopStoryVoice(
-      false
-    );
-
-
-    storySpeech.utterance =
-      speakMalay(
-        text,
-        {
-
-          stopExisting: true,
-
-
-          onstart() {
-
-            storySpeech.speaking =
-              true;
-
-            storySpeech.paused =
-              false;
-
-            updateStoryVoiceButtons();
-
-          },
-
-
-          onend() {
-
-            storySpeech.speaking =
-              false;
-
-            storySpeech.paused =
-              false;
-
-            storySpeech.utterance =
-              null;
-
-            updateStoryVoiceButtons();
-
-          }
-
-        }
-      );
-
-
-    storySpeech.speaking =
-      true;
-
-
-    storySpeech.paused =
-      false;
-
-
+    storySpeech.speaking = true;
+    storySpeech.paused = false;
     updateStoryVoiceButtons();
 
+    await playAIVoice(text, {
+      mode: "story",
+      stopExisting: true,
+      onstart() {
+        storySpeech.speaking = true;
+        storySpeech.paused = false;
+        updateStoryVoiceButtons();
+      },
+      onend() {
+        storySpeech.speaking = false;
+        storySpeech.paused = false;
+        updateStoryVoiceButtons();
+      }
+    });
   }
-
-
-  /* =======================================================
-     PAUSE / RESUME
-     ======================================================= */
 
   function pauseResumeStoryVoice() {
+    const audio = storySpeech.audio;
 
-    if (
-      !("speechSynthesis" in window)
-    ) {
+    if (audio) {
+      if (storySpeech.paused) {
+        audio.play().catch(() => {});
+        storySpeech.paused = false;
+      } else {
+        audio.pause();
+        storySpeech.paused = true;
+      }
 
+      updateStoryVoiceButtons();
       return;
-
     }
 
+    if ("speechSynthesis" in window) {
+      const speech = window.speechSynthesis;
 
-    const speech =
-      window.speechSynthesis;
+      if (!storySpeech.speaking) {
+        startStoryVoice();
+        return;
+      }
 
+      if (storySpeech.paused) {
+        speech.resume();
+        storySpeech.paused = false;
+      } else {
+        speech.pause();
+        storySpeech.paused = true;
+      }
 
-    if (
-      !storySpeech.speaking
-    ) {
-
-      startStoryVoice();
-
-      return;
-
+      updateStoryVoiceButtons();
     }
-
-
-    if (
-      storySpeech.paused
-    ) {
-
-      speech.resume();
-
-      storySpeech.paused =
-        false;
-
-    }
-
-    else {
-
-      speech.pause();
-
-      storySpeech.paused =
-        true;
-
-    }
-
-
-    updateStoryVoiceButtons();
-
   }
 
+  function stopStoryVoice(showMessage = true) {
+    stopAudioElement();
 
-  /* =======================================================
-     STOP
-     ======================================================= */
-
-  function stopStoryVoice(
-    showMessage = true
-  ) {
-
-    if (
-      "speechSynthesis" in window
-    ) {
-
-      window
-        .speechSynthesis
-        .cancel();
-
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
     }
 
-
-    storySpeech.speaking =
-      false;
-
-
-    storySpeech.paused =
-      false;
-
-
-    storySpeech.utterance =
-      null;
-
-
+    storySpeech.speaking = false;
+    storySpeech.paused = false;
     updateStoryVoiceButtons();
-
 
     if (showMessage) {
-
-      showToast(
-        "⏹ Bacaan dihentikan."
-      );
-
+      showToast?.("⏹ Bacaan dihentikan.");
     }
-
   }
 
+  async function pronounceStoryWord(word) {
+    const cleanWord = String(word || "").trim();
+    if (!cleanWord) return;
 
-  /* =======================================================
-     READ ONE WORD
-     ======================================================= */
-
-  function pronounceStoryWord(
-    word
-  ) {
-
-    const cleanWord =
-      String(word || "")
-        .trim();
-
-
-    if (!cleanWord) {
-
-      return;
-
-    }
-
-
-    speakMalay(
-      cleanWord,
-      {
-        stopExisting: true,
-        rate: 0.75
-      }
-    );
-
+    await playAIVoice(cleanWord, {
+      mode: "word",
+      stopExisting: true
+    });
   }
-
-
-  /* =======================================================
-     CREATE STORY VOICE BUTTONS
-     ======================================================= */
 
   function addStoryVoiceControls() {
+    const reader = byId("storyReader");
+    if (!reader || byId("storyVoiceControls")) return;
 
-    const reader =
-      byId(
-        "storyReader"
-      );
-
-
-    if (!reader) {
-
-      return;
-
-    }
-
-
-    /*
-      Prevent duplicate controls
-    */
-
-    if (
-      byId(
-        "storyVoiceControls"
-      )
-    ) {
-
-      return;
-
-    }
-
-
-    const controls =
-      document.createElement(
-        "div"
-      );
-
-
-    controls.id =
-      "storyVoiceControls";
-
-
+    const controls = document.createElement("div");
+    controls.id = "storyVoiceControls";
     controls.style.cssText = `
       display:grid;
       grid-template-columns:1.4fr 1fr 1fr;
@@ -5940,338 +5777,117 @@ window.KaranganAI = {
       background:#f5f0ff;
     `;
 
-
     controls.innerHTML = `
-
-      <button
-        id="readStoryVoiceButton"
-        class="primary-button"
-        type="button"
-      >
+      <button id="readStoryVoiceButton" class="primary-button" type="button">
         🔊 Baca Cerita
       </button>
-
-
-      <button
-        id="pauseStoryVoiceButton"
-        class="secondary-button"
-        type="button"
-      >
+      <button id="pauseStoryVoiceButton" class="secondary-button" type="button">
         ⏸ Jeda
       </button>
-
-
-      <button
-        id="stopStoryVoiceButton"
-        class="secondary-button"
-        type="button"
-      >
+      <button id="stopStoryVoiceButton" class="secondary-button" type="button">
         ⏹ Berhenti
       </button>
-
     `;
 
-
-    const heading =
-      reader.querySelector(
-        "h1"
-      );
-
-
+    const heading = reader.querySelector("h1");
     if (heading) {
-
-      heading.insertAdjacentElement(
-        "afterend",
-        controls
-      );
-
+      heading.insertAdjacentElement("afterend", controls);
+    } else {
+      reader.prepend(controls);
     }
 
-    else {
-
-      reader.prepend(
-        controls
-      );
-
-    }
-
-
-    byId(
-      "readStoryVoiceButton"
-    )
-      ?.addEventListener(
-        "click",
-        startStoryVoice
-      );
-
-
-    byId(
-      "pauseStoryVoiceButton"
-    )
-      ?.addEventListener(
-        "click",
-        pauseResumeStoryVoice
-      );
-
-
-    byId(
-      "stopStoryVoiceButton"
-    )
-      ?.addEventListener(
-        "click",
-        () => {
-
-          stopStoryVoice(
-            true
-          );
-
-        }
-      );
-
+    byId("readStoryVoiceButton")?.addEventListener("click", startStoryVoice);
+    byId("pauseStoryVoiceButton")?.addEventListener("click", pauseResumeStoryVoice);
+    byId("stopStoryVoiceButton")?.addEventListener("click", () => stopStoryVoice(true));
 
     updateStoryVoiceButtons();
-
   }
-
-
-  /* =======================================================
-     UPDATE BUTTON TEXT
-     ======================================================= */
 
   function updateStoryVoiceButtons() {
-
-    const readButton =
-      byId(
-        "readStoryVoiceButton"
-      );
-
-
-    const pauseButton =
-      byId(
-        "pauseStoryVoiceButton"
-      );
-
+    const readButton = byId("readStoryVoiceButton");
+    const pauseButton = byId("pauseStoryVoiceButton");
 
     if (readButton) {
-
-      readButton.textContent =
-        storySpeech.speaking
-          ? "🔊 Sedang Membaca..."
-          : "🔊 Baca Cerita";
-
+      readButton.textContent = storySpeech.speaking
+        ? "🔊 Sedang Membaca..."
+        : "🔊 Baca Cerita";
     }
-
 
     if (pauseButton) {
-
-      pauseButton.textContent =
-        storySpeech.paused
-          ? "▶️ Sambung"
-          : "⏸ Jeda";
-
+      pauseButton.textContent = storySpeech.paused
+        ? "▶️ Sambung"
+        : "⏸ Jeda";
     }
-
   }
 
-
-  /* =======================================================
-     ADD SPEAKER TO TRANSLATION POPUP
-     ======================================================= */
-
   function addWordVoiceButton() {
+    const wordElement = byId("translationWord");
+    if (!wordElement) return;
 
-    const wordElement =
-      byId(
-        "translationWord"
-      );
-
-
-    if (!wordElement) {
-
-      return;
-
-    }
-
-
-    let button =
-      byId(
-        "storyWordVoiceButton"
-      );
-
+    let button = byId("storyWordVoiceButton");
 
     if (!button) {
-
-      button =
-        document.createElement(
-          "button"
-        );
-
-
-      button.id =
-        "storyWordVoiceButton";
-
-
-      button.type =
-        "button";
-
-
-      button.className =
-        "secondary-button";
-
-
+      button = document.createElement("button");
+      button.id = "storyWordVoiceButton";
+      button.type = "button";
+      button.className = "secondary-button";
       button.style.cssText = `
         margin-top:10px;
         padding:8px 12px;
       `;
-
-
-      wordElement
-        .insertAdjacentElement(
-          "afterend",
-          button
-        );
-
+      wordElement.insertAdjacentElement("afterend", button);
     }
 
-
-    button.textContent =
-      `🔊 Dengar "${currentTranslationWord}"`;
-
-
-    button.onclick =
-      () => {
-
-        pronounceStoryWord(
-          currentTranslationWord
-        );
-
-      };
-
+    button.textContent = `🔊 Dengar "${currentTranslationWord}"`;
+    button.onclick = () => pronounceStoryWord(currentTranslationWord);
   }
 
+  const originalRenderStory = renderStory;
 
-  /* =======================================================
-     HOOK EXISTING renderStory()
-     ======================================================= */
+  renderStory = function(story) {
+    stopStoryVoice(false);
+    originalRenderStory(story);
+    addStoryVoiceControls();
+  };
 
-  const originalRenderStory =
-    renderStory;
+  const originalTranslateWord = translateWord;
 
+  translateWord = async function(word) {
+    await originalTranslateWord(word);
+    addWordVoiceButton();
+  };
 
-  renderStory =
-    function(story) {
+  const originalShowScreen = showScreen;
 
-      stopStoryVoice(
-        false
-      );
+  showScreen = function(screenName, remember = true) {
+    if (currentScreen === "story" && screenName !== "story") {
+      stopStoryVoice(false);
+    }
 
+    return originalShowScreen(screenName, remember);
+  };
 
-      originalRenderStory(
-        story
-      );
-
-
-      addStoryVoiceControls();
-
-    };
-
-
-  /* =======================================================
-     HOOK EXISTING translateWord()
-     ======================================================= */
-
-  const originalTranslateWord =
-    translateWord;
-
-
-  translateWord =
-    async function(word) {
-
-      await originalTranslateWord(
-        word
-      );
-
-
-      addWordVoiceButton();
-
-    };
-
-
-  /* =======================================================
-     STOP AUDIO WHEN LEAVING STORY
-     ======================================================= */
-
-  const originalShowScreen =
-    showScreen;
-
-
-  showScreen =
-    function(
-      screenName,
-      remember = true
-    ) {
-
-      if (
-        currentScreen ===
-          "story" &&
-        screenName !==
-          "story"
-      ) {
-
-        stopStoryVoice(
-          false
-        );
-
-      }
-
-
-      return originalShowScreen(
-        screenName,
-        remember
-      );
-
-    };
-
-
-  /* =======================================================
-     IOS / SAFARI VOICE INITIALIZATION
-     ======================================================= */
-
-  if (
-    "speechSynthesis" in window
-  ) {
-
-    window
-      .speechSynthesis
-      .getVoices();
-
-
-    window
-      .speechSynthesis
-      .addEventListener?.(
-        "voiceschanged",
-        () => {
-
-          window
-            .speechSynthesis
-            .getVoices();
-
-        }
-      );
-
+  if ("speechSynthesis" in window) {
+    window.speechSynthesis.getVoices();
+    window.speechSynthesis.addEventListener?.(
+      "voiceschanged",
+      () => window.speechSynthesis.getVoices()
+    );
   }
 
+  window.KaranganVoice = {
+    speakWord: pronounceStoryWord,
+    speakStory: startStoryVoice,
+    stop: stopStoryVoice,
+    pauseResume: pauseResumeStoryVoice
+  };
 
-  console.log(
-    "Karangan AI v3.1 Story Voice loaded."
-  );
-
+  console.log("✅ Karangan AI v5.1 Natural AI Voice loaded.");
 
 })();
 
-
 /* =========================================================
-   END STORY VOICE UPGRADE
+   END NATURAL AI VOICE UPGRADE
    ========================================================= */
 /* =========================================================
    KARANGAN AI v3.2
@@ -9260,34 +8876,25 @@ window.KaranganAI = {
 
   function speakTranslationWord(word) {
     const target = String(word || "").trim();
-
     if (!target) return;
 
+    if (window.KaranganVoice?.speakWord) {
+      window.KaranganVoice.speakWord(target);
+      return;
+    }
+
     if (!("speechSynthesis" in window) || typeof SpeechSynthesisUtterance !== "function") {
-      if (typeof showToast === "function") {
-        showToast("🔇 Peranti ini tidak menyokong sebutan suara.");
-      }
+      showToast?.("🔇 Peranti ini tidak menyokong sebutan suara.");
       return;
     }
 
     try {
       window.speechSynthesis.cancel();
-
       const utterance = new SpeechSynthesisUtterance(target);
       utterance.lang = "ms-MY";
-      utterance.rate = 0.82;
+      utterance.rate = 0.78;
       utterance.pitch = 1;
       utterance.volume = 1;
-
-      const voices = window.speechSynthesis.getVoices();
-      const malayVoice = voices.find(voice =>
-        /^ms(-|_)/i.test(voice.lang || "")
-      );
-
-      if (malayVoice) {
-        utterance.voice = malayVoice;
-      }
-
       window.speechSynthesis.speak(utterance);
     } catch (error) {
       console.warn("Word pronunciation unavailable:", error);
