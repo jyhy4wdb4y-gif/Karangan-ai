@@ -9104,3 +9104,782 @@ window.KaranganAI = {
 /* =========================================================
    END KARANGAN AI v3.3
    ========================================================= */
+/* =========================================================
+   KARANGAN AI v3.5
+   TRANSLATION ENGINE FIX
+   ========================================================= */
+
+(() => {
+
+  "use strict";
+
+
+  /* =======================================================
+     1. HELPERS
+     ======================================================= */
+
+  function cleanTranslationWord(
+    rawWord
+  ) {
+
+    return String(
+      rawWord || ""
+    )
+      .toLowerCase()
+      .trim()
+      .replace(
+        /^[^a-zA-ZÀ-ÿ]+|[^a-zA-ZÀ-ÿ'-]+$/g,
+        ""
+      );
+
+  }
+
+
+  function makeTranslationResult(
+    word,
+    translation,
+    meaning = ""
+  ) {
+
+    return {
+
+      word,
+
+      translation:
+        translation || "",
+
+      meaning:
+        meaning ||
+        translation ||
+        ""
+
+    };
+
+  }
+
+
+  /* =======================================================
+     2. CURRENT STORY LOOKUP
+     ======================================================= */
+
+  function lookupCurrentStoryDictionary(
+    word
+  ) {
+
+    if (
+      !currentStory ||
+      !currentStory.dictionary
+    ) {
+
+      return null;
+
+    }
+
+
+    const value =
+      currentStory.dictionary[
+        word
+      ];
+
+
+    if (!value) {
+
+      return null;
+
+    }
+
+
+    return makeTranslationResult(
+      word,
+      value,
+      value
+    );
+
+  }
+
+
+  /* =======================================================
+     3. VOCABULARY V2 LOOKUP
+     ======================================================= */
+
+  function lookupVocabularyEngine(
+    word
+  ) {
+
+    const engine =
+      typeof getVocabularyEngine ===
+        "function"
+        ? getVocabularyEngine()
+        : window.KaranganVocabulary;
+
+
+    if (
+      !engine ||
+      typeof engine.lookupWord !==
+        "function"
+    ) {
+
+      return null;
+
+    }
+
+
+    try {
+
+      const result =
+        engine.lookupWord(
+          word
+        );
+
+
+      if (!result) {
+
+        return null;
+
+      }
+
+
+      return {
+
+        word,
+
+        translation:
+          result.translation ||
+          [
+            result.zh,
+            result.en
+          ]
+            .filter(Boolean)
+            .join(" · "),
+
+        meaning:
+          result.meaning ||
+          ""
+
+      };
+
+    } catch (error) {
+
+      console.warn(
+        "Vocabulary lookup failed:",
+        error
+      );
+
+
+      return null;
+
+    }
+
+  }
+
+
+  /* =======================================================
+     4. SEARCH ALL STORY DICTIONARIES
+     ======================================================= */
+
+  function lookupAllStoryDictionaries(
+    word
+  ) {
+
+    const stories =
+      Array.isArray(
+        window.KARANGAN_STORIES
+      )
+        ? window.KARANGAN_STORIES
+        : [];
+
+
+    for (
+      const story of stories
+    ) {
+
+      const value =
+        story?.dictionary?.[
+          word
+        ];
+
+
+      if (value) {
+
+        return makeTranslationResult(
+          word,
+          value,
+          value
+        );
+
+      }
+
+    }
+
+
+    return null;
+
+  }
+
+
+  /* =======================================================
+     5. WORD FORM FALLBACK
+     ======================================================= */
+
+  function generateWordCandidates(
+    word
+  ) {
+
+    const candidates =
+      new Set();
+
+
+    candidates.add(
+      word
+    );
+
+
+    /*
+      Possessive / object suffix
+    */
+
+    if (
+      word.endsWith(
+        "nya"
+      ) &&
+      word.length > 5
+    ) {
+
+      candidates.add(
+        word.slice(
+          0,
+          -3
+        )
+      );
+
+    }
+
+
+    if (
+      word.endsWith(
+        "kan"
+      ) &&
+      word.length > 6
+    ) {
+
+      candidates.add(
+        word.slice(
+          0,
+          -3
+        )
+      );
+
+    }
+
+
+    if (
+      word.endsWith(
+        "i"
+      ) &&
+      word.length > 5
+    ) {
+
+      candidates.add(
+        word.slice(
+          0,
+          -1
+        )
+      );
+
+    }
+
+
+    /*
+      Common Malay prefixes
+    */
+
+    const prefixes = [
+      "ber",
+      "ter",
+      "mem",
+      "men",
+      "meng",
+      "meny",
+      "me",
+      "di",
+      "ke",
+      "se",
+      "pe"
+    ];
+
+
+    prefixes.forEach(
+      prefix => {
+
+        if (
+          word.startsWith(
+            prefix
+          ) &&
+          word.length >
+            prefix.length + 2
+        ) {
+
+          candidates.add(
+            word.slice(
+              prefix.length
+            )
+          );
+
+        }
+
+      }
+    );
+
+
+    /*
+      Prefix + suffix combination
+    */
+
+    Array.from(
+      candidates
+    ).forEach(
+      candidate => {
+
+        if (
+          candidate.endsWith(
+            "nya"
+          ) &&
+          candidate.length > 5
+        ) {
+
+          candidates.add(
+            candidate.slice(
+              0,
+              -3
+            )
+          );
+
+        }
+
+
+        if (
+          candidate.endsWith(
+            "kan"
+          ) &&
+          candidate.length > 6
+        ) {
+
+          candidates.add(
+            candidate.slice(
+              0,
+              -3
+            )
+          );
+
+        }
+
+      }
+    );
+
+
+    return Array.from(
+      candidates
+    );
+
+  }
+
+
+  /* =======================================================
+     6. LOCAL MULTI-LAYER LOOKUP
+     ======================================================= */
+
+  function lookupTranslationLocally(
+    word
+  ) {
+
+    const candidates =
+      generateWordCandidates(
+        word
+      );
+
+
+    for (
+      const candidate of candidates
+    ) {
+
+      const currentStoryResult =
+        lookupCurrentStoryDictionary(
+          candidate
+        );
+
+
+      if (
+        currentStoryResult
+      ) {
+
+        return currentStoryResult;
+
+      }
+
+
+      const vocabularyResult =
+        lookupVocabularyEngine(
+          candidate
+        );
+
+
+      if (
+        vocabularyResult
+      ) {
+
+        return vocabularyResult;
+
+      }
+
+
+      const allStoryResult =
+        lookupAllStoryDictionaries(
+          candidate
+        );
+
+
+      if (
+        allStoryResult
+      ) {
+
+        return allStoryResult;
+
+      }
+
+    }
+
+
+    return null;
+
+  }
+
+
+  /* =======================================================
+     7. OVERRIDE translateWord()
+     ======================================================= */
+
+  translateWord =
+    async function(
+      rawWord
+    ) {
+
+      const word =
+        cleanTranslationWord(
+          rawWord
+        );
+
+
+      if (!word) {
+
+        return;
+
+      }
+
+
+      currentTranslationWord =
+        word;
+
+
+      const sentence =
+        findStorySentenceContainingWord(
+          word
+        );
+
+
+      currentTranslationData = {
+
+        word,
+
+        translation: "",
+
+        meaning: "",
+
+        example:
+          sentence,
+
+        storyId:
+          currentStory?.id ||
+          null
+
+      };
+
+
+      const popup =
+        byId(
+          "translationPopup"
+        );
+
+
+      if (popup) {
+
+        popup.hidden =
+          false;
+
+      }
+
+
+      safeText(
+        byId(
+          "translationWord"
+        ),
+        word
+      );
+
+
+      const meaningEl =
+        byId(
+          "translationMeaning"
+        );
+
+
+      const definitionEl =
+        byId(
+          "translationDefinition"
+        );
+
+
+      const exampleEl =
+        byId(
+          "translationExample"
+        );
+
+
+      /*
+        STEP 1–4:
+        Local lookup
+      */
+
+      const localResult =
+        lookupTranslationLocally(
+          word
+        );
+
+
+      if (
+        localResult
+      ) {
+
+        currentTranslationData.translation =
+          localResult.translation;
+
+
+        currentTranslationData.meaning =
+          localResult.meaning ||
+          localResult.translation;
+
+
+        safeText(
+          meaningEl,
+          localResult.translation
+        );
+
+
+        safeText(
+          definitionEl,
+          localResult.meaning ||
+          ""
+        );
+
+
+        safeText(
+          exampleEl,
+          sentence ||
+          `Perkataan: ${word}`
+        );
+
+
+        updateSaveVocabularyButton();
+
+
+        return;
+
+      }
+
+
+      /*
+        STEP 5:
+        AI fallback
+      */
+
+      safeText(
+        meaningEl,
+        "Mencari maksud..."
+      );
+
+
+      safeText(
+        definitionEl,
+        "Cikgu Aira sedang mencari perkataan ini."
+      );
+
+
+      safeText(
+        exampleEl,
+        sentence ||
+        `Perkataan: ${word}`
+      );
+
+
+      try {
+
+        const result =
+          await callAI({
+
+            type:
+              "translate",
+
+            word,
+
+            context:
+              sentence,
+
+            sourceLanguage:
+              "Bahasa Melayu",
+
+            targetLanguages: [
+              "Simplified Chinese",
+              "English"
+            ],
+
+            instruction:
+              "Translate the Bahasa Melayu word using its sentence context. Return a short response suitable for a primary-school learner. Format: Chinese · English. Do not return markdown."
+
+          });
+
+
+        const answer =
+          String(
+            extractAIText(
+              result
+            ) ||
+            ""
+          ).trim();
+
+
+        if (!answer) {
+
+          throw new Error(
+            "Empty AI translation"
+          );
+
+        }
+
+
+        currentTranslationData.translation =
+          answer;
+
+
+        currentTranslationData.meaning =
+          answer;
+
+
+        safeText(
+          meaningEl,
+          answer
+        );
+
+
+        safeText(
+          definitionEl,
+          ""
+        );
+
+
+      } catch (error) {
+
+        console.warn(
+          "Translation failed:",
+          word,
+          error
+        );
+
+
+        /*
+          Important:
+          Do not display the old
+          "Maksud belum tersedia"
+          immediately.
+
+          Give the student a useful fallback.
+        */
+
+        const fallback =
+          `"${word}" belum ada dalam kamus tempatan. Cuba Tanya Cikgu Aira.`;
+
+
+        currentTranslationData.translation =
+          fallback;
+
+
+        currentTranslationData.meaning =
+          fallback;
+
+
+        safeText(
+          meaningEl,
+          fallback
+        );
+
+
+        safeText(
+          definitionEl,
+          ""
+        );
+
+      }
+
+
+      updateSaveVocabularyButton();
+
+    };
+
+
+  /* =======================================================
+     8. PUBLIC DEBUG LOOKUP
+     ======================================================= */
+
+  window.KaranganTranslation = {
+
+    lookup(
+      word
+    ) {
+
+      const clean =
+        cleanTranslationWord(
+          word
+        );
+
+
+      return {
+
+        word:
+          clean,
+
+        candidates:
+          generateWordCandidates(
+            clean
+          ),
+
+        result:
+          lookupTranslationLocally(
+            clean
+          )
+
+      };
+
+    }
+
+  };
+
+
+  console.log(
+    "✅ Karangan AI v3.5 Translation Engine loaded"
+  );
+
+
+})();
+
+
+/* =========================================================
+   END KARANGAN AI v3.5
+   ========================================================= */
