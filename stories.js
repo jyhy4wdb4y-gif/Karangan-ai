@@ -5468,3 +5468,6494 @@ console.log(
    Tahun 5 = 10
    TOTAL = 30 STORIES
    ========================================================= */
+
+
+/* =========================================================
+   PHASE 1 CONTENT EXPANSION — 60 ADDITIONAL COMPLETE LESSONS
+   Total target: 30 stories per year / 90 stories
+   ========================================================= */
+const KARANGAN_PHASE1_EXTRA_STORIES = [
+  {
+    "id": "lawatan-ke-zoo",
+    "title": "Lawatan ke Zoo",
+    "year": 3,
+    "level": "Tahun 3",
+    "theme": "Haiwan",
+    "emoji": "📖✨",
+    "description": "Cerita bertema haiwan untuk murid Tahun 3.",
+    "targetWords": "70–100 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Lawatan ke Zoo"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hari Sabtu, saya bersama keluarga dan rakan menyertai aktiviti lawatan ke zoo. Cuaca pada pagi itu cerah dan nyaman. Kami membuat persediaan dengan teratur sebelum memulakan aktiviti. Saya mendengar arahan dengan teliti dan membantu orang di sekeliling saya. Kami bekerjasama dengan gembira sehingga semua tugas selesai. Kawasan itu kelihatan bersih dan indah. Saya berasa gembira kerana mendapat pengalaman baharu yang bermakna.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "membantu-ibu-di-dapur",
+    "title": "Membantu Ibu di Dapur",
+    "year": 3,
+    "level": "Tahun 3",
+    "theme": "Keluarga",
+    "emoji": "📖✨",
+    "description": "Cerita bertema keluarga untuk murid Tahun 3.",
+    "targetWords": "70–100 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Membantu Ibu di Dapur"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hari Sabtu, saya bersama keluarga dan rakan menyertai aktiviti membantu ibu di dapur. Cuaca pada pagi itu cerah dan nyaman. Kami membuat persediaan dengan teratur sebelum memulakan aktiviti. Saya mendengar arahan dengan teliti dan membantu orang di sekeliling saya. Kami bekerjasama dengan gembira sehingga semua tugas selesai. Kawasan itu kelihatan bersih dan indah. Saya berasa gembira kerana mendapat pengalaman baharu yang bermakna.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "hari-jadi-saya",
+    "title": "Hari Jadi Saya",
+    "year": 3,
+    "level": "Tahun 3",
+    "theme": "Keluarga",
+    "emoji": "📖✨",
+    "description": "Cerita bertema keluarga untuk murid Tahun 3.",
+    "targetWords": "70–100 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Hari Jadi Saya"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hari Sabtu, saya bersama keluarga dan rakan menyertai aktiviti hari jadi saya. Cuaca pada pagi itu cerah dan nyaman. Kami membuat persediaan dengan teratur sebelum memulakan aktiviti. Saya mendengar arahan dengan teliti dan membantu orang di sekeliling saya. Kami bekerjasama dengan gembira sehingga semua tugas selesai. Kawasan itu kelihatan bersih dan indah. Saya berasa gembira kerana mendapat pengalaman baharu yang bermakna.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "menanam-pokok-bunga",
+    "title": "Menanam Pokok Bunga",
+    "year": 3,
+    "level": "Tahun 3",
+    "theme": "Alam Sekitar",
+    "emoji": "📖✨",
+    "description": "Cerita bertema alam sekitar untuk murid Tahun 3.",
+    "targetWords": "70–100 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Menanam Pokok Bunga"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hari Sabtu, saya bersama keluarga dan rakan menyertai aktiviti menanam pokok bunga. Cuaca pada pagi itu cerah dan nyaman. Kami membuat persediaan dengan teratur sebelum memulakan aktiviti. Saya mendengar arahan dengan teliti dan membantu orang di sekeliling saya. Kami bekerjasama dengan gembira sehingga semua tugas selesai. Kawasan itu kelihatan bersih dan indah. Saya berasa gembira kerana mendapat pengalaman baharu yang bermakna.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "pergi-ke-perpustakaan",
+    "title": "Pergi ke Perpustakaan",
+    "year": 3,
+    "level": "Tahun 3",
+    "theme": "Sekolah",
+    "emoji": "📖✨",
+    "description": "Cerita bertema sekolah untuk murid Tahun 3.",
+    "targetWords": "70–100 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Pergi ke Perpustakaan"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hari Sabtu, saya bersama keluarga dan rakan menyertai aktiviti pergi ke perpustakaan. Cuaca pada pagi itu cerah dan nyaman. Kami membuat persediaan dengan teratur sebelum memulakan aktiviti. Saya mendengar arahan dengan teliti dan membantu orang di sekeliling saya. Kami bekerjasama dengan gembira sehingga semua tugas selesai. Kawasan itu kelihatan bersih dan indah. Saya berasa gembira kerana mendapat pengalaman baharu yang bermakna.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "bermain-di-taman",
+    "title": "Bermain di Taman",
+    "year": 3,
+    "level": "Tahun 3",
+    "theme": "Rekreasi",
+    "emoji": "📖✨",
+    "description": "Cerita bertema rekreasi untuk murid Tahun 3.",
+    "targetWords": "70–100 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Bermain di Taman"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hari Sabtu, saya bersama keluarga dan rakan menyertai aktiviti bermain di taman. Cuaca pada pagi itu cerah dan nyaman. Kami membuat persediaan dengan teratur sebelum memulakan aktiviti. Saya mendengar arahan dengan teliti dan membantu orang di sekeliling saya. Kami bekerjasama dengan gembira sehingga semua tugas selesai. Kawasan itu kelihatan bersih dan indah. Saya berasa gembira kerana mendapat pengalaman baharu yang bermakna.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "kucing-kesayangan-saya",
+    "title": "Kucing Kesayangan Saya",
+    "year": 3,
+    "level": "Tahun 3",
+    "theme": "Haiwan",
+    "emoji": "📖✨",
+    "description": "Cerita bertema haiwan untuk murid Tahun 3.",
+    "targetWords": "70–100 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Kucing Kesayangan Saya"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hari Sabtu, saya bersama keluarga dan rakan menyertai aktiviti kucing kesayangan saya. Cuaca pada pagi itu cerah dan nyaman. Kami membuat persediaan dengan teratur sebelum memulakan aktiviti. Saya mendengar arahan dengan teliti dan membantu orang di sekeliling saya. Kami bekerjasama dengan gembira sehingga semua tugas selesai. Kawasan itu kelihatan bersih dan indah. Saya berasa gembira kerana mendapat pengalaman baharu yang bermakna.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "membeli-belah-di-pasar",
+    "title": "Membeli-belah di Pasar",
+    "year": 3,
+    "level": "Tahun 3",
+    "theme": "Kehidupan Harian",
+    "emoji": "📖✨",
+    "description": "Cerita bertema kehidupan harian untuk murid Tahun 3.",
+    "targetWords": "70–100 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Membeli-belah di Pasar"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hari Sabtu, saya bersama keluarga dan rakan menyertai aktiviti membeli-belah di pasar. Cuaca pada pagi itu cerah dan nyaman. Kami membuat persediaan dengan teratur sebelum memulakan aktiviti. Saya mendengar arahan dengan teliti dan membantu orang di sekeliling saya. Kami bekerjasama dengan gembira sehingga semua tugas selesai. Kawasan itu kelihatan bersih dan indah. Saya berasa gembira kerana mendapat pengalaman baharu yang bermakna.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "majlis-hari-raya",
+    "title": "Majlis Hari Raya",
+    "year": 3,
+    "level": "Tahun 3",
+    "theme": "Perayaan",
+    "emoji": "📖✨",
+    "description": "Cerita bertema perayaan untuk murid Tahun 3.",
+    "targetWords": "70–100 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Majlis Hari Raya"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hari Sabtu, saya bersama keluarga dan rakan menyertai aktiviti majlis hari raya. Cuaca pada pagi itu cerah dan nyaman. Kami membuat persediaan dengan teratur sebelum memulakan aktiviti. Saya mendengar arahan dengan teliti dan membantu orang di sekeliling saya. Kami bekerjasama dengan gembira sehingga semua tugas selesai. Kawasan itu kelihatan bersih dan indah. Saya berasa gembira kerana mendapat pengalaman baharu yang bermakna.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "menjaga-kebersihan-kelas",
+    "title": "Menjaga Kebersihan Kelas",
+    "year": 3,
+    "level": "Tahun 3",
+    "theme": "Sekolah",
+    "emoji": "📖✨",
+    "description": "Cerita bertema sekolah untuk murid Tahun 3.",
+    "targetWords": "70–100 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Menjaga Kebersihan Kelas"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hari Sabtu, saya bersama keluarga dan rakan menyertai aktiviti menjaga kebersihan kelas. Cuaca pada pagi itu cerah dan nyaman. Kami membuat persediaan dengan teratur sebelum memulakan aktiviti. Saya mendengar arahan dengan teliti dan membantu orang di sekeliling saya. Kami bekerjasama dengan gembira sehingga semua tugas selesai. Kawasan itu kelihatan bersih dan indah. Saya berasa gembira kerana mendapat pengalaman baharu yang bermakna.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "belajar-menunggang-basikal",
+    "title": "Belajar Menunggang Basikal",
+    "year": 3,
+    "level": "Tahun 3",
+    "theme": "Pengalaman",
+    "emoji": "📖✨",
+    "description": "Cerita bertema pengalaman untuk murid Tahun 3.",
+    "targetWords": "70–100 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Belajar Menunggang Basikal"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hari Sabtu, saya bersama keluarga dan rakan menyertai aktiviti belajar menunggang basikal. Cuaca pada pagi itu cerah dan nyaman. Kami membuat persediaan dengan teratur sebelum memulakan aktiviti. Saya mendengar arahan dengan teliti dan membantu orang di sekeliling saya. Kami bekerjasama dengan gembira sehingga semua tugas selesai. Kawasan itu kelihatan bersih dan indah. Saya berasa gembira kerana mendapat pengalaman baharu yang bermakna.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "lawatan-ke-ladang",
+    "title": "Lawatan ke Ladang",
+    "year": 3,
+    "level": "Tahun 3",
+    "theme": "Alam",
+    "emoji": "📖✨",
+    "description": "Cerita bertema alam untuk murid Tahun 3.",
+    "targetWords": "70–100 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Lawatan ke Ladang"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hari Sabtu, saya bersama keluarga dan rakan menyertai aktiviti lawatan ke ladang. Cuaca pada pagi itu cerah dan nyaman. Kami membuat persediaan dengan teratur sebelum memulakan aktiviti. Saya mendengar arahan dengan teliti dan membantu orang di sekeliling saya. Kami bekerjasama dengan gembira sehingga semua tugas selesai. Kawasan itu kelihatan bersih dan indah. Saya berasa gembira kerana mendapat pengalaman baharu yang bermakna.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "membantu-jiran",
+    "title": "Membantu Jiran",
+    "year": 3,
+    "level": "Tahun 3",
+    "theme": "Kemasyarakatan",
+    "emoji": "📖✨",
+    "description": "Cerita bertema kemasyarakatan untuk murid Tahun 3.",
+    "targetWords": "70–100 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Membantu Jiran"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hari Sabtu, saya bersama keluarga dan rakan menyertai aktiviti membantu jiran. Cuaca pada pagi itu cerah dan nyaman. Kami membuat persediaan dengan teratur sebelum memulakan aktiviti. Saya mendengar arahan dengan teliti dan membantu orang di sekeliling saya. Kami bekerjasama dengan gembira sehingga semua tugas selesai. Kawasan itu kelihatan bersih dan indah. Saya berasa gembira kerana mendapat pengalaman baharu yang bermakna.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "hari-pertama-di-sekolah",
+    "title": "Hari Pertama di Sekolah",
+    "year": 3,
+    "level": "Tahun 3",
+    "theme": "Sekolah",
+    "emoji": "📖✨",
+    "description": "Cerita bertema sekolah untuk murid Tahun 3.",
+    "targetWords": "70–100 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Hari Pertama di Sekolah"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hari Sabtu, saya bersama keluarga dan rakan menyertai aktiviti hari pertama di sekolah. Cuaca pada pagi itu cerah dan nyaman. Kami membuat persediaan dengan teratur sebelum memulakan aktiviti. Saya mendengar arahan dengan teliti dan membantu orang di sekeliling saya. Kami bekerjasama dengan gembira sehingga semua tugas selesai. Kawasan itu kelihatan bersih dan indah. Saya berasa gembira kerana mendapat pengalaman baharu yang bermakna.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "berkunjung-ke-rumah-nenek",
+    "title": "Berkunjung ke Rumah Nenek",
+    "year": 3,
+    "level": "Tahun 3",
+    "theme": "Keluarga",
+    "emoji": "📖✨",
+    "description": "Cerita bertema keluarga untuk murid Tahun 3.",
+    "targetWords": "70–100 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Berkunjung ke Rumah Nenek"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hari Sabtu, saya bersama keluarga dan rakan menyertai aktiviti berkunjung ke rumah nenek. Cuaca pada pagi itu cerah dan nyaman. Kami membuat persediaan dengan teratur sebelum memulakan aktiviti. Saya mendengar arahan dengan teliti dan membantu orang di sekeliling saya. Kami bekerjasama dengan gembira sehingga semua tugas selesai. Kawasan itu kelihatan bersih dan indah. Saya berasa gembira kerana mendapat pengalaman baharu yang bermakna.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "pertandingan-mewarna",
+    "title": "Pertandingan Mewarna",
+    "year": 3,
+    "level": "Tahun 3",
+    "theme": "Sekolah",
+    "emoji": "📖✨",
+    "description": "Cerita bertema sekolah untuk murid Tahun 3.",
+    "targetWords": "70–100 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Pertandingan Mewarna"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hari Sabtu, saya bersama keluarga dan rakan menyertai aktiviti pertandingan mewarna. Cuaca pada pagi itu cerah dan nyaman. Kami membuat persediaan dengan teratur sebelum memulakan aktiviti. Saya mendengar arahan dengan teliti dan membantu orang di sekeliling saya. Kami bekerjasama dengan gembira sehingga semua tugas selesai. Kawasan itu kelihatan bersih dan indah. Saya berasa gembira kerana mendapat pengalaman baharu yang bermakna.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "bermain-layang-layang",
+    "title": "Bermain Layang-layang",
+    "year": 3,
+    "level": "Tahun 3",
+    "theme": "Rekreasi",
+    "emoji": "📖✨",
+    "description": "Cerita bertema rekreasi untuk murid Tahun 3.",
+    "targetWords": "70–100 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Bermain Layang-layang"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hari Sabtu, saya bersama keluarga dan rakan menyertai aktiviti bermain layang-layang. Cuaca pada pagi itu cerah dan nyaman. Kami membuat persediaan dengan teratur sebelum memulakan aktiviti. Saya mendengar arahan dengan teliti dan membantu orang di sekeliling saya. Kami bekerjasama dengan gembira sehingga semua tugas selesai. Kawasan itu kelihatan bersih dan indah. Saya berasa gembira kerana mendapat pengalaman baharu yang bermakna.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "sarapan-bersama-keluarga",
+    "title": "Sarapan Bersama Keluarga",
+    "year": 3,
+    "level": "Tahun 3",
+    "theme": "Keluarga",
+    "emoji": "📖✨",
+    "description": "Cerita bertema keluarga untuk murid Tahun 3.",
+    "targetWords": "70–100 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Sarapan Bersama Keluarga"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hari Sabtu, saya bersama keluarga dan rakan menyertai aktiviti sarapan bersama keluarga. Cuaca pada pagi itu cerah dan nyaman. Kami membuat persediaan dengan teratur sebelum memulakan aktiviti. Saya mendengar arahan dengan teliti dan membantu orang di sekeliling saya. Kami bekerjasama dengan gembira sehingga semua tugas selesai. Kawasan itu kelihatan bersih dan indah. Saya berasa gembira kerana mendapat pengalaman baharu yang bermakna.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "menjaga-haiwan-peliharaan",
+    "title": "Menjaga Haiwan Peliharaan",
+    "year": 3,
+    "level": "Tahun 3",
+    "theme": "Tanggungjawab",
+    "emoji": "📖✨",
+    "description": "Cerita bertema tanggungjawab untuk murid Tahun 3.",
+    "targetWords": "70–100 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Menjaga Haiwan Peliharaan"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hari Sabtu, saya bersama keluarga dan rakan menyertai aktiviti menjaga haiwan peliharaan. Cuaca pada pagi itu cerah dan nyaman. Kami membuat persediaan dengan teratur sebelum memulakan aktiviti. Saya mendengar arahan dengan teliti dan membantu orang di sekeliling saya. Kami bekerjasama dengan gembira sehingga semua tugas selesai. Kawasan itu kelihatan bersih dan indah. Saya berasa gembira kerana mendapat pengalaman baharu yang bermakna.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "hujan-pada-petang-hari",
+    "title": "Hujan pada Petang Hari",
+    "year": 3,
+    "level": "Tahun 3",
+    "theme": "Cuaca",
+    "emoji": "📖✨",
+    "description": "Cerita bertema cuaca untuk murid Tahun 3.",
+    "targetWords": "70–100 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Hujan pada Petang Hari"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hari Sabtu, saya bersama keluarga dan rakan menyertai aktiviti hujan pada petang hari. Cuaca pada pagi itu cerah dan nyaman. Kami membuat persediaan dengan teratur sebelum memulakan aktiviti. Saya mendengar arahan dengan teliti dan membantu orang di sekeliling saya. Kami bekerjasama dengan gembira sehingga semua tugas selesai. Kawasan itu kelihatan bersih dan indah. Saya berasa gembira kerana mendapat pengalaman baharu yang bermakna.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "lawatan-ke-muzium",
+    "title": "Lawatan ke Muzium",
+    "year": 4,
+    "level": "Tahun 4",
+    "theme": "Ilmu",
+    "emoji": "📖✨",
+    "description": "Cerita bertema ilmu untuk murid Tahun 4.",
+    "targetWords": "90–120 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Lawatan ke Muzium"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hujung minggu yang lalu, sekolah saya menganjurkan aktiviti lawatan ke muzium. Sejak awal pagi, para peserta berkumpul dengan penuh semangat. Guru menerangkan langkah-langkah yang perlu dilakukan supaya aktiviti berjalan dengan lancar dan selamat. Saya dan rakan-rakan membahagikan tugas lalu bekerjasama dengan bersungguh-sungguh. Kami saling membantu apabila menghadapi kesukaran. Selepas beberapa jam, aktiviti itu berjaya diselesaikan. Saya berasa bangga kerana dapat mempelajari perkara baharu serta mengamalkan sikap bertanggungjawab.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "kempen-kitar-semula",
+    "title": "Kempen Kitar Semula",
+    "year": 4,
+    "level": "Tahun 4",
+    "theme": "Alam Sekitar",
+    "emoji": "📖✨",
+    "description": "Cerita bertema alam sekitar untuk murid Tahun 4.",
+    "targetWords": "90–120 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Kempen Kitar Semula"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hujung minggu yang lalu, sekolah saya menganjurkan aktiviti kempen kitar semula. Sejak awal pagi, para peserta berkumpul dengan penuh semangat. Guru menerangkan langkah-langkah yang perlu dilakukan supaya aktiviti berjalan dengan lancar dan selamat. Saya dan rakan-rakan membahagikan tugas lalu bekerjasama dengan bersungguh-sungguh. Kami saling membantu apabila menghadapi kesukaran. Selepas beberapa jam, aktiviti itu berjaya diselesaikan. Saya berasa bangga kerana dapat mempelajari perkara baharu serta mengamalkan sikap bertanggungjawab.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "pertandingan-bercerita",
+    "title": "Pertandingan Bercerita",
+    "year": 4,
+    "level": "Tahun 4",
+    "theme": "Sekolah",
+    "emoji": "📖✨",
+    "description": "Cerita bertema sekolah untuk murid Tahun 4.",
+    "targetWords": "90–120 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Pertandingan Bercerita"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hujung minggu yang lalu, sekolah saya menganjurkan aktiviti pertandingan bercerita. Sejak awal pagi, para peserta berkumpul dengan penuh semangat. Guru menerangkan langkah-langkah yang perlu dilakukan supaya aktiviti berjalan dengan lancar dan selamat. Saya dan rakan-rakan membahagikan tugas lalu bekerjasama dengan bersungguh-sungguh. Kami saling membantu apabila menghadapi kesukaran. Selepas beberapa jam, aktiviti itu berjaya diselesaikan. Saya berasa bangga kerana dapat mempelajari perkara baharu serta mengamalkan sikap bertanggungjawab.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "membantu-mangsa-banjir",
+    "title": "Membantu Mangsa Banjir",
+    "year": 4,
+    "level": "Tahun 4",
+    "theme": "Kemasyarakatan",
+    "emoji": "📖✨",
+    "description": "Cerita bertema kemasyarakatan untuk murid Tahun 4.",
+    "targetWords": "90–120 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Membantu Mangsa Banjir"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hujung minggu yang lalu, sekolah saya menganjurkan aktiviti membantu mangsa banjir. Sejak awal pagi, para peserta berkumpul dengan penuh semangat. Guru menerangkan langkah-langkah yang perlu dilakukan supaya aktiviti berjalan dengan lancar dan selamat. Saya dan rakan-rakan membahagikan tugas lalu bekerjasama dengan bersungguh-sungguh. Kami saling membantu apabila menghadapi kesukaran. Selepas beberapa jam, aktiviti itu berjaya diselesaikan. Saya berasa bangga kerana dapat mempelajari perkara baharu serta mengamalkan sikap bertanggungjawab.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "berkebun-bersama-ayah",
+    "title": "Berkebun Bersama Ayah",
+    "year": 4,
+    "level": "Tahun 4",
+    "theme": "Keluarga",
+    "emoji": "📖✨",
+    "description": "Cerita bertema keluarga untuk murid Tahun 4.",
+    "targetWords": "90–120 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Berkebun Bersama Ayah"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hujung minggu yang lalu, sekolah saya menganjurkan aktiviti berkebun bersama ayah. Sejak awal pagi, para peserta berkumpul dengan penuh semangat. Guru menerangkan langkah-langkah yang perlu dilakukan supaya aktiviti berjalan dengan lancar dan selamat. Saya dan rakan-rakan membahagikan tugas lalu bekerjasama dengan bersungguh-sungguh. Kami saling membantu apabila menghadapi kesukaran. Selepas beberapa jam, aktiviti itu berjaya diselesaikan. Saya berasa bangga kerana dapat mempelajari perkara baharu serta mengamalkan sikap bertanggungjawab.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "hari-kantin-sekolah",
+    "title": "Hari Kantin Sekolah",
+    "year": 4,
+    "level": "Tahun 4",
+    "theme": "Sekolah",
+    "emoji": "📖✨",
+    "description": "Cerita bertema sekolah untuk murid Tahun 4.",
+    "targetWords": "90–120 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Hari Kantin Sekolah"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hujung minggu yang lalu, sekolah saya menganjurkan aktiviti hari kantin sekolah. Sejak awal pagi, para peserta berkumpul dengan penuh semangat. Guru menerangkan langkah-langkah yang perlu dilakukan supaya aktiviti berjalan dengan lancar dan selamat. Saya dan rakan-rakan membahagikan tugas lalu bekerjasama dengan bersungguh-sungguh. Kami saling membantu apabila menghadapi kesukaran. Selepas beberapa jam, aktiviti itu berjaya diselesaikan. Saya berasa bangga kerana dapat mempelajari perkara baharu serta mengamalkan sikap bertanggungjawab.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "perkhemahan-pengakap",
+    "title": "Perkhemahan Pengakap",
+    "year": 4,
+    "level": "Tahun 4",
+    "theme": "Kokurikulum",
+    "emoji": "📖✨",
+    "description": "Cerita bertema kokurikulum untuk murid Tahun 4.",
+    "targetWords": "90–120 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Perkhemahan Pengakap"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hujung minggu yang lalu, sekolah saya menganjurkan aktiviti perkhemahan pengakap. Sejak awal pagi, para peserta berkumpul dengan penuh semangat. Guru menerangkan langkah-langkah yang perlu dilakukan supaya aktiviti berjalan dengan lancar dan selamat. Saya dan rakan-rakan membahagikan tugas lalu bekerjasama dengan bersungguh-sungguh. Kami saling membantu apabila menghadapi kesukaran. Selepas beberapa jam, aktiviti itu berjaya diselesaikan. Saya berasa bangga kerana dapat mempelajari perkara baharu serta mengamalkan sikap bertanggungjawab.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "menjaga-keselamatan-jalan-raya",
+    "title": "Menjaga Keselamatan Jalan Raya",
+    "year": 4,
+    "level": "Tahun 4",
+    "theme": "Keselamatan",
+    "emoji": "📖✨",
+    "description": "Cerita bertema keselamatan untuk murid Tahun 4.",
+    "targetWords": "90–120 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Menjaga Keselamatan Jalan Raya"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hujung minggu yang lalu, sekolah saya menganjurkan aktiviti menjaga keselamatan jalan raya. Sejak awal pagi, para peserta berkumpul dengan penuh semangat. Guru menerangkan langkah-langkah yang perlu dilakukan supaya aktiviti berjalan dengan lancar dan selamat. Saya dan rakan-rakan membahagikan tugas lalu bekerjasama dengan bersungguh-sungguh. Kami saling membantu apabila menghadapi kesukaran. Selepas beberapa jam, aktiviti itu berjaya diselesaikan. Saya berasa bangga kerana dapat mempelajari perkara baharu serta mengamalkan sikap bertanggungjawab.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "lawatan-ke-balai-bomba",
+    "title": "Lawatan ke Balai Bomba",
+    "year": 4,
+    "level": "Tahun 4",
+    "theme": "Keselamatan",
+    "emoji": "📖✨",
+    "description": "Cerita bertema keselamatan untuk murid Tahun 4.",
+    "targetWords": "90–120 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Lawatan ke Balai Bomba"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hujung minggu yang lalu, sekolah saya menganjurkan aktiviti lawatan ke balai bomba. Sejak awal pagi, para peserta berkumpul dengan penuh semangat. Guru menerangkan langkah-langkah yang perlu dilakukan supaya aktiviti berjalan dengan lancar dan selamat. Saya dan rakan-rakan membahagikan tugas lalu bekerjasama dengan bersungguh-sungguh. Kami saling membantu apabila menghadapi kesukaran. Selepas beberapa jam, aktiviti itu berjaya diselesaikan. Saya berasa bangga kerana dapat mempelajari perkara baharu serta mengamalkan sikap bertanggungjawab.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "pertandingan-bola-sepak",
+    "title": "Pertandingan Bola Sepak",
+    "year": 4,
+    "level": "Tahun 4",
+    "theme": "Sukan",
+    "emoji": "📖✨",
+    "description": "Cerita bertema sukan untuk murid Tahun 4.",
+    "targetWords": "90–120 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Pertandingan Bola Sepak"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hujung minggu yang lalu, sekolah saya menganjurkan aktiviti pertandingan bola sepak. Sejak awal pagi, para peserta berkumpul dengan penuh semangat. Guru menerangkan langkah-langkah yang perlu dilakukan supaya aktiviti berjalan dengan lancar dan selamat. Saya dan rakan-rakan membahagikan tugas lalu bekerjasama dengan bersungguh-sungguh. Kami saling membantu apabila menghadapi kesukaran. Selepas beberapa jam, aktiviti itu berjaya diselesaikan. Saya berasa bangga kerana dapat mempelajari perkara baharu serta mengamalkan sikap bertanggungjawab.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "membaca-membuka-minda",
+    "title": "Membaca Membuka Minda",
+    "year": 4,
+    "level": "Tahun 4",
+    "theme": "Ilmu",
+    "emoji": "📖✨",
+    "description": "Cerita bertema ilmu untuk murid Tahun 4.",
+    "targetWords": "90–120 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Membaca Membuka Minda"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hujung minggu yang lalu, sekolah saya menganjurkan aktiviti membaca membuka minda. Sejak awal pagi, para peserta berkumpul dengan penuh semangat. Guru menerangkan langkah-langkah yang perlu dilakukan supaya aktiviti berjalan dengan lancar dan selamat. Saya dan rakan-rakan membahagikan tugas lalu bekerjasama dengan bersungguh-sungguh. Kami saling membantu apabila menghadapi kesukaran. Selepas beberapa jam, aktiviti itu berjaya diselesaikan. Saya berasa bangga kerana dapat mempelajari perkara baharu serta mengamalkan sikap bertanggungjawab.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "sambutan-hari-guru",
+    "title": "Sambutan Hari Guru",
+    "year": 4,
+    "level": "Tahun 4",
+    "theme": "Sekolah",
+    "emoji": "📖✨",
+    "description": "Cerita bertema sekolah untuk murid Tahun 4.",
+    "targetWords": "90–120 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Sambutan Hari Guru"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hujung minggu yang lalu, sekolah saya menganjurkan aktiviti sambutan hari guru. Sejak awal pagi, para peserta berkumpul dengan penuh semangat. Guru menerangkan langkah-langkah yang perlu dilakukan supaya aktiviti berjalan dengan lancar dan selamat. Saya dan rakan-rakan membahagikan tugas lalu bekerjasama dengan bersungguh-sungguh. Kami saling membantu apabila menghadapi kesukaran. Selepas beberapa jam, aktiviti itu berjaya diselesaikan. Saya berasa bangga kerana dapat mempelajari perkara baharu serta mengamalkan sikap bertanggungjawab.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "membersihkan-pantai",
+    "title": "Membersihkan Pantai",
+    "year": 4,
+    "level": "Tahun 4",
+    "theme": "Alam Sekitar",
+    "emoji": "📖✨",
+    "description": "Cerita bertema alam sekitar untuk murid Tahun 4.",
+    "targetWords": "90–120 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Membersihkan Pantai"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hujung minggu yang lalu, sekolah saya menganjurkan aktiviti membersihkan pantai. Sejak awal pagi, para peserta berkumpul dengan penuh semangat. Guru menerangkan langkah-langkah yang perlu dilakukan supaya aktiviti berjalan dengan lancar dan selamat. Saya dan rakan-rakan membahagikan tugas lalu bekerjasama dengan bersungguh-sungguh. Kami saling membantu apabila menghadapi kesukaran. Selepas beberapa jam, aktiviti itu berjaya diselesaikan. Saya berasa bangga kerana dapat mempelajari perkara baharu serta mengamalkan sikap bertanggungjawab.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "bercuti-di-kampung",
+    "title": "Bercuti di Kampung",
+    "year": 4,
+    "level": "Tahun 4",
+    "theme": "Keluarga",
+    "emoji": "📖✨",
+    "description": "Cerita bertema keluarga untuk murid Tahun 4.",
+    "targetWords": "90–120 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Bercuti di Kampung"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hujung minggu yang lalu, sekolah saya menganjurkan aktiviti bercuti di kampung. Sejak awal pagi, para peserta berkumpul dengan penuh semangat. Guru menerangkan langkah-langkah yang perlu dilakukan supaya aktiviti berjalan dengan lancar dan selamat. Saya dan rakan-rakan membahagikan tugas lalu bekerjasama dengan bersungguh-sungguh. Kami saling membantu apabila menghadapi kesukaran. Selepas beberapa jam, aktiviti itu berjaya diselesaikan. Saya berasa bangga kerana dapat mempelajari perkara baharu serta mengamalkan sikap bertanggungjawab.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "menyertai-larian-amal",
+    "title": "Menyertai Larian Amal",
+    "year": 4,
+    "level": "Tahun 4",
+    "theme": "Kemasyarakatan",
+    "emoji": "📖✨",
+    "description": "Cerita bertema kemasyarakatan untuk murid Tahun 4.",
+    "targetWords": "90–120 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Menyertai Larian Amal"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hujung minggu yang lalu, sekolah saya menganjurkan aktiviti menyertai larian amal. Sejak awal pagi, para peserta berkumpul dengan penuh semangat. Guru menerangkan langkah-langkah yang perlu dilakukan supaya aktiviti berjalan dengan lancar dan selamat. Saya dan rakan-rakan membahagikan tugas lalu bekerjasama dengan bersungguh-sungguh. Kami saling membantu apabila menghadapi kesukaran. Selepas beberapa jam, aktiviti itu berjaya diselesaikan. Saya berasa bangga kerana dapat mempelajari perkara baharu serta mengamalkan sikap bertanggungjawab.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "membantu-rakan-yang-cedera",
+    "title": "Membantu Rakan yang Cedera",
+    "year": 4,
+    "level": "Tahun 4",
+    "theme": "Persahabatan",
+    "emoji": "📖✨",
+    "description": "Cerita bertema persahabatan untuk murid Tahun 4.",
+    "targetWords": "90–120 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Membantu Rakan yang Cedera"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hujung minggu yang lalu, sekolah saya menganjurkan aktiviti membantu rakan yang cedera. Sejak awal pagi, para peserta berkumpul dengan penuh semangat. Guru menerangkan langkah-langkah yang perlu dilakukan supaya aktiviti berjalan dengan lancar dan selamat. Saya dan rakan-rakan membahagikan tugas lalu bekerjasama dengan bersungguh-sungguh. Kami saling membantu apabila menghadapi kesukaran. Selepas beberapa jam, aktiviti itu berjaya diselesaikan. Saya berasa bangga kerana dapat mempelajari perkara baharu serta mengamalkan sikap bertanggungjawab.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "pameran-sains-sekolah",
+    "title": "Pameran Sains Sekolah",
+    "year": 4,
+    "level": "Tahun 4",
+    "theme": "Sains",
+    "emoji": "📖✨",
+    "description": "Cerita bertema sains untuk murid Tahun 4.",
+    "targetWords": "90–120 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Pameran Sains Sekolah"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hujung minggu yang lalu, sekolah saya menganjurkan aktiviti pameran sains sekolah. Sejak awal pagi, para peserta berkumpul dengan penuh semangat. Guru menerangkan langkah-langkah yang perlu dilakukan supaya aktiviti berjalan dengan lancar dan selamat. Saya dan rakan-rakan membahagikan tugas lalu bekerjasama dengan bersungguh-sungguh. Kami saling membantu apabila menghadapi kesukaran. Selepas beberapa jam, aktiviti itu berjaya diselesaikan. Saya berasa bangga kerana dapat mempelajari perkara baharu serta mengamalkan sikap bertanggungjawab.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "berjimat-cermat",
+    "title": "Berjimat Cermat",
+    "year": 4,
+    "level": "Tahun 4",
+    "theme": "Nilai Murni",
+    "emoji": "📖✨",
+    "description": "Cerita bertema nilai murni untuk murid Tahun 4.",
+    "targetWords": "90–120 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Berjimat Cermat"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hujung minggu yang lalu, sekolah saya menganjurkan aktiviti berjimat cermat. Sejak awal pagi, para peserta berkumpul dengan penuh semangat. Guru menerangkan langkah-langkah yang perlu dilakukan supaya aktiviti berjalan dengan lancar dan selamat. Saya dan rakan-rakan membahagikan tugas lalu bekerjasama dengan bersungguh-sungguh. Kami saling membantu apabila menghadapi kesukaran. Selepas beberapa jam, aktiviti itu berjaya diselesaikan. Saya berasa bangga kerana dapat mempelajari perkara baharu serta mengamalkan sikap bertanggungjawab.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "menjaga-kesihatan-diri",
+    "title": "Menjaga Kesihatan Diri",
+    "year": 4,
+    "level": "Tahun 4",
+    "theme": "Kesihatan",
+    "emoji": "📖✨",
+    "description": "Cerita bertema kesihatan untuk murid Tahun 4.",
+    "targetWords": "90–120 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Menjaga Kesihatan Diri"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hujung minggu yang lalu, sekolah saya menganjurkan aktiviti menjaga kesihatan diri. Sejak awal pagi, para peserta berkumpul dengan penuh semangat. Guru menerangkan langkah-langkah yang perlu dilakukan supaya aktiviti berjalan dengan lancar dan selamat. Saya dan rakan-rakan membahagikan tugas lalu bekerjasama dengan bersungguh-sungguh. Kami saling membantu apabila menghadapi kesukaran. Selepas beberapa jam, aktiviti itu berjaya diselesaikan. Saya berasa bangga kerana dapat mempelajari perkara baharu serta mengamalkan sikap bertanggungjawab.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "lawatan-ke-akuarium",
+    "title": "Lawatan ke Akuarium",
+    "year": 4,
+    "level": "Tahun 4",
+    "theme": "Haiwan",
+    "emoji": "📖✨",
+    "description": "Cerita bertema haiwan untuk murid Tahun 4.",
+    "targetWords": "90–120 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Lawatan ke Akuarium"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada hujung minggu yang lalu, sekolah saya menganjurkan aktiviti lawatan ke akuarium. Sejak awal pagi, para peserta berkumpul dengan penuh semangat. Guru menerangkan langkah-langkah yang perlu dilakukan supaya aktiviti berjalan dengan lancar dan selamat. Saya dan rakan-rakan membahagikan tugas lalu bekerjasama dengan bersungguh-sungguh. Kami saling membantu apabila menghadapi kesukaran. Selepas beberapa jam, aktiviti itu berjaya diselesaikan. Saya berasa bangga kerana dapat mempelajari perkara baharu serta mengamalkan sikap bertanggungjawab.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "program-cintai-alam",
+    "title": "Program Cintai Alam",
+    "year": 5,
+    "level": "Tahun 5",
+    "theme": "Alam Sekitar",
+    "emoji": "📖✨",
+    "description": "Cerita bertema alam sekitar untuk murid Tahun 5.",
+    "targetWords": "110–150 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Program Cintai Alam"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada minggu lalu, saya berpeluang menyertai program cintai alam yang dianjurkan oleh pihak sekolah. Program itu bertujuan menambah pengetahuan serta membentuk sikap bertanggungjawab dalam kalangan murid. Sebelum aktiviti bermula, guru memberikan penerangan yang jelas tentang tugasan dan aspek keselamatan. Saya dan rakan-rakan bekerjasama, berbincang dan menyelesaikan setiap tugasan dengan tekun. Walaupun kami menghadapi beberapa cabaran, kami tidak mudah berputus asa. Akhirnya, program tersebut berjalan dengan lancar dan mencapai matlamatnya. Pengalaman itu menyedarkan saya bahawa usaha, disiplin dan kerjasama amat penting untuk mencapai kejayaan.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "lawatan-sambil-belajar-ke-melaka",
+    "title": "Lawatan Sambil Belajar ke Melaka",
+    "year": 5,
+    "level": "Tahun 5",
+    "theme": "Sejarah",
+    "emoji": "📖✨",
+    "description": "Cerita bertema sejarah untuk murid Tahun 5.",
+    "targetWords": "110–150 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Lawatan Sambil Belajar ke Melaka"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada minggu lalu, saya berpeluang menyertai lawatan sambil belajar ke melaka yang dianjurkan oleh pihak sekolah. Program itu bertujuan menambah pengetahuan serta membentuk sikap bertanggungjawab dalam kalangan murid. Sebelum aktiviti bermula, guru memberikan penerangan yang jelas tentang tugasan dan aspek keselamatan. Saya dan rakan-rakan bekerjasama, berbincang dan menyelesaikan setiap tugasan dengan tekun. Walaupun kami menghadapi beberapa cabaran, kami tidak mudah berputus asa. Akhirnya, program tersebut berjalan dengan lancar dan mencapai matlamatnya. Pengalaman itu menyedarkan saya bahawa usaha, disiplin dan kerjasama amat penting untuk mencapai kejayaan.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "pertandingan-pidato",
+    "title": "Pertandingan Pidato",
+    "year": 5,
+    "level": "Tahun 5",
+    "theme": "Sekolah",
+    "emoji": "📖✨",
+    "description": "Cerita bertema sekolah untuk murid Tahun 5.",
+    "targetWords": "110–150 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Pertandingan Pidato"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada minggu lalu, saya berpeluang menyertai pertandingan pidato yang dianjurkan oleh pihak sekolah. Program itu bertujuan menambah pengetahuan serta membentuk sikap bertanggungjawab dalam kalangan murid. Sebelum aktiviti bermula, guru memberikan penerangan yang jelas tentang tugasan dan aspek keselamatan. Saya dan rakan-rakan bekerjasama, berbincang dan menyelesaikan setiap tugasan dengan tekun. Walaupun kami menghadapi beberapa cabaran, kami tidak mudah berputus asa. Akhirnya, program tersebut berjalan dengan lancar dan mencapai matlamatnya. Pengalaman itu menyedarkan saya bahawa usaha, disiplin dan kerjasama amat penting untuk mencapai kejayaan.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "kempen-gaya-hidup-sihat",
+    "title": "Kempen Gaya Hidup Sihat",
+    "year": 5,
+    "level": "Tahun 5",
+    "theme": "Kesihatan",
+    "emoji": "📖✨",
+    "description": "Cerita bertema kesihatan untuk murid Tahun 5.",
+    "targetWords": "110–150 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Kempen Gaya Hidup Sihat"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada minggu lalu, saya berpeluang menyertai kempen gaya hidup sihat yang dianjurkan oleh pihak sekolah. Program itu bertujuan menambah pengetahuan serta membentuk sikap bertanggungjawab dalam kalangan murid. Sebelum aktiviti bermula, guru memberikan penerangan yang jelas tentang tugasan dan aspek keselamatan. Saya dan rakan-rakan bekerjasama, berbincang dan menyelesaikan setiap tugasan dengan tekun. Walaupun kami menghadapi beberapa cabaran, kami tidak mudah berputus asa. Akhirnya, program tersebut berjalan dengan lancar dan mencapai matlamatnya. Pengalaman itu menyedarkan saya bahawa usaha, disiplin dan kerjasama amat penting untuk mencapai kejayaan.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "menjadi-ketua-kelas-yang-bertanggungjawab",
+    "title": "Menjadi Ketua Kelas yang Bertanggungjawab",
+    "year": 5,
+    "level": "Tahun 5",
+    "theme": "Kepimpinan",
+    "emoji": "📖✨",
+    "description": "Cerita bertema kepimpinan untuk murid Tahun 5.",
+    "targetWords": "110–150 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Menjadi Ketua Kelas yang Bertanggungjawab"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada minggu lalu, saya berpeluang menyertai menjadi ketua kelas yang bertanggungjawab yang dianjurkan oleh pihak sekolah. Program itu bertujuan menambah pengetahuan serta membentuk sikap bertanggungjawab dalam kalangan murid. Sebelum aktiviti bermula, guru memberikan penerangan yang jelas tentang tugasan dan aspek keselamatan. Saya dan rakan-rakan bekerjasama, berbincang dan menyelesaikan setiap tugasan dengan tekun. Walaupun kami menghadapi beberapa cabaran, kami tidak mudah berputus asa. Akhirnya, program tersebut berjalan dengan lancar dan mencapai matlamatnya. Pengalaman itu menyedarkan saya bahawa usaha, disiplin dan kerjasama amat penting untuk mencapai kejayaan.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "hari-keusahawanan-sekolah",
+    "title": "Hari Keusahawanan Sekolah",
+    "year": 5,
+    "level": "Tahun 5",
+    "theme": "Keusahawanan",
+    "emoji": "📖✨",
+    "description": "Cerita bertema keusahawanan untuk murid Tahun 5.",
+    "targetWords": "110–150 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Hari Keusahawanan Sekolah"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada minggu lalu, saya berpeluang menyertai hari keusahawanan sekolah yang dianjurkan oleh pihak sekolah. Program itu bertujuan menambah pengetahuan serta membentuk sikap bertanggungjawab dalam kalangan murid. Sebelum aktiviti bermula, guru memberikan penerangan yang jelas tentang tugasan dan aspek keselamatan. Saya dan rakan-rakan bekerjasama, berbincang dan menyelesaikan setiap tugasan dengan tekun. Walaupun kami menghadapi beberapa cabaran, kami tidak mudah berputus asa. Akhirnya, program tersebut berjalan dengan lancar dan mencapai matlamatnya. Pengalaman itu menyedarkan saya bahawa usaha, disiplin dan kerjasama amat penting untuk mencapai kejayaan.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "misi-menyelamatkan-anak-kucing",
+    "title": "Misi Menyelamatkan Anak Kucing",
+    "year": 5,
+    "level": "Tahun 5",
+    "theme": "Prihatin",
+    "emoji": "📖✨",
+    "description": "Cerita bertema prihatin untuk murid Tahun 5.",
+    "targetWords": "110–150 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Misi Menyelamatkan Anak Kucing"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada minggu lalu, saya berpeluang menyertai misi menyelamatkan anak kucing yang dianjurkan oleh pihak sekolah. Program itu bertujuan menambah pengetahuan serta membentuk sikap bertanggungjawab dalam kalangan murid. Sebelum aktiviti bermula, guru memberikan penerangan yang jelas tentang tugasan dan aspek keselamatan. Saya dan rakan-rakan bekerjasama, berbincang dan menyelesaikan setiap tugasan dengan tekun. Walaupun kami menghadapi beberapa cabaran, kami tidak mudah berputus asa. Akhirnya, program tersebut berjalan dengan lancar dan mencapai matlamatnya. Pengalaman itu menyedarkan saya bahawa usaha, disiplin dan kerjasama amat penting untuk mencapai kejayaan.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "pengalaman-menaiki-kereta-api",
+    "title": "Pengalaman Menaiki Kereta Api",
+    "year": 5,
+    "level": "Tahun 5",
+    "theme": "Pengalaman",
+    "emoji": "📖✨",
+    "description": "Cerita bertema pengalaman untuk murid Tahun 5.",
+    "targetWords": "110–150 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Pengalaman Menaiki Kereta Api"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada minggu lalu, saya berpeluang menyertai pengalaman menaiki kereta api yang dianjurkan oleh pihak sekolah. Program itu bertujuan menambah pengetahuan serta membentuk sikap bertanggungjawab dalam kalangan murid. Sebelum aktiviti bermula, guru memberikan penerangan yang jelas tentang tugasan dan aspek keselamatan. Saya dan rakan-rakan bekerjasama, berbincang dan menyelesaikan setiap tugasan dengan tekun. Walaupun kami menghadapi beberapa cabaran, kami tidak mudah berputus asa. Akhirnya, program tersebut berjalan dengan lancar dan mencapai matlamatnya. Pengalaman itu menyedarkan saya bahawa usaha, disiplin dan kerjasama amat penting untuk mencapai kejayaan.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "gotong-royong-perdana-sekolah",
+    "title": "Gotong-royong Perdana Sekolah",
+    "year": 5,
+    "level": "Tahun 5",
+    "theme": "Kemasyarakatan",
+    "emoji": "📖✨",
+    "description": "Cerita bertema kemasyarakatan untuk murid Tahun 5.",
+    "targetWords": "110–150 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Gotong-royong Perdana Sekolah"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada minggu lalu, saya berpeluang menyertai gotong-royong perdana sekolah yang dianjurkan oleh pihak sekolah. Program itu bertujuan menambah pengetahuan serta membentuk sikap bertanggungjawab dalam kalangan murid. Sebelum aktiviti bermula, guru memberikan penerangan yang jelas tentang tugasan dan aspek keselamatan. Saya dan rakan-rakan bekerjasama, berbincang dan menyelesaikan setiap tugasan dengan tekun. Walaupun kami menghadapi beberapa cabaran, kami tidak mudah berputus asa. Akhirnya, program tersebut berjalan dengan lancar dan mencapai matlamatnya. Pengalaman itu menyedarkan saya bahawa usaha, disiplin dan kerjasama amat penting untuk mencapai kejayaan.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "pertandingan-reka-cipta",
+    "title": "Pertandingan Reka Cipta",
+    "year": 5,
+    "level": "Tahun 5",
+    "theme": "Sains dan Teknologi",
+    "emoji": "📖✨",
+    "description": "Cerita bertema sains dan teknologi untuk murid Tahun 5.",
+    "targetWords": "110–150 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Pertandingan Reka Cipta"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada minggu lalu, saya berpeluang menyertai pertandingan reka cipta yang dianjurkan oleh pihak sekolah. Program itu bertujuan menambah pengetahuan serta membentuk sikap bertanggungjawab dalam kalangan murid. Sebelum aktiviti bermula, guru memberikan penerangan yang jelas tentang tugasan dan aspek keselamatan. Saya dan rakan-rakan bekerjasama, berbincang dan menyelesaikan setiap tugasan dengan tekun. Walaupun kami menghadapi beberapa cabaran, kami tidak mudah berputus asa. Akhirnya, program tersebut berjalan dengan lancar dan mencapai matlamatnya. Pengalaman itu menyedarkan saya bahawa usaha, disiplin dan kerjasama amat penting untuk mencapai kejayaan.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "menghargai-jasa-ibu-bapa",
+    "title": "Menghargai Jasa Ibu Bapa",
+    "year": 5,
+    "level": "Tahun 5",
+    "theme": "Keluarga",
+    "emoji": "📖✨",
+    "description": "Cerita bertema keluarga untuk murid Tahun 5.",
+    "targetWords": "110–150 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Menghargai Jasa Ibu Bapa"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada minggu lalu, saya berpeluang menyertai menghargai jasa ibu bapa yang dianjurkan oleh pihak sekolah. Program itu bertujuan menambah pengetahuan serta membentuk sikap bertanggungjawab dalam kalangan murid. Sebelum aktiviti bermula, guru memberikan penerangan yang jelas tentang tugasan dan aspek keselamatan. Saya dan rakan-rakan bekerjasama, berbincang dan menyelesaikan setiap tugasan dengan tekun. Walaupun kami menghadapi beberapa cabaran, kami tidak mudah berputus asa. Akhirnya, program tersebut berjalan dengan lancar dan mencapai matlamatnya. Pengalaman itu menyedarkan saya bahawa usaha, disiplin dan kerjasama amat penting untuk mencapai kejayaan.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "berkunjung-ke-pusat-sains",
+    "title": "Berkunjung ke Pusat Sains",
+    "year": 5,
+    "level": "Tahun 5",
+    "theme": "Sains",
+    "emoji": "📖✨",
+    "description": "Cerita bertema sains untuk murid Tahun 5.",
+    "targetWords": "110–150 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Berkunjung ke Pusat Sains"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada minggu lalu, saya berpeluang menyertai berkunjung ke pusat sains yang dianjurkan oleh pihak sekolah. Program itu bertujuan menambah pengetahuan serta membentuk sikap bertanggungjawab dalam kalangan murid. Sebelum aktiviti bermula, guru memberikan penerangan yang jelas tentang tugasan dan aspek keselamatan. Saya dan rakan-rakan bekerjasama, berbincang dan menyelesaikan setiap tugasan dengan tekun. Walaupun kami menghadapi beberapa cabaran, kami tidak mudah berputus asa. Akhirnya, program tersebut berjalan dengan lancar dan mencapai matlamatnya. Pengalaman itu menyedarkan saya bahawa usaha, disiplin dan kerjasama amat penting untuk mencapai kejayaan.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "menangani-buli-di-sekolah",
+    "title": "Menangani Buli di Sekolah",
+    "year": 5,
+    "level": "Tahun 5",
+    "theme": "Sahsiah",
+    "emoji": "📖✨",
+    "description": "Cerita bertema sahsiah untuk murid Tahun 5.",
+    "targetWords": "110–150 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Menangani Buli di Sekolah"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada minggu lalu, saya berpeluang menyertai menangani buli di sekolah yang dianjurkan oleh pihak sekolah. Program itu bertujuan menambah pengetahuan serta membentuk sikap bertanggungjawab dalam kalangan murid. Sebelum aktiviti bermula, guru memberikan penerangan yang jelas tentang tugasan dan aspek keselamatan. Saya dan rakan-rakan bekerjasama, berbincang dan menyelesaikan setiap tugasan dengan tekun. Walaupun kami menghadapi beberapa cabaran, kami tidak mudah berputus asa. Akhirnya, program tersebut berjalan dengan lancar dan mencapai matlamatnya. Pengalaman itu menyedarkan saya bahawa usaha, disiplin dan kerjasama amat penting untuk mencapai kejayaan.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "kempen-kurangkan-plastik",
+    "title": "Kempen Kurangkan Plastik",
+    "year": 5,
+    "level": "Tahun 5",
+    "theme": "Alam Sekitar",
+    "emoji": "📖✨",
+    "description": "Cerita bertema alam sekitar untuk murid Tahun 5.",
+    "targetWords": "110–150 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Kempen Kurangkan Plastik"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada minggu lalu, saya berpeluang menyertai kempen kurangkan plastik yang dianjurkan oleh pihak sekolah. Program itu bertujuan menambah pengetahuan serta membentuk sikap bertanggungjawab dalam kalangan murid. Sebelum aktiviti bermula, guru memberikan penerangan yang jelas tentang tugasan dan aspek keselamatan. Saya dan rakan-rakan bekerjasama, berbincang dan menyelesaikan setiap tugasan dengan tekun. Walaupun kami menghadapi beberapa cabaran, kami tidak mudah berputus asa. Akhirnya, program tersebut berjalan dengan lancar dan mencapai matlamatnya. Pengalaman itu menyedarkan saya bahawa usaha, disiplin dan kerjasama amat penting untuk mencapai kejayaan.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "menyertai-pertandingan-badminton",
+    "title": "Menyertai Pertandingan Badminton",
+    "year": 5,
+    "level": "Tahun 5",
+    "theme": "Sukan",
+    "emoji": "📖✨",
+    "description": "Cerita bertema sukan untuk murid Tahun 5.",
+    "targetWords": "110–150 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Menyertai Pertandingan Badminton"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada minggu lalu, saya berpeluang menyertai menyertai pertandingan badminton yang dianjurkan oleh pihak sekolah. Program itu bertujuan menambah pengetahuan serta membentuk sikap bertanggungjawab dalam kalangan murid. Sebelum aktiviti bermula, guru memberikan penerangan yang jelas tentang tugasan dan aspek keselamatan. Saya dan rakan-rakan bekerjasama, berbincang dan menyelesaikan setiap tugasan dengan tekun. Walaupun kami menghadapi beberapa cabaran, kami tidak mudah berputus asa. Akhirnya, program tersebut berjalan dengan lancar dan mencapai matlamatnya. Pengalaman itu menyedarkan saya bahawa usaha, disiplin dan kerjasama amat penting untuk mencapai kejayaan.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "pengalaman-menjadi-pengacara-majlis",
+    "title": "Pengalaman Menjadi Pengacara Majlis",
+    "year": 5,
+    "level": "Tahun 5",
+    "theme": "Keyakinan",
+    "emoji": "📖✨",
+    "description": "Cerita bertema keyakinan untuk murid Tahun 5.",
+    "targetWords": "110–150 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Pengalaman Menjadi Pengacara Majlis"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada minggu lalu, saya berpeluang menyertai pengalaman menjadi pengacara majlis yang dianjurkan oleh pihak sekolah. Program itu bertujuan menambah pengetahuan serta membentuk sikap bertanggungjawab dalam kalangan murid. Sebelum aktiviti bermula, guru memberikan penerangan yang jelas tentang tugasan dan aspek keselamatan. Saya dan rakan-rakan bekerjasama, berbincang dan menyelesaikan setiap tugasan dengan tekun. Walaupun kami menghadapi beberapa cabaran, kami tidak mudah berputus asa. Akhirnya, program tersebut berjalan dengan lancar dan mencapai matlamatnya. Pengalaman itu menyedarkan saya bahawa usaha, disiplin dan kerjasama amat penting untuk mencapai kejayaan.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "bencana-banjir-di-kampung",
+    "title": "Bencana Banjir di Kampung",
+    "year": 5,
+    "level": "Tahun 5",
+    "theme": "Kemasyarakatan",
+    "emoji": "📖✨",
+    "description": "Cerita bertema kemasyarakatan untuk murid Tahun 5.",
+    "targetWords": "110–150 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Bencana Banjir di Kampung"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada minggu lalu, saya berpeluang menyertai bencana banjir di kampung yang dianjurkan oleh pihak sekolah. Program itu bertujuan menambah pengetahuan serta membentuk sikap bertanggungjawab dalam kalangan murid. Sebelum aktiviti bermula, guru memberikan penerangan yang jelas tentang tugasan dan aspek keselamatan. Saya dan rakan-rakan bekerjasama, berbincang dan menyelesaikan setiap tugasan dengan tekun. Walaupun kami menghadapi beberapa cabaran, kami tidak mudah berputus asa. Akhirnya, program tersebut berjalan dengan lancar dan mencapai matlamatnya. Pengalaman itu menyedarkan saya bahawa usaha, disiplin dan kerjasama amat penting untuk mencapai kejayaan.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "belajar-mengurus-masa",
+    "title": "Belajar Mengurus Masa",
+    "year": 5,
+    "level": "Tahun 5",
+    "theme": "Disiplin",
+    "emoji": "📖✨",
+    "description": "Cerita bertema disiplin untuk murid Tahun 5.",
+    "targetWords": "110–150 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Belajar Mengurus Masa"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada minggu lalu, saya berpeluang menyertai belajar mengurus masa yang dianjurkan oleh pihak sekolah. Program itu bertujuan menambah pengetahuan serta membentuk sikap bertanggungjawab dalam kalangan murid. Sebelum aktiviti bermula, guru memberikan penerangan yang jelas tentang tugasan dan aspek keselamatan. Saya dan rakan-rakan bekerjasama, berbincang dan menyelesaikan setiap tugasan dengan tekun. Walaupun kami menghadapi beberapa cabaran, kami tidak mudah berputus asa. Akhirnya, program tersebut berjalan dengan lancar dan mencapai matlamatnya. Pengalaman itu menyedarkan saya bahawa usaha, disiplin dan kerjasama amat penting untuk mencapai kejayaan.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "persahabatan-yang-bermakna",
+    "title": "Persahabatan yang Bermakna",
+    "year": 5,
+    "level": "Tahun 5",
+    "theme": "Persahabatan",
+    "emoji": "📖✨",
+    "description": "Cerita bertema persahabatan untuk murid Tahun 5.",
+    "targetWords": "110–150 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Persahabatan yang Bermakna"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada minggu lalu, saya berpeluang menyertai persahabatan yang bermakna yang dianjurkan oleh pihak sekolah. Program itu bertujuan menambah pengetahuan serta membentuk sikap bertanggungjawab dalam kalangan murid. Sebelum aktiviti bermula, guru memberikan penerangan yang jelas tentang tugasan dan aspek keselamatan. Saya dan rakan-rakan bekerjasama, berbincang dan menyelesaikan setiap tugasan dengan tekun. Walaupun kami menghadapi beberapa cabaran, kami tidak mudah berputus asa. Akhirnya, program tersebut berjalan dengan lancar dan mencapai matlamatnya. Pengalaman itu menyedarkan saya bahawa usaha, disiplin dan kerjasama amat penting untuk mencapai kejayaan.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  },
+  {
+    "id": "cita-cita-saya",
+    "title": "Cita-cita Saya",
+    "year": 5,
+    "level": "Tahun 5",
+    "theme": "Masa Hadapan",
+    "emoji": "📖✨",
+    "description": "Cerita bertema masa hadapan untuk murid Tahun 5.",
+    "targetWords": "110–150 perkataan",
+    "pictures": [
+      {
+        "emoji": "📖",
+        "caption": "Cita-cita Saya"
+      },
+      {
+        "emoji": "👧🏻👦🏻",
+        "caption": "Murid menjalankan aktiviti bersama-sama."
+      },
+      {
+        "emoji": "✨😊",
+        "caption": "Aktiviti selesai dengan gembira."
+      }
+    ],
+    "story": "Pada minggu lalu, saya berpeluang menyertai cita-cita saya yang dianjurkan oleh pihak sekolah. Program itu bertujuan menambah pengetahuan serta membentuk sikap bertanggungjawab dalam kalangan murid. Sebelum aktiviti bermula, guru memberikan penerangan yang jelas tentang tugasan dan aspek keselamatan. Saya dan rakan-rakan bekerjasama, berbincang dan menyelesaikan setiap tugasan dengan tekun. Walaupun kami menghadapi beberapa cabaran, kami tidak mudah berputus asa. Akhirnya, program tersebut berjalan dengan lancar dan mencapai matlamatnya. Pengalaman itu menyedarkan saya bahawa usaha, disiplin dan kerjasama amat penting untuk mencapai kejayaan.",
+    "dictionary": {
+      "pada": "在 / on",
+      "hari": "天 / day",
+      "kami": "我们 / we",
+      "saya": "我 / I",
+      "sekolah": "学校 / school",
+      "bersama": "一起 / together",
+      "aktiviti": "活动 / activity",
+      "gembira": "开心 / happy",
+      "membantu": "帮助 / help",
+      "menjaga": "照顾 / take care",
+      "bersih": "干净 / clean",
+      "indah": "美丽 / beautiful",
+      "rajin": "勤奋 / diligent",
+      "selamat": "安全 / safe",
+      "akhirnya": "最后 / finally",
+      "pengalaman": "经历 / experience",
+      "bermakna": "有意义 / meaningful"
+    },
+    "grammar": {
+      "verb": [
+        "menyertai",
+        "membantu",
+        "menjaga",
+        "bekerjasama"
+      ],
+      "adjective": [
+        "cerah",
+        "nyaman",
+        "bersih",
+        "indah",
+        "gembira",
+        "bermakna"
+      ],
+      "number": [],
+      "noun": [
+        "hari",
+        "sekolah",
+        "aktiviti",
+        "pengalaman"
+      ]
+    },
+    "questions": [
+      {
+        "question": "Apakah nilai penting dalam cerita ini?",
+        "answers": [
+          "Malas",
+          "Kerjasama",
+          "Marah",
+          "Takut"
+        ],
+        "correct": 1,
+        "explanation": "Watak-watak bekerjasama untuk menyelesaikan aktiviti."
+      },
+      {
+        "question": "Bagaimanakah perasaan penulis pada akhir cerita?",
+        "answers": [
+          "Gembira",
+          "Marah",
+          "Takut",
+          "Kecewa"
+        ],
+        "correct": 0,
+        "explanation": "Penulis berasa gembira dan memperoleh pengalaman bermakna."
+      }
+    ],
+    "writingGuide": [
+      "Bilakah aktiviti berlaku?",
+      "Siapakah yang terlibat?",
+      "Apakah persediaan yang dibuat?",
+      "Apakah aktiviti yang dilakukan?",
+      "Apakah nilai yang dipelajari?",
+      "Bagaimanakah perasaan kamu?"
+    ],
+    "usefulWords": [
+      "Pada minggu lalu",
+      "Selepas itu",
+      "Selain itu",
+      "bekerjasama",
+      "bertanggungjawab",
+      "Akhirnya",
+      "pengalaman bermakna"
+    ]
+  }
+];
+KARANGAN_STORIES.push(...KARANGAN_PHASE1_EXTRA_STORIES);
+console.log("✅ Phase 1 story expansion loaded:", KARANGAN_STORIES.length, "stories");
+

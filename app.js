@@ -9105,3695 +9105,424 @@ window.KaranganAI = {
    END KARANGAN AI v3.3
    ========================================================= */
 /* =========================================================
-   KARANGAN AI v3.5
-   TRANSLATION ENGINE FIX
+
+/* =========================================================
+   KARANGAN AI — TRANSLATION ENGINE v4.0
+   Single stable translation layer
    ========================================================= */
 
 (() => {
-
   "use strict";
 
+  const CACHE_KEY = "karanganAI_translation_v4";
 
-  /* =======================================================
-     1. HELPERS
-     ======================================================= */
-
-  function cleanTranslationWord(
-    rawWord
-  ) {
-
-    return String(
-      rawWord || ""
-    )
+  function cleanWord(raw) {
+    return String(raw || "")
       .toLowerCase()
       .trim()
-      .replace(
-        /^[^a-zA-ZÀ-ÿ]+|[^a-zA-ZÀ-ÿ'-]+$/g,
-        ""
-      );
-
+      .replace(/^[^a-zA-ZÀ-ÿ]+|[^a-zA-ZÀ-ÿ'-]+$/g, "");
   }
 
+  function loadCache() {
+    try {
+      return JSON.parse(localStorage.getItem(CACHE_KEY) || "{}");
+    } catch (_) {
+      return {};
+    }
+  }
 
-  function makeTranslationResult(
-    word,
-    translation,
-    meaning = ""
-  ) {
+  function saveCache(cache) {
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+    } catch (_) {}
+  }
 
+  function splitCombinedTranslation(value) {
+    const text = String(value || "").trim();
+    if (!text) return { zh: "", en: "" };
+    if (!text.includes("·")) return { zh: text, en: "" };
+    const parts = text.split("·").map(v => v.trim()).filter(Boolean);
+    return { zh: parts[0] || "", en: parts.slice(1).join(" · ") };
+  }
+
+  function merge(...items) {
+    const out = { zh: "", en: "", meaning: "" };
+    for (const item of items) {
+      if (!item) continue;
+      if (!out.zh && item.zh) out.zh = String(item.zh).trim();
+      if (!out.en && item.en) out.en = String(item.en).trim();
+      if (!out.meaning && item.meaning) out.meaning = String(item.meaning).trim();
+    }
+    return out;
+  }
+
+  function isComplete(data) {
+    return Boolean(data?.zh && data?.en && data?.meaning);
+  }
+
+  function getSentence(word) {
+    if (typeof findStorySentenceContainingWord === "function") {
+      return findStorySentenceContainingWord(word) || "";
+    }
+    return "";
+  }
+
+  function fromCurrentStory(word) {
+    const value = currentStory?.dictionary?.[word];
+    if (!value) return null;
+    if (typeof value === "object") {
+      return {
+        zh: value.zh || value.chinese || "",
+        en: value.en || value.english || "",
+        meaning: value.meaning || value.definition || ""
+      };
+    }
+    return { zh: String(value).trim(), en: "", meaning: "" };
+  }
+
+  function fromAllStories(word) {
+    const stories = Array.isArray(window.KARANGAN_STORIES)
+      ? window.KARANGAN_STORIES
+      : (Array.isArray(window.stories) ? window.stories : []);
+
+    for (const story of stories) {
+      const value = story?.dictionary?.[word];
+      if (!value) continue;
+      if (typeof value === "object") {
+        return {
+          zh: value.zh || value.chinese || "",
+          en: value.en || value.english || "",
+          meaning: value.meaning || value.definition || ""
+        };
+      }
+      return { zh: String(value).trim(), en: "", meaning: "" };
+    }
+    return null;
+  }
+
+  function fromBasicDictionary(word) {
+    if (typeof BASIC_DICTIONARY !== "object" || !BASIC_DICTIONARY[word]) return null;
+    const item = BASIC_DICTIONARY[word];
     return {
-
-      word,
-
-      translation:
-        translation || "",
-
-      meaning:
-        meaning ||
-        translation ||
-        ""
-
+      zh: item.zh || "",
+      en: item.en || "",
+      meaning: item.meaning || ""
     };
-
   }
 
-
-  /* =======================================================
-     2. CURRENT STORY LOOKUP
-     ======================================================= */
-
-  function lookupCurrentStoryDictionary(
-    word
-  ) {
-
-    if (
-      !currentStory ||
-      !currentStory.dictionary
-    ) {
-
-      return null;
-
-    }
-
-
-    const value =
-      currentStory.dictionary[
-        word
-      ];
-
-
-    if (!value) {
-
-      return null;
-
-    }
-
-
-    return makeTranslationResult(
-      word,
-      value,
-      value
-    );
-
-  }
-
-
-  /* =======================================================
-     3. VOCABULARY V2 LOOKUP
-     ======================================================= */
-
-  function lookupVocabularyEngine(
-    word
-  ) {
-
-    const engine =
-      typeof getVocabularyEngine ===
-        "function"
-        ? getVocabularyEngine()
-        : window.KaranganVocabulary;
-
-
-    if (
-      !engine ||
-      typeof engine.lookupWord !==
-        "function"
-    ) {
-
-      return null;
-
-    }
-
+  function fromVocabulary(word) {
+    const engine = window.KaranganVocabulary;
+    if (!engine) return null;
 
     try {
-
-      const result =
-        engine.lookupWord(
-          word
-        );
-
-
-      if (!result) {
-
-        return null;
-
-      }
-
-
-      return {
-
-        word,
-
-        translation:
-          result.translation ||
-          [
-            result.zh,
-            result.en
-          ]
-            .filter(Boolean)
-            .join(" · "),
-
-        meaning:
-          result.meaning ||
-          ""
-
-      };
-
-    } catch (error) {
-
-      console.warn(
-        "Vocabulary lookup failed:",
-        error
-      );
-
-
-      return null;
-
-    }
-
-  }
-
-
-  /* =======================================================
-     4. SEARCH ALL STORY DICTIONARIES
-     ======================================================= */
-
-  function lookupAllStoryDictionaries(
-    word
-  ) {
-
-    const stories =
-      Array.isArray(
-        window.KARANGAN_STORIES
-      )
-        ? window.KARANGAN_STORIES
-        : [];
-
-
-    for (
-      const story of stories
-    ) {
-
-      const value =
-        story?.dictionary?.[
-          word
-        ];
-
-
-      if (value) {
-
-        return makeTranslationResult(
-          word,
-          value,
-          value
-        );
-
-      }
-
-    }
-
-
-    return null;
-
-  }
-
-
-  /* =======================================================
-     5. WORD FORM FALLBACK
-     ======================================================= */
-
-  function generateWordCandidates(
-    word
-  ) {
-
-    const candidates =
-      new Set();
-
-
-    candidates.add(
-      word
-    );
-
-
-    /*
-      Possessive / object suffix
-    */
-
-    if (
-      word.endsWith(
-        "nya"
-      ) &&
-      word.length > 5
-    ) {
-
-      candidates.add(
-        word.slice(
-          0,
-          -3
-        )
-      );
-
-    }
-
-
-    if (
-      word.endsWith(
-        "kan"
-      ) &&
-      word.length > 6
-    ) {
-
-      candidates.add(
-        word.slice(
-          0,
-          -3
-        )
-      );
-
-    }
-
-
-    if (
-      word.endsWith(
-        "i"
-      ) &&
-      word.length > 5
-    ) {
-
-      candidates.add(
-        word.slice(
-          0,
-          -1
-        )
-      );
-
-    }
-
-
-    /*
-      Common Malay prefixes
-    */
-
-    const prefixes = [
-      "ber",
-      "ter",
-      "mem",
-      "men",
-      "meng",
-      "meny",
-      "me",
-      "di",
-      "ke",
-      "se",
-      "pe"
-    ];
-
-
-    prefixes.forEach(
-      prefix => {
-
-        if (
-          word.startsWith(
-            prefix
-          ) &&
-          word.length >
-            prefix.length + 2
-        ) {
-
-          candidates.add(
-            word.slice(
-              prefix.length
-            )
-          );
-
-        }
-
-      }
-    );
-
-
-    /*
-      Prefix + suffix combination
-    */
-
-    Array.from(
-      candidates
-    ).forEach(
-      candidate => {
-
-        if (
-          candidate.endsWith(
-            "nya"
-          ) &&
-          candidate.length > 5
-        ) {
-
-          candidates.add(
-            candidate.slice(
-              0,
-              -3
-            )
-          );
-
-        }
-
-
-        if (
-          candidate.endsWith(
-            "kan"
-          ) &&
-          candidate.length > 6
-        ) {
-
-          candidates.add(
-            candidate.slice(
-              0,
-              -3
-            )
-          );
-
-        }
-
-      }
-    );
-
-
-    return Array.from(
-      candidates
-    );
-
-  }
-
-
-  /* =======================================================
-     6. LOCAL MULTI-LAYER LOOKUP
-     ======================================================= */
-
-  function lookupTranslationLocally(
-    word
-  ) {
-
-    const candidates =
-      generateWordCandidates(
-        word
-      );
-
-
-    for (
-      const candidate of candidates
-    ) {
-
-      const currentStoryResult =
-        lookupCurrentStoryDictionary(
-          candidate
-        );
-
-
-      if (
-        currentStoryResult
-      ) {
-
-        return currentStoryResult;
-
-      }
-
-
-      const vocabularyResult =
-        lookupVocabularyEngine(
-          candidate
-        );
-
-
-      if (
-        vocabularyResult
-      ) {
-
-        return vocabularyResult;
-
-      }
-
-
-      const allStoryResult =
-        lookupAllStoryDictionaries(
-          candidate
-        );
-
-
-      if (
-        allStoryResult
-      ) {
-
-        return allStoryResult;
-
-      }
-
-    }
-
-
-    return null;
-
-  }
-
-
-  /* =======================================================
-     7. OVERRIDE translateWord()
-     ======================================================= */
-
-  translateWord =
-    async function(
-      rawWord
-    ) {
-
-      const word =
-        cleanTranslationWord(
-          rawWord
-        );
-
-
-      if (!word) {
-
-        return;
-
-      }
-
-
-      currentTranslationWord =
-        word;
-
-
-      const sentence =
-        findStorySentenceContainingWord(
-          word
-        );
-
-
-      currentTranslationData = {
-
-        word,
-
-        translation: "",
-
-        meaning: "",
-
-        example:
-          sentence,
-
-        storyId:
-          currentStory?.id ||
-          null
-
-      };
-
-
-      const popup =
-        byId(
-          "translationPopup"
-        );
-
-
-      if (popup) {
-
-        popup.hidden =
-          false;
-
-      }
-
-
-      safeText(
-        byId(
-          "translationWord"
-        ),
-        word
-      );
-
-
-      const meaningEl =
-        byId(
-          "translationMeaning"
-        );
-
-
-      const definitionEl =
-        byId(
-          "translationDefinition"
-        );
-
-
-      const exampleEl =
-        byId(
-          "translationExample"
-        );
-
-
-      /*
-        STEP 1–4:
-        Local lookup
-      */
-
-      const localResult =
-        lookupTranslationLocally(
-          word
-        );
-
-
-      if (
-        localResult
-      ) {
-
-        currentTranslationData.translation =
-          localResult.translation;
-
-
-        currentTranslationData.meaning =
-          localResult.meaning ||
-          localResult.translation;
-
-
-        safeText(
-          meaningEl,
-          localResult.translation
-        );
-
-
-        safeText(
-          definitionEl,
-          localResult.meaning ||
-          ""
-        );
-
-
-        safeText(
-          exampleEl,
-          sentence ||
-          `Perkataan: ${word}`
-        );
-
-
-        updateSaveVocabularyButton();
-
-
-        return;
-
-      }
-
-
-      /*
-        STEP 5:
-        AI fallback
-      */
-
-      safeText(
-        meaningEl,
-        "Mencari maksud..."
-      );
-
-
-      safeText(
-        definitionEl,
-        "Cikgu Aira sedang mencari perkataan ini."
-      );
-
-
-      safeText(
-        exampleEl,
-        sentence ||
-        `Perkataan: ${word}`
-      );
-
-
-      try {
-
-        const result =
-          await callAI({
-
-            type:
-              "translate",
-
-            word,
-
-            context:
-              sentence,
-
-            sourceLanguage:
-              "Bahasa Melayu",
-
-            targetLanguages: [
-              "Simplified Chinese",
-              "English"
-            ],
-
-            instruction:
-              "Translate the Bahasa Melayu word using its sentence context. Return a short response suitable for a primary-school learner. Format: Chinese · English. Do not return markdown."
-
-          });
-
-
-        const answer =
-          String(
-            extractAIText(
-              result
-            ) ||
-            ""
-          ).trim();
-
-
-        if (!answer) {
-
-          throw new Error(
-            "Empty AI translation"
-          );
-
-        }
-
-
-        currentTranslationData.translation =
-          answer;
-
-
-        currentTranslationData.meaning =
-          answer;
-
-
-        safeText(
-          meaningEl,
-          answer
-        );
-
-
-        safeText(
-          definitionEl,
-          ""
-        );
-
-
-      } catch (error) {
-
-        console.warn(
-          "Translation failed:",
-          word,
-          error
-        );
-
-
-        /*
-          Important:
-          Do not display the old
-          "Maksud belum tersedia"
-          immediately.
-
-          Give the student a useful fallback.
-        */
-
-        const fallback =
-          `"${word}" belum ada dalam kamus tempatan. Cuba Tanya Cikgu Aira.`;
-
-
-        currentTranslationData.translation =
-          fallback;
-
-
-        currentTranslationData.meaning =
-          fallback;
-
-
-        safeText(
-          meaningEl,
-          fallback
-        );
-
-
-        safeText(
-          definitionEl,
-          ""
-        );
-
-      }
-
-
-      updateSaveVocabularyButton();
-
-    };
-
-
-  /* =======================================================
-     8. PUBLIC DEBUG LOOKUP
-     ======================================================= */
-
-  window.KaranganTranslation = {
-
-    lookup(
-      word
-    ) {
-
-      const clean =
-        cleanTranslationWord(
-          word
-        );
-
-
-      return {
-
-        word:
-          clean,
-
-        candidates:
-          generateWordCandidates(
-            clean
-          ),
-
-        result:
-          lookupTranslationLocally(
-            clean
-          )
-
-      };
-
-    }
-
-  };
-
-
-  console.log(
-    "✅ Karangan AI v3.5 Translation Engine loaded"
-  );
-
-
-})();
-
-
-/* =========================================================
-   END KARANGAN AI v3.5
-   ========================================================= */
-/* =========================================================
-   KARANGAN AI v3.6
-   MALAY WORD MORPHOLOGY + TRANSLATION FALLBACK
-   ========================================================= */
-
-(() => {
-
-  "use strict";
-
-
-  /* =======================================================
-     1. SPECIAL MALAY WORD FORMS
-     High-confidence derived-word mappings.
-     ======================================================= */
-
-  const MALAY_WORD_FORMS = {
-
-    /* Learning */
-
-    mempelajari: [
-      "belajar",
-      "pelajar"
-    ],
-
-    pembelajaran: [
-      "belajar"
-    ],
-
-    pelajaran: [
-      "belajar"
-    ],
-
-    belajar: [
-      "belajar"
-    ],
-
-
-    /* Colour */
-
-    berwarna: [
-      "warna"
-    ],
-
-    mewarnai: [
-      "warna"
-    ],
-
-    mewarnakan: [
-      "warna"
-    ],
-
-
-    /* Clean */
-
-    membersihkan: [
-      "bersih"
-    ],
-
-    kebersihan: [
-      "bersih"
-    ],
-
-
-    /* Happy */
-
-    menggembirakan: [
-      "gembira"
-    ],
-
-    kegembiraan: [
-      "gembira"
-    ],
-
-
-    /* Prepare */
-
-    menyiapkan: [
-      "siap"
-    ],
-
-    disiapkan: [
-      "siap"
-    ],
-
-    persiapan: [
-      "siap"
-    ],
-
-
-    /* Help */
-
-    membantu: [
-      "bantu"
-    ],
-
-    bantuan: [
-      "bantu"
-    ],
-
-
-    /* Care */
-
-    menjaga: [
-      "jaga"
-    ],
-
-    penjagaan: [
-      "jaga"
-    ],
-
-
-    /* Read */
-
-    membaca: [
-      "baca"
-    ],
-
-    bacaan: [
-      "baca"
-    ],
-
-
-    /* Write */
-
-    menulis: [
-      "tulis"
-    ],
-
-    tulisan: [
-      "tulis"
-    ],
-
-    penulis: [
-      "tulis"
-    ],
-
-
-    /* Play */
-
-    bermain: [
-      "main"
-    ],
-
-    permainan: [
-      "main"
-    ],
-
-
-    /* Work */
-
-    bekerja: [
-      "kerja"
-    ],
-
-    pekerjaan: [
-      "kerja"
-    ],
-
-
-    /* Success */
-
-    berjaya: [
-      "jaya"
-    ],
-
-    kejayaan: [
-      "jaya"
-    ],
-
-
-    /* Spirit */
-
-    bersemangat: [
-      "semangat"
-    ],
-
-
-    /* Beautiful */
-
-    mencantikkan: [
-      "cantik"
-    ],
-
-
-    /* Long */
-
-    memanjangkan: [
-      "panjang"
-    ],
-
-
-    /* Short */
-
-    memendekkan: [
-      "pendek"
-    ],
-
-
-    /* Big */
-
-    membesarkan: [
-      "besar"
-    ],
-
-
-    /* Small */
-
-    mengecilkan: [
-      "kecil"
-    ]
-
-  };
-
-
-  /* =======================================================
-     2. BUILT-IN TRANSLATION SAFETY NET
-     ======================================================= */
-
-  const MALAY_ROOT_DICTIONARY = {
-
-    warna: {
-      zh: "颜色",
-      en: "colour / color",
-      meaning:
-        "Rupa sesuatu berdasarkan warna seperti merah, biru atau hijau."
-    },
-
-    berwarna: {
-      zh: "有颜色的 / 彩色的",
-      en: "coloured / colored",
-      meaning:
-        "Mempunyai warna."
-    },
-
-    belajar: {
-      zh: "学习",
-      en: "study / learn",
-      meaning:
-        "Berusaha mendapatkan ilmu atau kemahiran."
-    },
-
-    mempelajari: {
-      zh: "学习 / 研习",
-      en: "study / learn",
-      meaning:
-        "Belajar atau mengkaji sesuatu dengan lebih mendalam."
-    },
-
-    pelajar: {
-      zh: "学生",
-      en: "student",
-      meaning:
-        "Orang yang belajar."
-    },
-
-    bersih: {
-      zh: "干净",
-      en: "clean",
-      meaning:
-        "Tidak kotor."
-    },
-
-    membersihkan: {
-      zh: "清理 / 打扫",
-      en: "clean",
-      meaning:
-        "Menjadikan sesuatu bersih."
-    },
-
-    gembira: {
-      zh: "开心 / 高兴",
-      en: "happy",
-      meaning:
-        "Berasa senang dan bahagia."
-    },
-
-    siap: {
-      zh: "准备好 / 完成",
-      en: "ready / complete",
-      meaning:
-        "Sudah selesai atau sudah tersedia."
-    },
-
-    bantu: {
-      zh: "帮助",
-      en: "help",
-      meaning:
-        "Memberikan pertolongan."
-    },
-
-    jaga: {
-      zh: "照顾 / 保护",
-      en: "take care / protect",
-      meaning:
-        "Memelihara atau memastikan sesuatu dalam keadaan baik."
-    },
-
-    baca: {
-      zh: "阅读",
-      en: "read",
-      meaning:
-        "Melihat dan memahami tulisan."
-    },
-
-    tulis: {
-      zh: "写",
-      en: "write",
-      meaning:
-        "Menghasilkan huruf atau perkataan."
-    },
-
-    main: {
-      zh: "玩",
-      en: "play",
-      meaning:
-        "Melakukan sesuatu untuk berseronok."
-    },
-
-    kerja: {
-      zh: "工作",
-      en: "work",
-      meaning:
-        "Melakukan sesuatu tugas."
-    },
-
-    jaya: {
-      zh: "成功",
-      en: "success / succeed",
-      meaning:
-        "Berhasil mencapai sesuatu."
-    },
-
-    semangat: {
-      zh: "精神 / 热情",
-      en: "spirit / enthusiasm",
-      meaning:
-        "Perasaan kuat untuk melakukan sesuatu."
-    },
-
-    cantik: {
-      zh: "漂亮",
-      en: "beautiful",
-      meaning:
-        "Indah atau elok dipandang."
-    },
-
-    panjang: {
-      zh: "长",
-      en: "long",
-      meaning:
-        "Mempunyai ukuran yang jauh dari satu hujung ke hujung yang lain."
-    },
-
-    pendek: {
-      zh: "短",
-      en: "short",
-      meaning:
-        "Tidak panjang."
-    },
-
-    besar: {
-      zh: "大",
-      en: "big / large",
-      meaning:
-        "Mempunyai saiz yang besar."
-    },
-
-    kecil: {
-      zh: "小",
-      en: "small",
-      meaning:
-        "Tidak besar."
-    }
-
-  };
-
-
-  /* =======================================================
-     3. NORMALISE
-     ======================================================= */
-
-  function normalizeMalayLookupWord(
-    value
-  ) {
-
-    return String(
-      value || ""
-    )
-      .toLowerCase()
-      .trim()
-      .replace(
-        /^[^a-zA-ZÀ-ÿ]+|[^a-zA-ZÀ-ÿ'-]+$/g,
-        ""
-      );
-
-  }
-
-
-  /* =======================================================
-     4. GENERATE MALAY ROOT CANDIDATES
-     ======================================================= */
-
-  function getMalayRootCandidates(
-    rawWord
-  ) {
-
-    const word =
-      normalizeMalayLookupWord(
-        rawWord
-      );
-
-
-    const candidates =
-      new Set();
-
-
-    if (!word) {
-
-      return [];
-
-    }
-
-
-    /*
-      Always try exact word first.
-    */
-
-    candidates.add(
-      word
-    );
-
-
-    /*
-      High-confidence mapping.
-    */
-
-    const special =
-      MALAY_WORD_FORMS[
-        word
-      ];
-
-
-    if (
-      Array.isArray(
-        special
-      )
-    ) {
-
-      special.forEach(
-        item =>
-          candidates.add(
-            item
-          )
-      );
-
-    }
-
-
-    /*
-      Possessive suffix:
-      rumahnya -> rumah
-      bukunya -> buku
-    */
-
-    if (
-      word.endsWith("nya") &&
-      word.length > 5
-    ) {
-
-      candidates.add(
-        word.slice(
-          0,
-          -3
-        )
-      );
-
-    }
-
-
-    /*
-      -kan
-    */
-
-    if (
-      word.endsWith("kan") &&
-      word.length > 6
-    ) {
-
-      candidates.add(
-        word.slice(
-          0,
-          -3
-        )
-      );
-
-    }
-
-
-    /*
-      -i
-    */
-
-    if (
-      word.endsWith("i") &&
-      word.length > 5
-    ) {
-
-      candidates.add(
-        word.slice(
-          0,
-          -1
-        )
-      );
-
-    }
-
-
-    /*
-      ber-
-      berwarna -> warna
-      bermain -> main
-    */
-
-    if (
-      word.startsWith("ber") &&
-      word.length > 6
-    ) {
-
-      candidates.add(
-        word.slice(3)
-      );
-
-    }
-
-
-    /*
-      ter-
-    */
-
-    if (
-      word.startsWith("ter") &&
-      word.length > 6
-    ) {
-
-      candidates.add(
-        word.slice(3)
-      );
-
-    }
-
-
-    /*
-      di-
-    */
-
-    if (
-      word.startsWith("di") &&
-      word.length > 5
-    ) {
-
-      candidates.add(
-        word.slice(2)
-      );
-
-    }
-
-
-    /*
-      memper-
-      mempelajari is handled by
-      special mapping above.
-    */
-
-    if (
-      word.startsWith("memper") &&
-      word.length > 8
-    ) {
-
-      candidates.add(
-        word.slice(6)
-      );
-
-    }
-
-
-    /*
-      meng-
-    */
-
-    if (
-      word.startsWith("meng") &&
-      word.length > 7
-    ) {
-
-      candidates.add(
-        word.slice(4)
-      );
-
-    }
-
-
-    /*
-      meny-
-      Malay root may begin with s.
-
-      menyapu -> sapu
-    */
-
-    if (
-      word.startsWith("meny") &&
-      word.length > 7
-    ) {
-
-      const remainder =
-        word.slice(4);
-
-
-      candidates.add(
-        remainder
-      );
-
-
-      candidates.add(
-        "s" + remainder
-      );
-
-    }
-
-
-    /*
-      men-
-      root may begin with t.
-
-      menulis -> tulis
-    */
-
-    if (
-      word.startsWith("men") &&
-      word.length > 6
-    ) {
-
-      const remainder =
-        word.slice(3);
-
-
-      candidates.add(
-        remainder
-      );
-
-
-      candidates.add(
-        "t" + remainder
-      );
-
-    }
-
-
-    /*
-      mem-
-      root may begin with p.
-
-      memilih -> pilih
-    */
-
-    if (
-      word.startsWith("mem") &&
-      word.length > 6
-    ) {
-
-      const remainder =
-        word.slice(3);
-
-
-      candidates.add(
-        remainder
-      );
-
-
-      candidates.add(
-        "p" + remainder
-      );
-
-    }
-
-
-    /*
-      me-
-    */
-
-    if (
-      word.startsWith("me") &&
-      word.length > 5
-    ) {
-
-      candidates.add(
-        word.slice(2)
-      );
-
-    }
-
-
-    /*
-      peN- noun forms.
-    */
-
-    [
-      "peng",
-      "peny",
-      "pen",
-      "pem",
-      "pe"
-    ].forEach(
-      prefix => {
-
-        if (
-          word.startsWith(
-            prefix
-          ) &&
-          word.length >
-            prefix.length + 2
-        ) {
-
-          candidates.add(
-            word.slice(
-              prefix.length
-            )
-          );
-
-        }
-
-      }
-    );
-
-
-    return Array.from(
-      candidates
-    );
-
-  }
-
-
-  /* =======================================================
-     5. SEARCH STORY DATABASE
-     ======================================================= */
-
-  function searchStoryDictionaryV36(
-    word
-  ) {
-
-    const stories =
-      Array.isArray(
-        window.KARANGAN_STORIES
-      )
-        ? window.KARANGAN_STORIES
-        : [];
-
-
-    for (
-      const story of stories
-    ) {
-
-      if (
-        !story ||
-        !story.dictionary
-      ) {
-
-        continue;
-
-      }
-
-
-      const result =
-        story.dictionary[
-          word
-        ];
-
-
-      if (result) {
-
-        return {
-
-          word,
-
-          translation:
-            result,
-
-          meaning:
-            result,
-
-          source:
-            "story"
-
-        };
-
-      }
-
-    }
-
-
-    return null;
-
-  }
-
-
-  /* =======================================================
-     6. LOOKUP ROOT DICTIONARY
-     ======================================================= */
-
-  function searchRootDictionaryV36(
-    word
-  ) {
-
-    const result =
-      MALAY_ROOT_DICTIONARY[
-        word
-      ];
-
-
-    if (!result) {
-
-      return null;
-
-    }
-
-
-    return {
-
-      word,
-
-      translation:
-        [
-          result.zh,
-          result.en
-        ]
-          .filter(Boolean)
-          .join(" · "),
-
-      meaning:
-        result.meaning ||
-        "",
-
-      source:
-        "morphology"
-
-    };
-
-  }
-
-
-  /* =======================================================
-     7. MASTER V3.6 LOOKUP
-     ======================================================= */
-
-  function lookupMalayWordV36(
-    rawWord
-  ) {
-
-    const original =
-      normalizeMalayLookupWord(
-        rawWord
-      );
-
-
-    if (!original) {
-
-      return null;
-
-    }
-
-
-    const candidates =
-      getMalayRootCandidates(
-        original
-      );
-
-
-    /*
-      Exact built-in definition first.
-    */
-
-    const exact =
-      searchRootDictionaryV36(
-        original
-      );
-
-
-    if (exact) {
-
-      return {
-        ...exact,
-        originalWord:
-          original
-      };
-
-    }
-
-
-    /*
-      Search candidates.
-    */
-
-    for (
-      const candidate of candidates
-    ) {
-
-      /*
-        Search story dictionaries.
-      */
-
-      const storyResult =
-        searchStoryDictionaryV36(
-          candidate
-        );
-
-
-      if (
-        storyResult
-      ) {
-
-        return {
-
-          ...storyResult,
-
-          originalWord:
-            original,
-
-          matchedWord:
-            candidate
-
-        };
-
-      }
-
-
-      /*
-        Search morphology dictionary.
-      */
-
-      const rootResult =
-        searchRootDictionaryV36(
-          candidate
-        );
-
-
-      if (
-        rootResult
-      ) {
-
-        return {
-
-          ...rootResult,
-
-          originalWord:
-            original,
-
-          matchedWord:
-            candidate
-
-        };
-
-      }
-
-    }
-
-
-    return null;
-
-  }
-
-
-  /* =======================================================
-     8. CONNECT TO v3.5
-     ======================================================= */
-
-  if (
-    window.KaranganTranslation
-  ) {
-
-    const oldLookup =
-      window.KaranganTranslation
-        .lookup;
-
-
-    window.KaranganTranslation
-      .lookupV35 =
-        oldLookup;
-
-
-    window.KaranganTranslation
-      .lookupMorphology =
-        lookupMalayWordV36;
-
-
-    window.KaranganTranslation
-      .getRootCandidates =
-        getMalayRootCandidates;
-
-  }
-
-
-  /* =======================================================
-     9. PATCH BASIC DICTIONARY
-     Allows old translateWord() paths to benefit too.
-     ======================================================= */
-
-  if (
-    typeof BASIC_DICTIONARY !==
-      "undefined"
-  ) {
-
-    Object.entries(
-      MALAY_ROOT_DICTIONARY
-    ).forEach(
-      ([
-        word,
-        data
-      ]) => {
-
-        if (
-          !BASIC_DICTIONARY[
-            word
-          ]
-        ) {
-
-          BASIC_DICTIONARY[
-            word
-          ] = {
-
-            zh:
-              data.zh,
-
-            en:
-              data.en,
-
-            meaning:
-              data.meaning
-
+      if (typeof engine.lookupWord === "function") {
+        const item = engine.lookupWord(word);
+        if (item) {
+          return {
+            zh: item.zh || item.chinese || "",
+            en: item.en || item.english || "",
+            meaning: item.meaning || item.definition || ""
           };
-
         }
-
       }
-    );
 
+      if (typeof engine.findWord === "function") {
+        const item = engine.findWord(word);
+        if (item) {
+          const parsed = splitCombinedTranslation(item.translation);
+          return {
+            zh: item.zh || item.chinese || parsed.zh,
+            en: item.en || item.english || parsed.en,
+            meaning: item.meaning || ""
+          };
+        }
+      }
+    } catch (error) {
+      console.warn("Vocabulary translation lookup failed:", error);
+    }
+    return null;
   }
 
-
-  /* =======================================================
-     10. WRAP TRANSLATE WORD
-     Morphology check before v3.5 fallback.
-     ======================================================= */
-
-  if (
-    typeof translateWord ===
-      "function"
-  ) {
-
-    const translateWordV35 =
-      translateWord;
-
-
-    translateWord =
-      async function(
-        rawWord
-      ) {
-
-        const word =
-          normalizeMalayLookupWord(
-            rawWord
-          );
-
-
-        /*
-          Try v3.6 morphology.
-        */
-
-        const result =
-          lookupMalayWordV36(
-            word
-          );
-
-
-        if (
-          !result
-        ) {
-
-          /*
-            Let v3.5 continue normally,
-            including AI fallback.
-          */
-
-          return translateWordV35(
-            rawWord
-          );
-
-        }
-
-
-        currentTranslationWord =
-          word;
-
-
-        const sentence =
-          typeof findStorySentenceContainingWord ===
-            "function"
-            ? findStorySentenceContainingWord(
-                word
-              )
-            : "";
-
-
-        currentTranslationData = {
-
-          word,
-
-          translation:
-            result.translation,
-
-          meaning:
-            result.meaning ||
-            result.translation,
-
-          example:
-            sentence,
-
-          storyId:
-            currentStory?.id ||
-            null
-
-        };
-
-
-        const popup =
-          byId(
-            "translationPopup"
-          );
-
-
-        if (
-          popup
-        ) {
-
-          popup.hidden =
-            false;
-
-        }
-
-
-        safeText(
-          byId(
-            "translationWord"
-          ),
-          word
-        );
-
-
-        safeText(
-          byId(
-            "translationMeaning"
-          ),
-          result.translation
-        );
-
-
-        safeText(
-          byId(
-            "translationDefinition"
-          ),
-          result.meaning ||
-          ""
-        );
-
-
-        safeText(
-          byId(
-            "translationExample"
-          ),
-          sentence ||
-          `Perkataan: ${word}`
-        );
-
-
-        if (
-          typeof updateSaveVocabularyButton ===
-            "function"
-        ) {
-
-          updateSaveVocabularyButton();
-
-        }
-
+  function fromMalayMorphology(word) {
+    try {
+      const item = window.KaranganMalay?.lookup?.(word);
+      if (!item) return null;
+      const parsed = splitCombinedTranslation(item.translation);
+      return {
+        zh: item.zh || parsed.zh,
+        en: item.en || parsed.en,
+        meaning: item.meaning || ""
       };
-
+    } catch (_) {
+      return null;
+    }
   }
 
+  function speakTranslationWord(word) {
+    const target = String(word || "").trim();
 
-  /* =======================================================
-     11. DEBUG API
-     ======================================================= */
+    if (!target) return;
 
-  window.KaranganMalay =
-    {
+    if (!("speechSynthesis" in window) || typeof SpeechSynthesisUtterance !== "function") {
+      if (typeof showToast === "function") {
+        showToast("🔇 Peranti ini tidak menyokong sebutan suara.");
+      }
+      return;
+    }
 
-      lookup:
-        lookupMalayWordV36,
+    try {
+      window.speechSynthesis.cancel();
 
-      roots:
-        getMalayRootCandidates,
+      const utterance = new SpeechSynthesisUtterance(target);
+      utterance.lang = "ms-MY";
+      utterance.rate = 0.82;
+      utterance.pitch = 1;
+      utterance.volume = 1;
 
-      forms:
-        MALAY_WORD_FORMS
+      const voices = window.speechSynthesis.getVoices();
+      const malayVoice = voices.find(voice =>
+        /^ms(-|_)/i.test(voice.lang || "")
+      );
 
+      if (malayVoice) {
+        utterance.voice = malayVoice;
+      }
+
+      window.speechSynthesis.speak(utterance);
+    } catch (error) {
+      console.warn("Word pronunciation unavailable:", error);
+    }
+  }
+
+  function ensureTranslationVoiceButton(word) {
+    const wordElement = byId("translationWord");
+    if (!wordElement) return;
+
+    let button = byId("translationWordVoiceButtonV4");
+
+    if (!button) {
+      button = document.createElement("button");
+      button.id = "translationWordVoiceButtonV4";
+      button.type = "button";
+      button.className = "secondary-button";
+      button.style.cssText = `
+        margin-top:10px;
+        padding:8px 12px;
+        min-height:40px;
+      `;
+
+      wordElement.insertAdjacentElement("afterend", button);
+    }
+
+    button.textContent = `🔊 Dengar "${word}"`;
+    button.setAttribute("aria-label", `Dengar sebutan ${word}`);
+    button.onclick = () => speakTranslationWord(word);
+  }
+
+  function show(word, data, sentence, loading = false) {
+    const zh = String(data?.zh || "").trim();
+    const en = String(data?.en || "").trim();
+    const meaning = String(data?.meaning || "").trim();
+
+    currentTranslationWord = word;
+    currentTranslationData = {
+      word,
+      zh,
+      en,
+      translation: [zh, en].filter(Boolean).join(" · "),
+      meaning,
+      example: sentence,
+      storyId: currentStory?.id || null
     };
 
+    const popup = byId("translationPopup");
+    if (popup) popup.hidden = false;
 
-  console.log(
-    "✅ Karangan AI v3.6 Malay Morphology loaded"
-  );
+    safeText(byId("translationWord"), word);
 
+    let headline = "";
+    if (zh && en) headline = `🇨🇳 ${zh} · 🇬🇧 ${en}`;
+    else if (zh) headline = `🇨🇳 ${zh}${loading ? " · 正在补充 English..." : ""}`;
+    else if (en) headline = `🇬🇧 ${en}`;
+    else headline = loading ? "Mencari maksud..." : "Terjemahan belum tersedia.";
 
-})();
+    safeText(byId("translationMeaning"), headline);
+    safeText(byId("translationDefinition"), meaning ? `🇲🇾 ${meaning}` : "");
+    safeText(byId("translationExample"), sentence || `Perkataan: ${word}`);
 
+    ensureTranslationVoiceButton(word);
 
-/* =========================================================
-   END KARANGAN AI v3.6
-   ========================================================= */
-/* =========================================================
-   KARANGAN AI v3.7
-   COMPLETE TRANSLATION ENRICHMENT
-
-   Fix:
-   Local story dictionaries often contain Chinese only.
-   v3.7 automatically enriches them with:
-   - Chinese
-   - English
-   - Maksud BM
-   ========================================================= */
-
-(() => {
-
-  "use strict";
-
-
-  const COMPLETE_TRANSLATION_CACHE_KEY =
-    "karanganAI_complete_translation_v1";
-
-
-  /* =======================================================
-     CACHE
-     ======================================================= */
-
-  function loadCompleteTranslationCache() {
-
-    try {
-
-      return JSON.parse(
-        localStorage.getItem(
-          COMPLETE_TRANSLATION_CACHE_KEY
-        ) || "{}"
-      );
-
-    } catch (error) {
-
-      return {};
-
+    if (typeof updateSaveVocabularyButton === "function") {
+      updateSaveVocabularyButton();
     }
-
   }
 
-
-  function saveCompleteTranslationCache(
-    cache
-  ) {
-
-    try {
-
-      localStorage.setItem(
-        COMPLETE_TRANSLATION_CACHE_KEY,
-        JSON.stringify(cache)
-      );
-
-    } catch (error) {
-
-      console.warn(
-        "Translation cache save failed:",
-        error
-      );
-
-    }
-
-  }
-
-
-  /* =======================================================
-     WORD CLEANING
-     ======================================================= */
-
-  function cleanCompleteTranslationWord(
-    rawWord
-  ) {
-
-    return String(
-      rawWord || ""
-    )
-      .toLowerCase()
-      .trim()
-      .replace(
-        /^[^a-zA-ZÀ-ÿ]+|[^a-zA-ZÀ-ÿ'-]+$/g,
-        ""
-      );
-
-  }
-
-
-  /* =======================================================
-     CURRENT STORY CHINESE TRANSLATION
-     ======================================================= */
-
-  function getCurrentStoryTranslation(
-    word
-  ) {
-
-    const dictionary =
-      currentStory?.dictionary ||
-      {};
-
-
-    return (
-      dictionary[word] ||
-      ""
-    );
-
-  }
-
-
-  /* =======================================================
-     VOCABULARY V2 RESULT
-     ======================================================= */
-
-  function getVocabularyTranslationV37(
-    word
-  ) {
-
-    try {
-
-      const engine =
-        window.KaranganVocabulary;
-
-
-      if (
-        !engine ||
-        typeof engine.lookupWord !==
-          "function"
-      ) {
-
-        return null;
-
-      }
-
-
-      return (
-        engine.lookupWord(
-          word
-        ) ||
-        null
-      );
-
-    } catch (error) {
-
-      return null;
-
-    }
-
-  }
-
-
-  /* =======================================================
-     CHECK WHETHER RESULT IS COMPLETE
-     ======================================================= */
-
-  function isCompleteTranslation(
-    result
-  ) {
-
-    if (!result) {
-
-      return false;
-
-    }
-
-
-    return Boolean(
-      String(
-        result.zh || ""
-      ).trim() &&
-      String(
-        result.en || ""
-      ).trim()
-    );
-
-  }
-
-
-  /* =======================================================
-     PARSE AI RESPONSE
-     ======================================================= */
-
-  function parseCompleteTranslation(
-    text,
-    fallbackChinese = ""
-  ) {
-
-    const raw =
-      String(
-        text || ""
-      ).trim();
-
-
-    let zh = "";
-    let en = "";
-    let meaning = "";
-
-
-    const zhMatch =
-      raw.match(
-        /中文\s*[：:]\s*(.+)/i
-      );
-
-
-    const enMatch =
-      raw.match(
-        /English\s*[：:]\s*(.+)/i
-      );
-
-
-    const meaningMatch =
-      raw.match(
-        /Maksud\s*BM\s*[：:]\s*(.+)/i
-      );
-
-
-    if (zhMatch) {
-
-      zh =
-        zhMatch[1].trim();
-
-    }
-
-
-    if (enMatch) {
-
-      en =
-        enMatch[1].trim();
-
-    }
-
-
-    if (meaningMatch) {
-
-      meaning =
-        meaningMatch[1].trim();
-
-    }
-
-
-    /*
-      Some older AI responses may use:
-      Chinese · English
-    */
-
-    if (
-      !zh &&
-      !en &&
-      raw.includes("·")
-    ) {
-
-      const parts =
-        raw
-          .split("·")
-          .map(
-            item =>
-              item.trim()
-          );
-
-
-      if (
-        parts.length >= 2
-      ) {
-
-        zh =
-          parts[0];
-
-        en =
-          parts[1];
-
-      }
-
-    }
-
+  async function askAI(word, sentence, knownChinese) {
+    const result = await callAI({
+      type: "translate",
+      word,
+      context: sentence,
+      knownChinese: knownChinese || ""
+    });
 
     return {
-
-      zh:
-        zh ||
-        fallbackChinese ||
-        "",
-
-      en:
-        en ||
-        "",
-
-      meaning:
-        meaning ||
-        ""
-
+      zh: String(result?.zh || knownChinese || "").trim(),
+      en: String(result?.en || "").trim(),
+      meaning: String(result?.meaning || "").trim()
     };
-
   }
 
+  translateWord = async function(rawWord) {
+    const word = cleanWord(rawWord);
+    if (!word) return;
 
-  /* =======================================================
-     DISPLAY
-     ======================================================= */
+    const sentence = getSentence(word);
+    const cache = loadCache();
+    const cached = cache[word] || null;
 
-  function displayCompleteTranslation(
-    word,
-    data,
-    sentence
-  ) {
+    const local = merge(
+      cached,
+      fromCurrentStory(word),
+      fromVocabulary(word),
+      fromBasicDictionary(word),
+      fromMalayMorphology(word),
+      fromAllStories(word)
+    );
 
-    const zh =
-      data.zh || "—";
-
-
-    const en =
-      data.en || "—";
-
-
-    const meaning =
-      data.meaning || "";
-
-
-    const displayText =
-      `${zh} · ${en}`;
-
-
-    currentTranslationWord =
-      word;
-
-
-    currentTranslationData = {
-
-      word,
-
-      translation:
-        displayText,
-
-      meaning:
-        meaning ||
-        displayText,
-
-      example:
-        sentence,
-
-      storyId:
-        currentStory?.id ||
-        null
-
-    };
-
-
-    const popup =
-      byId(
-        "translationPopup"
-      );
-
-
-    if (popup) {
-
-      popup.hidden =
-        false;
-
+    if (isComplete(local)) {
+      show(word, local, sentence, false);
+      return;
     }
 
+    // Show every useful local result immediately. AI failure never erases it.
+    show(word, local, sentence, true);
 
-    safeText(
-      byId(
-        "translationWord"
-      ),
-      word
-    );
+    try {
+      const ai = await askAI(word, sentence, local.zh);
+      const complete = merge(local, ai);
 
+      if (complete.zh || complete.en || complete.meaning) {
+        cache[word] = complete;
+        saveCache(cache);
+      }
 
-    safeText(
-      byId(
-        "translationMeaning"
-      ),
-      displayText
-    );
-
-
-    safeText(
-      byId(
-        "translationDefinition"
-      ),
-      meaning
-    );
-
-
-    safeText(
-      byId(
-        "translationExample"
-      ),
-      sentence ||
-      `Perkataan: ${word}`
-    );
-
-
-    if (
-      typeof updateSaveVocabularyButton ===
-        "function"
-    ) {
-
-      updateSaveVocabularyButton();
-
+      show(word, complete, sentence, false);
+    } catch (error) {
+      console.warn("Translation AI unavailable:", word, error);
+      // Keep local translation visible; never replace it with a fatal error.
+      show(word, local, sentence, false);
     }
-
-  }
-
-
-  /* =======================================================
-     COMPLETE TRANSLATION ENGINE
-     ======================================================= */
-
-  const translateWordBeforeV37 =
-    translateWord;
-
-
-  translateWord =
-    async function(
-      rawWord
-    ) {
-
-      const word =
-        cleanCompleteTranslationWord(
-          rawWord
-        );
-
-
-      if (!word) {
-
-        return;
-
-      }
-
-
-      const sentence =
-        typeof findStorySentenceContainingWord ===
-          "function"
-
-          ? findStorySentenceContainingWord(
-              word
-            )
-
-          : "";
-
-
-      /*
-        STEP 1
-        Complete cache
-      */
-
-      const cache =
-        loadCompleteTranslationCache();
-
-
-      if (
-        cache[word] &&
-        cache[word].zh &&
-        cache[word].en
-      ) {
-
-        displayCompleteTranslation(
-          word,
-          cache[word],
-          sentence
-        );
-
-
-        return;
-
-      }
-
-
-      /*
-        STEP 2
-        Vocabulary v2
-
-        This dictionary already has
-        Chinese + English for many words.
-      */
-
-      const vocabulary =
-        getVocabularyTranslationV37(
-          word
-        );
-
-
-      if (
-        vocabulary &&
-        vocabulary.zh &&
-        vocabulary.en
-      ) {
-
-        const result = {
-
-          zh:
-            vocabulary.zh,
-
-          en:
-            vocabulary.en,
-
-          meaning:
-            vocabulary.meaning ||
-            ""
-
-        };
-
-
-        cache[word] =
-          result;
-
-
-        saveCompleteTranslationCache(
-          cache
-        );
-
-
-        displayCompleteTranslation(
-          word,
-          result,
-          sentence
-        );
-
-
-        return;
-
-      }
-
-
-      /*
-        STEP 3
-        Malay morphology v3.6
-
-        Some morphology entries already contain
-        Chinese + English in a combined string.
-      */
-
-      if (
-        window.KaranganMalay &&
-        typeof window.KaranganMalay.lookup ===
-          "function"
-      ) {
-
-        try {
-
-          const morphology =
-            window.KaranganMalay.lookup(
-              word
-            );
-
-
-          if (
-            morphology &&
-            morphology.translation
-          ) {
-
-            const parsed =
-              parseCompleteTranslation(
-                morphology.translation
-              );
-
-
-            /*
-              If morphology gives proper
-              Chinese + English,
-              use it immediately.
-            */
-
-            if (
-              parsed.zh &&
-              parsed.en
-            ) {
-
-              parsed.meaning =
-                morphology.meaning ||
-                parsed.meaning;
-
-
-              cache[word] =
-                parsed;
-
-
-              saveCompleteTranslationCache(
-                cache
-              );
-
-
-              displayCompleteTranslation(
-                word,
-                parsed,
-                sentence
-              );
-
-
-              return;
-
-            }
-
-          }
-
-        } catch (error) {
-
-          console.warn(
-            "Morphology translation error:",
-            error
-          );
-
-        }
-
-      }
-
-
-      /*
-        STEP 4
-        Current story dictionary.
-
-        IMPORTANT:
-        Most story dictionaries contain
-        Chinese only.
-
-        Therefore DO NOT stop here.
-        Use Chinese as a hint for AI.
-      */
-
-      const localChinese =
-        getCurrentStoryTranslation(
-          word
-        );
-
-
-      /*
-        Show immediately while AI enriches.
-      */
-
-      currentTranslationWord =
-        word;
-
-
-      const popup =
-        byId(
-          "translationPopup"
-        );
-
-
-      if (popup) {
-
-        popup.hidden =
-          false;
-
-      }
-
-
-      safeText(
-        byId(
-          "translationWord"
-        ),
-        word
-      );
-
-
-      safeText(
-        byId(
-          "translationMeaning"
-        ),
-        localChinese
-
-          ? `${localChinese} · 正在补充 English...`
-
-          : "Mencari maksud..."
-      );
-
-
-      safeText(
-        byId(
-          "translationDefinition"
-        ),
-        "Cikgu Aira sedang melengkapkan terjemahan..."
-      );
-
-
-      safeText(
-        byId(
-          "translationExample"
-        ),
-        sentence ||
-        `Perkataan: ${word}`
-      );
-
-
-      /*
-        STEP 5
-        AI enrichment
-      */
-
-      try {
-
-        const result =
-          await callAI({
-
-            type:
-              "translate",
-
-            word,
-
-            context:
-              sentence,
-
-            knownChinese:
-              localChinese,
-
-            instruction:
-              `
-Complete the translation of this Bahasa Melayu word.
-
-You MUST return exactly these three lines:
-
-中文：<Simplified Chinese meaning>
-English：<English meaning>
-Maksud BM：<short simple Bahasa Melayu definition>
-
-Even if a Chinese translation is already supplied,
-you MUST still provide English and Maksud BM.
-
-Do not omit any line.
-Do not use markdown.
-              `.trim()
-
-          });
-
-
-        const answer =
-          extractAIText(
-            result
-          );
-
-
-        const parsed =
-          parseCompleteTranslation(
-            answer,
-            localChinese
-          );
-
-
-        /*
-          If AI unexpectedly misses English,
-          use old translation engine as
-          a final safety fallback.
-        */
-
-        if (!parsed.en) {
-
-          console.warn(
-            "AI translation incomplete:",
-            word,
-            answer
-          );
-
-
-          return translateWordBeforeV37(
-            rawWord
-          );
-
-        }
-
-
-        cache[word] =
-          parsed;
-
-
-        saveCompleteTranslationCache(
-          cache
-        );
-
-
-        displayCompleteTranslation(
-          word,
-          parsed,
-          sentence
-        );
-
-
-      } catch (error) {
-
-        console.warn(
-          "v3.7 translation enrichment failed:",
-          word,
-          error
-        );
-
-
-        /*
-          Preserve all previous v3.6 / v3.5
-          fallbacks if AI is unavailable.
-        */
-
-        return translateWordBeforeV37(
-          rawWord
-        );
-
-      }
-
-    };
-
-
-  /* =======================================================
-     DEBUG / CACHE
-     ======================================================= */
-
-  window.KaranganCompleteTranslation = {
-
-    getCache() {
-
-      return loadCompleteTranslationCache();
-
-    },
-
-
-    clearCache() {
-
-      localStorage.removeItem(
-        COMPLETE_TRANSLATION_CACHE_KEY
-      );
-
-
-      console.log(
-        "Translation cache cleared."
-      );
-
-    }
-
   };
 
+  window.KaranganTranslationV4 = {
+    clearCache() {
+      localStorage.removeItem(CACHE_KEY);
+      console.log("✅ Translation v4 cache cleared");
+    },
+    getCache() {
+      return loadCache();
+    }
+  };
 
-  console.log(
-    "✅ Karangan AI v3.7 Complete Translation loaded"
-  );
-
-
+  console.log("✅ Karangan AI Translation Engine v4 loaded");
 })();
 
-
 /* =========================================================
-   END KARANGAN AI v3.7
-   ========================================================= */
-/* =========================================================
-   KARANGAN AI v3.8
-   UNIVERSAL AI WORD TRANSLATION
-
-   Priority:
-   1. Complete translation cache
-   2. Vocabulary engine complete entry
-   3. Local story Chinese hint
-   4. AI structured translation
-   5. Safe fallback
+   END KARANGAN AI TRANSLATION ENGINE v4.0
    ========================================================= */
 
+
+/* =========================================================
+   PHASE 1 — LANGKAH 1 + 2 STABILITY PACK v5.0
+   ========================================================= */
 (() => {
-
   "use strict";
 
-  const TRANSLATION_CACHE_KEY =
-    "karanganAI_translation_v38";
-
-
-  /* =======================================================
-     1. CACHE
-     ======================================================= */
-
-  function getTranslationCacheV38() {
-
-    try {
-
-      return JSON.parse(
-        localStorage.getItem(
-          TRANSLATION_CACHE_KEY
-        ) || "{}"
-      );
-
-    } catch (error) {
-
-      return {};
-
-    }
-
+  // Reliable navigation: module pages always have a direct route home.
+  function ensureModuleHomeButton() {
+    const header = document.querySelector("#moduleScreen .module-header") || byId("moduleBackButton")?.parentElement;
+    if (!header || byId("moduleHomeButtonV5")) return;
+    const btn = document.createElement("button");
+    btn.id = "moduleHomeButtonV5";
+    btn.type = "button";
+    btn.className = "icon-button";
+    btn.textContent = "🏠";
+    btn.setAttribute("aria-label", "Kembali ke halaman utama");
+    btn.addEventListener("click", () => showScreen("home"));
+    header.appendChild(btn);
   }
 
-
-  function saveTranslationCacheV38(
-    cache
-  ) {
-
-    try {
-
-      localStorage.setItem(
-        TRANSLATION_CACHE_KEY,
-        JSON.stringify(cache)
-      );
-
-    } catch (error) {
-
-      console.warn(
-        "Translation cache error:",
-        error
-      );
-
-    }
-
-  }
-
-
-  /* =======================================================
-     2. CLEAN WORD
-     ======================================================= */
-
-  function cleanWordV38(
-    rawWord
-  ) {
-
-    return String(
-      rawWord || ""
-    )
-      .toLowerCase()
-      .trim()
-      .replace(
-        /^[^a-zA-ZÀ-ÿ]+|[^a-zA-ZÀ-ÿ'-]+$/g,
-        ""
-      );
-
-  }
-
-
-  /* =======================================================
-     3. LOCAL STORY LOOKUP
-     ======================================================= */
-
-  function getStoryDictionaryValueV38(
-    word
-  ) {
-
-    if (
-      currentStory?.dictionary?.[
-        word
-      ]
-    ) {
-
-      return currentStory
-        .dictionary[
-          word
-        ];
-
-    }
-
-
-    const stories =
-      Array.isArray(
-        window.KARANGAN_STORIES
-      )
-        ? window.KARANGAN_STORIES
-        : [];
-
-
-    for (
-      const story of stories
-    ) {
-
-      const value =
-        story?.dictionary?.[
-          word
-        ];
-
-
-      if (value) {
-
-        return value;
-
-      }
-
-    }
-
-
-    return "";
-
-  }
-
-
-  /* =======================================================
-     4. VOCABULARY ENGINE LOOKUP
-     ======================================================= */
-
-  function getVocabularyEntryV38(
-    word
-  ) {
-
-    try {
-
-      const engine =
-        window.KaranganVocabulary;
-
-
-      if (
-        !engine ||
-        typeof engine.lookupWord !==
-          "function"
-      ) {
-
-        return null;
-
-      }
-
-
-      return (
-        engine.lookupWord(
-          word
-        ) ||
-        null
-      );
-
-    } catch (error) {
-
-      console.warn(
-        "Vocabulary lookup error:",
-        error
-      );
-
-
-      return null;
-
-    }
-
-  }
-
-
-  /* =======================================================
-     5. GET STORY SENTENCE
-     ======================================================= */
-
-  function getSentenceV38(
-    word
-  ) {
-
-    if (
-      typeof findStorySentenceContainingWord ===
-        "function"
-    ) {
-
-      return (
-        findStorySentenceContainingWord(
-          word
-        ) ||
-        ""
-      );
-
-    }
-
-
-    return "";
-
-  }
-
-
-  /* =======================================================
-     6. SHOW LOADING POPUP
-     ======================================================= */
-
-  function showTranslationLoadingV38(
-    word,
-    localChinese,
-    sentence
-  ) {
-
-    currentTranslationWord =
-      word;
-
-
-    const popup =
-      byId(
-        "translationPopup"
-      );
-
-
-    if (popup) {
-
-      popup.hidden =
-        false;
-
-    }
-
-
-    safeText(
-      byId(
-        "translationWord"
-      ),
-      word
-    );
-
-
-    safeText(
-      byId(
-        "translationMeaning"
-      ),
-      localChinese
-        ? `${localChinese} · Loading English...`
-        : "正在查询翻译..."
-    );
-
-
-    safeText(
-      byId(
-        "translationDefinition"
-      ),
-      "Cikgu Aira sedang melengkapkan maksud..."
-    );
-
-
-    safeText(
-      byId(
-        "translationExample"
-      ),
-      sentence ||
-      `Perkataan: ${word}`
-    );
-
-  }
-
-
-  /* =======================================================
-     7. DISPLAY COMPLETE RESULT
-     ======================================================= */
-
-  function showTranslationResultV38(
-    word,
-    data,
-    sentence
-  ) {
-
-    const zh =
-      String(
-        data.zh || ""
-      ).trim();
-
-
-    const en =
-      String(
-        data.en || ""
-      ).trim();
-
-
-    const meaning =
-      String(
-        data.meaning || ""
-      ).trim();
-
-
-    currentTranslationWord =
-      word;
-
-
-    currentTranslationData = {
-
-      word,
-
-      translation:
-        `${zh} · ${en}`,
-
-      meaning:
-        meaning,
-
-      zh,
-
-      en,
-
-      example:
-        sentence,
-
-      storyId:
-        currentStory?.id ||
-        null
-
-    };
-
-
-    const popup =
-      byId(
-        "translationPopup"
-      );
-
-
-    if (popup) {
-
-      popup.hidden =
-        false;
-
-    }
-
-
-    safeText(
-      byId(
-        "translationWord"
-      ),
-      word
-    );
-
-
-    safeText(
-      byId(
-        "translationMeaning"
-      ),
-      `🇨🇳 ${zh}   ·   🇬🇧 ${en}`
-    );
-
-
-    safeText(
-      byId(
-        "translationDefinition"
-      ),
-      meaning
-        ? `🇲🇾 ${meaning}`
-        : ""
-    );
-
-
-    safeText(
-      byId(
-        "translationExample"
-      ),
-      sentence ||
-      `Perkataan: ${word}`
-    );
-
-
-    if (
-      typeof updateSaveVocabularyButton ===
-        "function"
-    ) {
-
-      updateSaveVocabularyButton();
-
-    }
-
-  }
-
-
-  /* =======================================================
-     8. AI STRUCTURED TRANSLATION
-     ======================================================= */
-
-  async function requestAITranslationV38(
-    word,
-    sentence,
-    localChinese = ""
-  ) {
-
-    const response =
-      await callAI({
-
-        type:
-          "translate",
-
-        word,
-
-        context:
-          sentence,
-
-        knownChinese:
-          localChinese
-
-      });
-
-
-    /*
-      New API format:
-      {
-        type: "translate",
-        word: "...",
-        zh: "...",
-        en: "...",
-        meaning: "...",
-        answer: "..."
-      }
-    */
-
-    const zh =
-      String(
-        response?.zh ||
-        localChinese ||
-        ""
-      ).trim();
-
-
-    const en =
-      String(
-        response?.en ||
-        ""
-      ).trim();
-
-
-    const meaning =
-      String(
-        response?.meaning ||
-        ""
-      ).trim();
-
-
-    if (
-      !zh ||
-      !en
-    ) {
-
-      throw new Error(
-        "Incomplete structured translation"
-      );
-
-    }
-
-
-    return {
-
-      zh,
-
-      en,
-
-      meaning
-
-    };
-
-  }
-
-
-  /* =======================================================
-     9. OVERRIDE translateWord
-     ======================================================= */
-
-  translateWord =
-    async function(
-      rawWord
-    ) {
-
-      const word =
-        cleanWordV38(
-          rawWord
-        );
-
-
-      if (!word) {
-
-        return;
-
-      }
-
-
-      const sentence =
-        getSentenceV38(
-          word
-        );
-
-
-      const cache =
-        getTranslationCacheV38();
-
-
-      /* ---------------------------------------------------
-         STEP 1 — Complete cache
-         --------------------------------------------------- */
-
-      const cached =
-        cache[word];
-
-
-      if (
-        cached?.zh &&
-        cached?.en
-      ) {
-
-        showTranslationResultV38(
-          word,
-          cached,
-          sentence
-        );
-
-
-        return;
-
-      }
-
-
-      /* ---------------------------------------------------
-         STEP 2 — Vocabulary v2 complete entry
-         --------------------------------------------------- */
-
-      const vocabulary =
-        getVocabularyEntryV38(
-          word
-        );
-
-
-      if (
-        vocabulary?.zh &&
-        vocabulary?.en
-      ) {
-
-        const complete = {
-
-          zh:
-            vocabulary.zh,
-
-          en:
-            vocabulary.en,
-
-          meaning:
-            vocabulary.meaning ||
-            ""
-
-        };
-
-
-        cache[word] =
-          complete;
-
-
-        saveTranslationCacheV38(
-          cache
-        );
-
-
-        showTranslationResultV38(
-          word,
-          complete,
-          sentence
-        );
-
-
-        return;
-
-      }
-
-
-      /* ---------------------------------------------------
-         STEP 3 — Morphology complete result
-         --------------------------------------------------- */
-
-      if (
-        window.KaranganMalay &&
-        typeof window.KaranganMalay.lookup ===
-          "function"
-      ) {
-
-        try {
-
-          const morphology =
-            window.KaranganMalay.lookup(
-              word
-            );
-
-
-          /*
-            v3.6 often returns:
-            "颜色 · colour / color"
-          */
-
-          if (
-            morphology?.translation &&
-            morphology.translation.includes(
-              "·"
-            )
-          ) {
-
-            const parts =
-              morphology.translation
-                .split("·")
-                .map(
-                  value =>
-                    value.trim()
-                );
-
-
-            if (
-              parts[0] &&
-              parts[1]
-            ) {
-
-              const complete = {
-
-                zh:
-                  parts[0],
-
-                en:
-                  parts
-                    .slice(1)
-                    .join(" · "),
-
-                meaning:
-                  morphology.meaning ||
-                  ""
-
-              };
-
-
-              cache[word] =
-                complete;
-
-
-              saveTranslationCacheV38(
-                cache
-              );
-
-
-              showTranslationResultV38(
-                word,
-                complete,
-                sentence
-              );
-
-
-              return;
-
-            }
-
-          }
-
-        } catch (error) {
-
-          console.warn(
-            "Morphology lookup failed:",
-            error
-          );
-
-        }
-
-      }
-
-
-      /* ---------------------------------------------------
-         STEP 4 — Story dictionary Chinese hint
-
-         IMPORTANT:
-         Do NOT return here.
-         Story dictionary is usually Chinese only.
-         --------------------------------------------------- */
-
-      const localChinese =
-        getStoryDictionaryValueV38(
-          word
-        );
-
-
-      showTranslationLoadingV38(
-        word,
-        localChinese,
-        sentence
-      );
-
-
-      /* ---------------------------------------------------
-         STEP 5 — AI
-         --------------------------------------------------- */
-
-      try {
-
-        const complete =
-          await requestAITranslationV38(
-            word,
-            sentence,
-            localChinese
-          );
-
-
-        cache[word] =
-          complete;
-
-
-        saveTranslationCacheV38(
-          cache
-        );
-
-
-        showTranslationResultV38(
-          word,
-          complete,
-          sentence
-        );
-
-
-      } catch (error) {
-
-        console.warn(
-          "AI translation v3.8 failed:",
-          word,
-          error
-        );
-
-
-        /*
-          We intentionally do NOT call the
-          old translateWord anymore.
-
-          Old translation patches can return:
-          "belum ada dalam kamus tempatan"
-          before AI has a chance to complete it.
-        */
-
-
-        currentTranslationData = {
-
-          word,
-
-          translation:
-            localChinese ||
-            "",
-
-          meaning:
-            "",
-
-          example:
-            sentence,
-
-          storyId:
-            currentStory?.id ||
-            null
-
-        };
-
-
-        safeText(
-          byId(
-            "translationMeaning"
-          ),
-          localChinese
-            ? `🇨🇳 ${localChinese}`
-            : "Terjemahan AI tidak tersedia buat sementara."
-        );
-
-
-        safeText(
-          byId(
-            "translationDefinition"
-          ),
-          "Cuba lagi sebentar."
-        );
-
-
-        if (
-          typeof updateSaveVocabularyButton ===
-            "function"
-        ) {
-
-          updateSaveVocabularyButton();
-
-        }
-
-      }
-
-    };
-
-
-  /* =======================================================
-     10. DEBUG
-     ======================================================= */
-
-  window.KaranganTranslationV38 = {
-
-    clearCache() {
-
-      localStorage.removeItem(
-        TRANSLATION_CACHE_KEY
-      );
-
-      console.log(
-        "✅ v3.8 translation cache cleared"
-      );
-
-    },
-
-
-    getCache() {
-
-      return getTranslationCacheV38();
-
-    }
-
+  const oldShowScreenV5 = showScreen;
+  showScreen = function(screenName, remember = true) {
+    oldShowScreenV5(screenName, remember);
+    if (screenName === "module") setTimeout(ensureModuleHomeButton, 0);
   };
 
+  closeModule = function() { showScreen("home"); };
 
-  console.log(
-    "✅ Karangan AI v3.8 Universal AI Translation loaded"
-  );
+  // Daily vocabulary + useful writing phrases.
+  const DAILY_PHRASES = [
+    ["Cuaca pada pagi itu cerah dan nyaman.","那天早晨天气晴朗舒适。","The weather that morning was bright and pleasant.","Cuaca"],
+    ["Kicauan burung kedengaran merdu pada waktu pagi.","清晨传来悦耳的鸟鸣声。","The melodious chirping of birds could be heard in the morning.","Pemandangan"],
+    ["Pokok-pokok yang menghijau menjadikan suasana nyaman dan mendamaikan.","翠绿的树木让环境舒适宁静。","The lush green trees made the surroundings pleasant and peaceful.","Pemandangan"],
+    ["Saya berasa sangat gembira kerana pengalaman itu amat bermakna.","我非常开心，因为那次经历很有意义。","I felt very happy because the experience was very meaningful.","Perasaan"],
+    ["Kami bekerjasama bagai aur dengan tebing.","我们互相合作、互相帮助。","We worked together and supported one another.","Kerjasama"],
+    ["Suasana di situ sungguh meriah dan menggembirakan.","那里的气氛十分热闹愉快。","The atmosphere there was lively and cheerful.","Suasana"],
+    ["Tanpa membuang masa, kami segera memulakan aktiviti.","我们不浪费时间，马上开始活动。","Without wasting time, we immediately began the activity.","Tindakan"],
+    ["Pelbagai aktiviti yang menarik telah dijalankan.","那里进行了各种有趣的活动。","Various interesting activities were carried out.","Aktiviti"],
+    ["Kami melakukan tugas dengan penuh semangat.","我们充满热忱地完成任务。","We carried out the task enthusiastically.","Sikap"],
+    ["Kawasan itu kelihatan bersih, indah dan teratur.","那个地方看起来干净、美丽又整齐。","The area looked clean, beautiful and orderly.","Pemandangan"],
+    ["Saya tidak dapat melupakan pengalaman yang menyeronokkan itu.","我无法忘记那次愉快的经历。","I could not forget that enjoyable experience.","Penutup"],
+    ["Pengalaman itu memberikan banyak pengajaran kepada saya.","那次经历让我学到了很多。","That experience taught me many valuable lessons.","Penutup"],
+    ["Kami pulang dengan hati yang gembira dan puas.","我们带着开心和满足的心情回家。","We returned home feeling happy and satisfied.","Penutup"],
+    ["Orang ramai memberikan kerjasama yang sangat baik.","大家都给予了很好的配合。","Everyone gave excellent cooperation.","Kerjasama"],
+    ["Saya berasa bangga kerana dapat membantu orang lain.","我为能够帮助别人而感到自豪。","I felt proud to be able to help others.","Perasaan"],
+    ["Pada awal pagi, udara terasa segar dan nyaman.","清晨时空气清新舒适。","Early in the morning, the air felt fresh and pleasant.","Cuaca"],
+    ["Langit yang biru terbentang luas tanpa awan gelap.","蔚蓝的天空辽阔无边，没有乌云。","The blue sky stretched widely without dark clouds.","Cuaca"],
+    ["Bunga-bunga berkembang mekar dan menceriakan suasana.","鲜花盛开，使周围充满生气。","The flowers were in full bloom and brightened the surroundings.","Pemandangan"],
+    ["Rakan-rakan saya bersorak dengan penuh semangat.","我的朋友们热情地欢呼。","My friends cheered enthusiastically.","Sukan"],
+    ["Kami sentiasa mengutamakan keselamatan semasa menjalankan aktiviti.","进行活动时，我们始终把安全放在第一位。","We always prioritised safety while carrying out the activity.","Keselamatan"]
+  ];
 
+  function phaseDateKey(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
+  function dailySlice(list,count){
+    const key=phaseDateKey().replace(/-/g,""); let seed=Number(key)%list.length; const out=[];
+    for(let i=0;i<count;i++) out.push(list[(seed+i)%list.length]); return out;
+  }
+  function speakMalayV5(text){
+    if(!("speechSynthesis" in window)) return showToast("🔇 Suara tidak tersedia.");
+    speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang="ms-MY"; u.rate=.88; u.pitch=1.08;
+    const vs=speechSynthesis.getVoices();
+    const preferred=vs.find(v=>/^ms(-|_)/i.test(v.lang||"") && /female|zira|yasmin|aina|siti/i.test(v.name||"")) || vs.find(v=>/^ms(-|_)/i.test(v.lang||""));
+    if(preferred) u.voice=preferred; speechSynthesis.speak(u);
+  }
+  window.KaranganVoiceV5={speak:speakMalayV5};
 
+  const oldRenderVocabularyModuleV5 = renderVocabularyModule;
+  renderVocabularyModule = function(){
+    const engine=getVocabularyEngine();
+    const words=getVocabularyWords();
+    const daily = engine?.getDailyNewWords?.(10) || words.filter(w=>!w.mastered).slice(0,10);
+    const phrases=dailySlice(DAILY_PHRASES,5);
+    const learned=words.filter(w=>w.mastered);
+    const cards=daily.map(item=>`<div class="v5-vocab-card" style="padding:16px;border:1px solid #ece8e1;border-radius:18px;background:white;margin-bottom:10px"><div style="display:flex;justify-content:space-between;gap:8px"><strong style="font-size:19px">${escapeHtml(item.word)}</strong><button type="button" data-v5-speak="${escapeAttribute(item.word)}" class="secondary-button">🔊</button></div><div style="color:#6b55d9;font-weight:750;margin-top:6px">${escapeHtml(item.translation||"")}</div>${item.meaning?`<p>${escapeHtml(item.meaning)}</p>`:""}<div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-v5-master="${escapeAttribute(item.id||"")}" class="secondary-button">✓ Sudah Kuasai</button><button type="button" data-v5-remove="${escapeAttribute(item.id||"")}" class="secondary-button">🗑 Buang</button></div></div>`).join("") || `<p>Tiada perkataan baharu hari ini.</p>`;
+    const phraseCards=phrases.map((p,i)=>`<div style="padding:16px;border-radius:18px;background:#fff7e7;margin-bottom:10px"><small>${escapeHtml(p[3])}</small><strong style="display:block;margin:5px 0">✨ ${escapeHtml(p[0])}</strong><div>🇨🇳 ${escapeHtml(p[1])}</div><div>🇬🇧 ${escapeHtml(p[2])}</div><button type="button" data-v5-speak="${escapeAttribute(p[0])}" class="secondary-button" style="margin-top:8px">🔊 Dengar</button></div>`).join("");
+    openModuleScreen(`<span class="section-kicker">LANGKAH 2</span><h1>🧠 Kosa Kata Hari Ini</h1><p>10 perkataan baharu setiap hari. Perkataan yang dikuasai akan dipindahkan keluar daripada senarai utama.</p><div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0"><span class="section-kicker">Hari Ini ${daily.length}</span><span class="section-kicker">Dikuasai ${learned.length}</span><span class="section-kicker">Semua ${words.length}</span></div>${cards}<h2 style="margin-top:28px">✨ 5 Ayat Cantik Hari Ini</h2><p>Ayat serba guna yang boleh digunakan dalam pelbagai karangan.</p>${phraseCards}<button id="v5AllWords" class="secondary-button" type="button" style="width:100%;margin-top:12px">📚 Lihat Semua Perkataan (A–Z)</button><button id="startVocabularyReviewButton" class="primary-button" type="button" style="width:100%;margin-top:10px">🎯 Mula Ulang Kaji</button>`,28);
+    $$('[data-v5-speak]').forEach(b=>b.onclick=()=>speakMalayV5(b.dataset.v5Speak));
+    $$('[data-v5-master]').forEach(b=>b.onclick=()=>{ if(b.dataset.v5Master) engine?.markMastered?.(b.dataset.v5Master,true); renderVocabularyModule(); });
+    $$('[data-v5-remove]').forEach(b=>b.onclick=()=>{ if(b.dataset.v5Remove) engine?.removeWord?.(b.dataset.v5Remove); renderVocabularyModule(); });
+    byId('startVocabularyReviewButton')?.addEventListener('click',startVocabularyReview);
+    byId('v5AllWords')?.addEventListener('click',()=>{
+      const sorted=[...getVocabularyWords()].sort((a,b)=>String(a.word).localeCompare(String(b.word),'ms'));
+      openModuleScreen(`<span class="section-kicker">BUKU KOSA KATA</span><h1>📚 Semua Perkataan</h1>${sorted.map(w=>`<div style="padding:12px;border-bottom:1px solid #eee"><strong>${escapeHtml(w.word)}</strong> — ${escapeHtml(w.translation||"")} ${w.mastered?'✓':''}</div>`).join('')}`,28);
+    });
+  };
+
+  // Use improved device voice for translation word button too.
+  document.addEventListener("click", e=>{
+    const b=e.target.closest?.("#translationWordVoiceButtonV4");
+    if(b){ e.preventDefault(); e.stopImmediatePropagation(); speakMalayV5(currentTranslationWord); }
+  }, true);
+
+  console.log("✅ Phase 1 Langkah 1+2 Stability Pack v5.0 loaded");
 })();
-
-
-/* =========================================================
-   END KARANGAN AI v3.8
-   ========================================================= */

@@ -2720,6 +2720,16 @@
      17. PUBLIC API
      ========================================================= */
 
+
+
+  /* Phase 1 daily-new vocabulary */
+  function getDailyNewWords(limit = 10) {
+    resetDailyIfNeeded(state);
+    const active = state.words.filter(word => !word.mastered);
+    const fresh = active.filter(word => Number(word.reviewCount || 0) === 0);
+    const rest = active.filter(word => Number(word.reviewCount || 0) > 0);
+    return [...fresh, ...rest].slice(0, limit);
+  }
   window.KaranganVocabulary = {
 
     /* Dictionary */
@@ -2762,6 +2772,7 @@
     /* Daily */
 
     getDailyProgress,
+    getDailyNewWords,
 
     completeDailyReview,
 
