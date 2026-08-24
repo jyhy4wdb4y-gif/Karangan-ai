@@ -11109,3 +11109,842 @@ window.KaranganAI = {
 /* =========================================================
    END KARANGAN AI v3.6
    ========================================================= */
+/* =========================================================
+   KARANGAN AI v3.7
+   COMPLETE TRANSLATION ENRICHMENT
+
+   Fix:
+   Local story dictionaries often contain Chinese only.
+   v3.7 automatically enriches them with:
+   - Chinese
+   - English
+   - Maksud BM
+   ========================================================= */
+
+(() => {
+
+  "use strict";
+
+
+  const COMPLETE_TRANSLATION_CACHE_KEY =
+    "karanganAI_complete_translation_v1";
+
+
+  /* =======================================================
+     CACHE
+     ======================================================= */
+
+  function loadCompleteTranslationCache() {
+
+    try {
+
+      return JSON.parse(
+        localStorage.getItem(
+          COMPLETE_TRANSLATION_CACHE_KEY
+        ) || "{}"
+      );
+
+    } catch (error) {
+
+      return {};
+
+    }
+
+  }
+
+
+  function saveCompleteTranslationCache(
+    cache
+  ) {
+
+    try {
+
+      localStorage.setItem(
+        COMPLETE_TRANSLATION_CACHE_KEY,
+        JSON.stringify(cache)
+      );
+
+    } catch (error) {
+
+      console.warn(
+        "Translation cache save failed:",
+        error
+      );
+
+    }
+
+  }
+
+
+  /* =======================================================
+     WORD CLEANING
+     ======================================================= */
+
+  function cleanCompleteTranslationWord(
+    rawWord
+  ) {
+
+    return String(
+      rawWord || ""
+    )
+      .toLowerCase()
+      .trim()
+      .replace(
+        /^[^a-zA-ZÀ-ÿ]+|[^a-zA-ZÀ-ÿ'-]+$/g,
+        ""
+      );
+
+  }
+
+
+  /* =======================================================
+     CURRENT STORY CHINESE TRANSLATION
+     ======================================================= */
+
+  function getCurrentStoryTranslation(
+    word
+  ) {
+
+    const dictionary =
+      currentStory?.dictionary ||
+      {};
+
+
+    return (
+      dictionary[word] ||
+      ""
+    );
+
+  }
+
+
+  /* =======================================================
+     VOCABULARY V2 RESULT
+     ======================================================= */
+
+  function getVocabularyTranslationV37(
+    word
+  ) {
+
+    try {
+
+      const engine =
+        window.KaranganVocabulary;
+
+
+      if (
+        !engine ||
+        typeof engine.lookupWord !==
+          "function"
+      ) {
+
+        return null;
+
+      }
+
+
+      return (
+        engine.lookupWord(
+          word
+        ) ||
+        null
+      );
+
+    } catch (error) {
+
+      return null;
+
+    }
+
+  }
+
+
+  /* =======================================================
+     CHECK WHETHER RESULT IS COMPLETE
+     ======================================================= */
+
+  function isCompleteTranslation(
+    result
+  ) {
+
+    if (!result) {
+
+      return false;
+
+    }
+
+
+    return Boolean(
+      String(
+        result.zh || ""
+      ).trim() &&
+      String(
+        result.en || ""
+      ).trim()
+    );
+
+  }
+
+
+  /* =======================================================
+     PARSE AI RESPONSE
+     ======================================================= */
+
+  function parseCompleteTranslation(
+    text,
+    fallbackChinese = ""
+  ) {
+
+    const raw =
+      String(
+        text || ""
+      ).trim();
+
+
+    let zh = "";
+    let en = "";
+    let meaning = "";
+
+
+    const zhMatch =
+      raw.match(
+        /中文\s*[：:]\s*(.+)/i
+      );
+
+
+    const enMatch =
+      raw.match(
+        /English\s*[：:]\s*(.+)/i
+      );
+
+
+    const meaningMatch =
+      raw.match(
+        /Maksud\s*BM\s*[：:]\s*(.+)/i
+      );
+
+
+    if (zhMatch) {
+
+      zh =
+        zhMatch[1].trim();
+
+    }
+
+
+    if (enMatch) {
+
+      en =
+        enMatch[1].trim();
+
+    }
+
+
+    if (meaningMatch) {
+
+      meaning =
+        meaningMatch[1].trim();
+
+    }
+
+
+    /*
+      Some older AI responses may use:
+      Chinese · English
+    */
+
+    if (
+      !zh &&
+      !en &&
+      raw.includes("·")
+    ) {
+
+      const parts =
+        raw
+          .split("·")
+          .map(
+            item =>
+              item.trim()
+          );
+
+
+      if (
+        parts.length >= 2
+      ) {
+
+        zh =
+          parts[0];
+
+        en =
+          parts[1];
+
+      }
+
+    }
+
+
+    return {
+
+      zh:
+        zh ||
+        fallbackChinese ||
+        "",
+
+      en:
+        en ||
+        "",
+
+      meaning:
+        meaning ||
+        ""
+
+    };
+
+  }
+
+
+  /* =======================================================
+     DISPLAY
+     ======================================================= */
+
+  function displayCompleteTranslation(
+    word,
+    data,
+    sentence
+  ) {
+
+    const zh =
+      data.zh || "—";
+
+
+    const en =
+      data.en || "—";
+
+
+    const meaning =
+      data.meaning || "";
+
+
+    const displayText =
+      `${zh} · ${en}`;
+
+
+    currentTranslationWord =
+      word;
+
+
+    currentTranslationData = {
+
+      word,
+
+      translation:
+        displayText,
+
+      meaning:
+        meaning ||
+        displayText,
+
+      example:
+        sentence,
+
+      storyId:
+        currentStory?.id ||
+        null
+
+    };
+
+
+    const popup =
+      byId(
+        "translationPopup"
+      );
+
+
+    if (popup) {
+
+      popup.hidden =
+        false;
+
+    }
+
+
+    safeText(
+      byId(
+        "translationWord"
+      ),
+      word
+    );
+
+
+    safeText(
+      byId(
+        "translationMeaning"
+      ),
+      displayText
+    );
+
+
+    safeText(
+      byId(
+        "translationDefinition"
+      ),
+      meaning
+    );
+
+
+    safeText(
+      byId(
+        "translationExample"
+      ),
+      sentence ||
+      `Perkataan: ${word}`
+    );
+
+
+    if (
+      typeof updateSaveVocabularyButton ===
+        "function"
+    ) {
+
+      updateSaveVocabularyButton();
+
+    }
+
+  }
+
+
+  /* =======================================================
+     COMPLETE TRANSLATION ENGINE
+     ======================================================= */
+
+  const translateWordBeforeV37 =
+    translateWord;
+
+
+  translateWord =
+    async function(
+      rawWord
+    ) {
+
+      const word =
+        cleanCompleteTranslationWord(
+          rawWord
+        );
+
+
+      if (!word) {
+
+        return;
+
+      }
+
+
+      const sentence =
+        typeof findStorySentenceContainingWord ===
+          "function"
+
+          ? findStorySentenceContainingWord(
+              word
+            )
+
+          : "";
+
+
+      /*
+        STEP 1
+        Complete cache
+      */
+
+      const cache =
+        loadCompleteTranslationCache();
+
+
+      if (
+        cache[word] &&
+        cache[word].zh &&
+        cache[word].en
+      ) {
+
+        displayCompleteTranslation(
+          word,
+          cache[word],
+          sentence
+        );
+
+
+        return;
+
+      }
+
+
+      /*
+        STEP 2
+        Vocabulary v2
+
+        This dictionary already has
+        Chinese + English for many words.
+      */
+
+      const vocabulary =
+        getVocabularyTranslationV37(
+          word
+        );
+
+
+      if (
+        vocabulary &&
+        vocabulary.zh &&
+        vocabulary.en
+      ) {
+
+        const result = {
+
+          zh:
+            vocabulary.zh,
+
+          en:
+            vocabulary.en,
+
+          meaning:
+            vocabulary.meaning ||
+            ""
+
+        };
+
+
+        cache[word] =
+          result;
+
+
+        saveCompleteTranslationCache(
+          cache
+        );
+
+
+        displayCompleteTranslation(
+          word,
+          result,
+          sentence
+        );
+
+
+        return;
+
+      }
+
+
+      /*
+        STEP 3
+        Malay morphology v3.6
+
+        Some morphology entries already contain
+        Chinese + English in a combined string.
+      */
+
+      if (
+        window.KaranganMalay &&
+        typeof window.KaranganMalay.lookup ===
+          "function"
+      ) {
+
+        try {
+
+          const morphology =
+            window.KaranganMalay.lookup(
+              word
+            );
+
+
+          if (
+            morphology &&
+            morphology.translation
+          ) {
+
+            const parsed =
+              parseCompleteTranslation(
+                morphology.translation
+              );
+
+
+            /*
+              If morphology gives proper
+              Chinese + English,
+              use it immediately.
+            */
+
+            if (
+              parsed.zh &&
+              parsed.en
+            ) {
+
+              parsed.meaning =
+                morphology.meaning ||
+                parsed.meaning;
+
+
+              cache[word] =
+                parsed;
+
+
+              saveCompleteTranslationCache(
+                cache
+              );
+
+
+              displayCompleteTranslation(
+                word,
+                parsed,
+                sentence
+              );
+
+
+              return;
+
+            }
+
+          }
+
+        } catch (error) {
+
+          console.warn(
+            "Morphology translation error:",
+            error
+          );
+
+        }
+
+      }
+
+
+      /*
+        STEP 4
+        Current story dictionary.
+
+        IMPORTANT:
+        Most story dictionaries contain
+        Chinese only.
+
+        Therefore DO NOT stop here.
+        Use Chinese as a hint for AI.
+      */
+
+      const localChinese =
+        getCurrentStoryTranslation(
+          word
+        );
+
+
+      /*
+        Show immediately while AI enriches.
+      */
+
+      currentTranslationWord =
+        word;
+
+
+      const popup =
+        byId(
+          "translationPopup"
+        );
+
+
+      if (popup) {
+
+        popup.hidden =
+          false;
+
+      }
+
+
+      safeText(
+        byId(
+          "translationWord"
+        ),
+        word
+      );
+
+
+      safeText(
+        byId(
+          "translationMeaning"
+        ),
+        localChinese
+
+          ? `${localChinese} · 正在补充 English...`
+
+          : "Mencari maksud..."
+      );
+
+
+      safeText(
+        byId(
+          "translationDefinition"
+        ),
+        "Cikgu Aira sedang melengkapkan terjemahan..."
+      );
+
+
+      safeText(
+        byId(
+          "translationExample"
+        ),
+        sentence ||
+        `Perkataan: ${word}`
+      );
+
+
+      /*
+        STEP 5
+        AI enrichment
+      */
+
+      try {
+
+        const result =
+          await callAI({
+
+            type:
+              "translate",
+
+            word,
+
+            context:
+              sentence,
+
+            knownChinese:
+              localChinese,
+
+            instruction:
+              `
+Complete the translation of this Bahasa Melayu word.
+
+You MUST return exactly these three lines:
+
+中文：<Simplified Chinese meaning>
+English：<English meaning>
+Maksud BM：<short simple Bahasa Melayu definition>
+
+Even if a Chinese translation is already supplied,
+you MUST still provide English and Maksud BM.
+
+Do not omit any line.
+Do not use markdown.
+              `.trim()
+
+          });
+
+
+        const answer =
+          extractAIText(
+            result
+          );
+
+
+        const parsed =
+          parseCompleteTranslation(
+            answer,
+            localChinese
+          );
+
+
+        /*
+          If AI unexpectedly misses English,
+          use old translation engine as
+          a final safety fallback.
+        */
+
+        if (!parsed.en) {
+
+          console.warn(
+            "AI translation incomplete:",
+            word,
+            answer
+          );
+
+
+          return translateWordBeforeV37(
+            rawWord
+          );
+
+        }
+
+
+        cache[word] =
+          parsed;
+
+
+        saveCompleteTranslationCache(
+          cache
+        );
+
+
+        displayCompleteTranslation(
+          word,
+          parsed,
+          sentence
+        );
+
+
+      } catch (error) {
+
+        console.warn(
+          "v3.7 translation enrichment failed:",
+          word,
+          error
+        );
+
+
+        /*
+          Preserve all previous v3.6 / v3.5
+          fallbacks if AI is unavailable.
+        */
+
+        return translateWordBeforeV37(
+          rawWord
+        );
+
+      }
+
+    };
+
+
+  /* =======================================================
+     DEBUG / CACHE
+     ======================================================= */
+
+  window.KaranganCompleteTranslation = {
+
+    getCache() {
+
+      return loadCompleteTranslationCache();
+
+    },
+
+
+    clearCache() {
+
+      localStorage.removeItem(
+        COMPLETE_TRANSLATION_CACHE_KEY
+      );
+
+
+      console.log(
+        "Translation cache cleared."
+      );
+
+    }
+
+  };
+
+
+  console.log(
+    "✅ Karangan AI v3.7 Complete Translation loaded"
+  );
+
+
+})();
+
+
+/* =========================================================
+   END KARANGAN AI v3.7
+   ========================================================= */
