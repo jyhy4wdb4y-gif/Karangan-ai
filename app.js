@@ -7974,4 +7974,1133 @@ window.KaranganAI = {
 /* =========================================================
    END KARANGAN AI v3.2
    ========================================================= */
+/* =========================================================
+   KARANGAN AI v3.3
+   STORY COMPREHENSION QUIZ
+   ========================================================= */
 
+(() => {
+
+  "use strict";
+
+
+  /* =======================================================
+     1. QUIZ STATE
+     ======================================================= */
+
+  let storyQuizState = {
+
+    story: null,
+
+    questions: [],
+
+    index: 0,
+
+    score: 0,
+
+    correct: 0,
+
+    answered: false
+
+  };
+
+
+  /* =======================================================
+     2. GET QUESTIONS
+     ======================================================= */
+
+  function getCurrentStoryQuestions() {
+
+    if (!currentStory) {
+
+      return [];
+
+    }
+
+
+    if (
+      Array.isArray(
+        currentStory.questions
+      )
+    ) {
+
+      return currentStory.questions;
+
+    }
+
+
+    if (
+      typeof window.getStoryQuestions ===
+        "function"
+    ) {
+
+      try {
+
+        return (
+          window.getStoryQuestions(
+            currentStory.id
+          ) ||
+          []
+        );
+
+      } catch (error) {
+
+        console.warn(
+          "Unable to get story questions:",
+          error
+        );
+
+      }
+
+    }
+
+
+    return [];
+
+  }
+
+
+  /* =======================================================
+     3. START QUIZ
+     ======================================================= */
+
+  function startStoryQuiz() {
+
+    const questions =
+      getCurrentStoryQuestions();
+
+
+    /*
+      If a story has no questions,
+      allow student to complete normally.
+    */
+
+    if (!questions.length) {
+
+      finishStoryWithoutQuiz();
+
+      return;
+
+    }
+
+
+    storyQuizState = {
+
+      story:
+        currentStory,
+
+      questions:
+        questions,
+
+      index: 0,
+
+      score: 0,
+
+      correct: 0,
+
+      answered: false
+
+    };
+
+
+    renderStoryQuizQuestion();
+
+  }
+
+
+  /* =======================================================
+     4. RENDER QUESTION
+     ======================================================= */
+
+  function renderStoryQuizQuestion() {
+
+    const question =
+      storyQuizState.questions[
+        storyQuizState.index
+      ];
+
+
+    if (!question) {
+
+      renderStoryQuizResult();
+
+      return;
+
+    }
+
+
+    storyQuizState.answered =
+      false;
+
+
+    const total =
+      storyQuizState.questions.length;
+
+
+    const progress =
+      Math.round(
+        storyQuizState.index /
+        total *
+        100
+      );
+
+
+    openModuleScreen(
+      `
+
+        <span class="section-kicker">
+          LANGKAH 1 · PEMAHAMAN
+        </span>
+
+
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          gap:12px;
+          margin-bottom:12px;
+        ">
+
+          <div>
+
+            <h1 style="
+              margin-bottom:4px;
+            ">
+              🧠 Fahami Cerita
+            </h1>
+
+            <div style="
+              color:#7a8388;
+              font-size:14px;
+            ">
+              ${escapeHtml(
+                storyQuizState.story
+                  ?.title ||
+                "Cerita"
+              )}
+            </div>
+
+          </div>
+
+
+          <div style="
+            background:#fff4dd;
+            border-radius:999px;
+            padding:8px 12px;
+            font-size:13px;
+            font-weight:900;
+            white-space:nowrap;
+          ">
+            ⭐ ${storyQuizState.score}
+          </div>
+
+        </div>
+
+
+        <div style="
+          height:8px;
+          border-radius:999px;
+          background:#ece9e4;
+          overflow:hidden;
+          margin:18px 0 24px;
+        ">
+
+          <div style="
+            width:${progress}%;
+            height:100%;
+            background:#ffad55;
+            transition:width .25s ease;
+          "></div>
+
+        </div>
+
+
+        <div style="
+          font-size:13px;
+          font-weight:800;
+          color:#8b9297;
+          margin-bottom:10px;
+        ">
+          SOALAN ${
+            storyQuizState.index + 1
+          } DARIPADA ${total}
+        </div>
+
+
+        <div style="
+          padding:22px;
+          border-radius:22px;
+          background:#f5f0ff;
+          margin-bottom:18px;
+        ">
+
+          <strong style="
+            font-size:20px;
+            line-height:1.55;
+            color:#303942;
+          ">
+            ${escapeHtml(
+              question.question ||
+              ""
+            )}
+          </strong>
+
+        </div>
+
+
+        <div
+          id="storyQuizAnswers"
+          style="
+            display:grid;
+            gap:10px;
+          "
+        >
+
+          ${
+            Array.isArray(
+              question.answers
+            )
+
+              ? question.answers
+                  .map(
+                    (
+                      answer,
+                      index
+                    ) => `
+
+                      <button
+                        type="button"
+                        class="secondary-button story-quiz-answer"
+                        data-story-answer-index="${index}"
+                        style="
+                          width:100%;
+                          text-align:left;
+                          padding:14px 16px;
+                          line-height:1.45;
+                        "
+                      >
+                        <strong style="
+                          margin-right:8px;
+                        ">
+                          ${
+                            String.fromCharCode(
+                              65 + index
+                            )
+                          }.
+                        </strong>
+
+                        ${escapeHtml(
+                          answer
+                        )}
+                      </button>
+
+                    `
+                  )
+                  .join("")
+
+              : ""
+          }
+
+        </div>
+
+
+        <div
+          id="storyQuizFeedback"
+          hidden
+          style="
+            margin-top:18px;
+          "
+        ></div>
+
+      `,
+      14
+    );
+
+
+    $$(
+      ".story-quiz-answer"
+    ).forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            submitStoryQuizAnswer(
+              Number(
+                button.dataset
+                  .storyAnswerIndex
+              )
+            );
+
+          }
+        );
+
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     5. SUBMIT ANSWER
+     ======================================================= */
+
+  function submitStoryQuizAnswer(
+    selectedIndex
+  ) {
+
+    if (
+      storyQuizState.answered
+    ) {
+
+      return;
+
+    }
+
+
+    storyQuizState.answered =
+      true;
+
+
+    const question =
+      storyQuizState.questions[
+        storyQuizState.index
+      ];
+
+
+    const correctIndex =
+      Number(
+        question.correct
+      );
+
+
+    const isCorrect =
+      selectedIndex ===
+      correctIndex;
+
+
+    const buttons =
+      $$(
+        ".story-quiz-answer"
+      );
+
+
+    buttons.forEach(
+      (
+        button,
+        index
+      ) => {
+
+        button.disabled =
+          true;
+
+
+        if (
+          index ===
+          correctIndex
+        ) {
+
+          button.style.background =
+            "#e9f8ef";
+
+          button.style.borderColor =
+            "#9bd4b5";
+
+          button.style.color =
+            "#24724f";
+
+        }
+
+
+        if (
+          index ===
+            selectedIndex &&
+          !isCorrect
+        ) {
+
+          button.style.background =
+            "#fff0f0";
+
+          button.style.borderColor =
+            "#efb4b4";
+
+          button.style.color =
+            "#a74747";
+
+        }
+
+      }
+    );
+
+
+    if (isCorrect) {
+
+      storyQuizState.correct +=
+        1;
+
+
+      storyQuizState.score +=
+        20;
+
+
+      if (
+        typeof window.addQuizCorrect ===
+          "function"
+      ) {
+
+        try {
+
+          window.addQuizCorrect();
+
+        } catch (error) {
+
+          console.warn(
+            error
+          );
+
+        }
+
+      }
+
+    }
+
+
+    const feedback =
+      byId(
+        "storyQuizFeedback"
+      );
+
+
+    if (feedback) {
+
+      feedback.hidden =
+        false;
+
+
+      feedback.innerHTML = `
+
+        <div style="
+          padding:17px;
+          border-radius:18px;
+          background:${
+            isCorrect
+              ? "#eef9f3"
+              : "#fff5e9"
+          };
+        ">
+
+          <strong style="
+            font-size:18px;
+          ">
+            ${
+              isCorrect
+                ? "✅ Betul!"
+                : "💡 Belum tepat."
+            }
+          </strong>
+
+
+          <p style="
+            line-height:1.6;
+            margin:8px 0 14px;
+            color:#68747a;
+          ">
+
+            ${
+              escapeHtml(
+                question.explanation ||
+                (
+                  isCorrect
+                    ? "Syabas!"
+                    : "Cuba baca penerangan ini."
+                )
+              )
+            }
+
+          </p>
+
+
+          <button
+            id="nextStoryQuizButton"
+            type="button"
+            class="primary-button"
+            style="width:100%;"
+          >
+
+            ${
+              storyQuizState.index + 1 >=
+                storyQuizState
+                  .questions
+                  .length
+
+                ? "Lihat Keputusan →"
+
+                : "Soalan Seterusnya →"
+            }
+
+          </button>
+
+        </div>
+
+      `;
+
+    }
+
+
+    byId(
+      "nextStoryQuizButton"
+    )?.addEventListener(
+      "click",
+      () => {
+
+        storyQuizState.index +=
+          1;
+
+
+        renderStoryQuizQuestion();
+
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     6. QUIZ RESULT
+     ======================================================= */
+
+  function renderStoryQuizResult() {
+
+    const total =
+      storyQuizState.questions.length;
+
+
+    const correct =
+      storyQuizState.correct;
+
+
+    const percentage =
+      total > 0
+        ? Math.round(
+            correct /
+            total *
+            100
+          )
+        : 100;
+
+
+    let emoji =
+      "🌟";
+
+
+    let title =
+      "Bagus!";
+
+
+    let message =
+      "Kamu sudah memahami cerita ini.";
+
+
+    if (
+      percentage === 100
+    ) {
+
+      emoji =
+        "🏆";
+
+      title =
+        "Hebat! Semua Betul!";
+
+      message =
+        "Pemahaman kamu sangat baik.";
+
+    }
+
+    else if (
+      percentage >= 70
+    ) {
+
+      emoji =
+        "🌟";
+
+      title =
+        "Syabas!";
+
+      message =
+        "Kamu memahami kebanyakan isi cerita.";
+
+    }
+
+    else {
+
+      emoji =
+        "💪";
+
+      title =
+        "Teruskan Berlatih!";
+
+      message =
+        "Baca semula cerita untuk memahami dengan lebih baik.";
+
+    }
+
+
+    openModuleScreen(
+      `
+
+        <div style="
+          text-align:center;
+          padding:25px 0;
+        ">
+
+          <div style="
+            font-size:76px;
+            margin-bottom:10px;
+          ">
+            ${emoji}
+          </div>
+
+
+          <span class="section-kicker">
+            LANGKAH 1 SELESAI
+          </span>
+
+
+          <h1>
+            ${escapeHtml(title)}
+          </h1>
+
+
+          <p style="
+            color:#667278;
+            line-height:1.6;
+          ">
+            ${escapeHtml(message)}
+          </p>
+
+
+          <div style="
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:10px;
+            margin:24px 0;
+          ">
+
+            <div style="
+              padding:18px;
+              border-radius:18px;
+              background:#fff6df;
+            ">
+
+              <div style="
+                font-size:12px;
+                color:#8e9498;
+              ">
+                BETUL
+              </div>
+
+              <strong style="
+                display:block;
+                margin-top:4px;
+                font-size:26px;
+              ">
+                ${correct}/${total}
+              </strong>
+
+            </div>
+
+
+            <div style="
+              padding:18px;
+              border-radius:18px;
+              background:#f2efff;
+            ">
+
+              <div style="
+                font-size:12px;
+                color:#8e9498;
+              ">
+                MARKAH
+              </div>
+
+              <strong style="
+                display:block;
+                margin-top:4px;
+                font-size:26px;
+              ">
+                ${percentage}%
+              </strong>
+
+            </div>
+
+          </div>
+
+
+          <div style="
+            padding:18px;
+            border-radius:18px;
+            background:#eef9f3;
+            margin-bottom:18px;
+            text-align:left;
+          ">
+
+            <strong>
+              📖 ${
+                escapeHtml(
+                  storyQuizState.story
+                    ?.title ||
+                  ""
+                )
+              }
+            </strong>
+
+            <p style="
+              margin:7px 0 0;
+              color:#647178;
+              line-height:1.55;
+            ">
+              Cerita ini akan ditandakan sebagai selesai.
+            </p>
+
+          </div>
+
+
+          <button
+            id="completeStoryQuizButton"
+            type="button"
+            class="primary-button"
+            style="width:100%;"
+          >
+            🧠 Teruskan ke Buku Kosa Kata →
+          </button>
+
+
+          <button
+            id="rereadStoryButton"
+            type="button"
+            class="secondary-button"
+            style="
+              width:100%;
+              margin-top:10px;
+            "
+          >
+            📖 Baca Cerita Semula
+          </button>
+
+        </div>
+
+      `,
+      14
+    );
+
+
+    byId(
+      "completeStoryQuizButton"
+    )?.addEventListener(
+      "click",
+      finishStoryQuiz
+    );
+
+
+    byId(
+      "rereadStoryButton"
+    )?.addEventListener(
+      "click",
+      () => {
+
+        if (
+          storyQuizState.story
+            ?.id
+        ) {
+
+          openStory(
+            storyQuizState.story.id
+          );
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     7. FINISH STORY + QUIZ
+     ======================================================= */
+
+  function finishStoryQuiz() {
+
+    const story =
+      storyQuizState.story;
+
+
+    /*
+      Mark individual story complete.
+    */
+
+    if (
+      story?.id &&
+      typeof window.completeLesson ===
+        "function"
+    ) {
+
+      try {
+
+        window.completeLesson(
+          story.id
+        );
+
+      } catch (error) {
+
+        console.warn(
+          "Complete lesson error:",
+          error
+        );
+
+      }
+
+    }
+
+
+    /*
+      Complete Langkah 1 mission once.
+    */
+
+    const firstTime =
+      completeMission(
+        "story"
+      );
+
+
+    if (firstTime) {
+
+      appState.storiesCompleted =
+        Number(
+          appState.storiesCompleted ||
+          0
+        ) + 1;
+
+
+      saveState();
+
+
+      updateAllUI();
+
+    }
+
+
+    showToast(
+      "📖 Cerita selesai! Syabas!"
+    );
+
+
+    setTimeout(
+      () => {
+
+        openModule(
+          "vocabulary"
+        );
+
+      },
+      450
+    );
+
+  }
+
+
+  /* =======================================================
+     8. STORY WITHOUT QUESTIONS
+     ======================================================= */
+
+  function finishStoryWithoutQuiz() {
+
+    if (
+      currentStory?.id &&
+      typeof window.completeLesson ===
+        "function"
+    ) {
+
+      try {
+
+        window.completeLesson(
+          currentStory.id
+        );
+
+      } catch (error) {
+
+        console.warn(error);
+
+      }
+
+    }
+
+
+    const firstTime =
+      completeMission(
+        "story"
+      );
+
+
+    if (firstTime) {
+
+      appState.storiesCompleted =
+        Number(
+          appState.storiesCompleted ||
+          0
+        ) + 1;
+
+
+      saveState();
+
+
+      updateAllUI();
+
+    }
+
+
+    setTimeout(
+      () => {
+
+        openModule(
+          "vocabulary"
+        );
+
+      },
+      350
+    );
+
+  }
+
+
+  /* =======================================================
+     9. REPLACE STORY FINISH BUTTON
+
+     Existing renderStory creates:
+     #finishStoryButton
+
+     We replace only its event behavior.
+     ======================================================= */
+
+  function bindStoryQuizFinishButton() {
+
+    const oldButton =
+      byId(
+        "finishStoryButton"
+      );
+
+
+    if (!oldButton) {
+
+      return;
+
+    }
+
+
+    /*
+      Clone button to remove old v3.0 listener.
+    */
+
+    const newButton =
+      oldButton.cloneNode(
+        true
+      );
+
+
+    oldButton.replaceWith(
+      newButton
+    );
+
+
+    newButton.textContent =
+      "🧠 Saya Sudah Baca · Mula Kuiz";
+
+
+    newButton.addEventListener(
+      "click",
+      startStoryQuiz
+    );
+
+  }
+
+
+  /* =======================================================
+     10. HOOK renderStory()
+
+     Preserve:
+     - Voice
+     - Story Library
+     - Grammar Highlight
+     - Translation
+     ======================================================= */
+
+  const renderStoryBeforeQuiz =
+    renderStory;
+
+
+  renderStory =
+    function(
+      story
+    ) {
+
+      renderStoryBeforeQuiz(
+        story
+      );
+
+
+      bindStoryQuizFinishButton();
+
+  };
+
+
+  /* =======================================================
+     11. PUBLIC API
+     ======================================================= */
+
+  window.KaranganStoryQuiz = {
+
+    start:
+      startStoryQuiz,
+
+    getState() {
+
+      return {
+
+        storyId:
+          storyQuizState.story
+            ?.id ||
+          null,
+
+        index:
+          storyQuizState.index,
+
+        score:
+          storyQuizState.score,
+
+        correct:
+          storyQuizState.correct,
+
+        total:
+          storyQuizState
+            .questions
+            .length
+
+      };
+
+    }
+
+  };
+
+
+  console.log(
+    "✅ Karangan AI v3.3 Story Comprehension Quiz loaded"
+  );
+
+
+})();
+
+
+/* =========================================================
+   END KARANGAN AI v3.3
+   ========================================================= */
