@@ -6273,3 +6273,1705 @@ window.KaranganAI = {
 /* =========================================================
    END STORY VOICE UPGRADE
    ========================================================= */
+/* =========================================================
+   KARANGAN AI v3.2
+   STORY LIBRARY + GRAMMAR HIGHLIGHT UPGRADE
+   ========================================================= */
+
+(() => {
+
+  "use strict";
+
+
+  /* =======================================================
+     1. STORY LIBRARY STATE
+     ======================================================= */
+
+  let storyLibraryFilter =
+    "all";
+
+
+  let activeHighlightType =
+    "";
+
+
+  const STORY_HIGHLIGHT_LABELS = {
+
+    adjective:
+      "Kata Adjektif",
+
+    verb:
+      "Kata Kerja",
+
+    noun:
+      "Kata Nama",
+
+    number:
+      "Kata Bilangan",
+
+    conjunction:
+      "Kata Hubung",
+
+    vocabulary:
+      "Perkataan Baharu"
+
+  };
+
+
+  const COMMON_CONJUNCTIONS = [
+    "dan",
+    "atau",
+    "tetapi",
+    "kerana",
+    "supaya",
+    "sambil",
+    "apabila",
+    "manakala",
+    "lalu",
+    "kemudian",
+    "sebelum",
+    "selepas"
+  ];
+
+
+  /* =======================================================
+     2. NORMALIZE STORY WORD
+     ======================================================= */
+
+  function normalizeStoryHighlightWord(
+    word
+  ) {
+
+    return String(
+      word || ""
+    )
+      .toLowerCase()
+      .replace(
+        /[.,!?;:"”“'()]/g,
+        ""
+      )
+      .trim();
+
+  }
+
+
+  /* =======================================================
+     3. GET STORY DATABASE
+     ======================================================= */
+
+  function getStoryLibraryData() {
+
+    if (
+      Array.isArray(
+        window.KARANGAN_STORIES
+      )
+    ) {
+
+      return window.KARANGAN_STORIES;
+
+    }
+
+
+    if (
+      Array.isArray(
+        window.stories
+      )
+    ) {
+
+      return window.stories;
+
+    }
+
+
+    if (
+      Array.isArray(
+        window.STORIES
+      )
+    ) {
+
+      return window.STORIES;
+
+    }
+
+
+    return [];
+
+  }
+
+
+  /* =======================================================
+     4. STORY LIBRARY
+     ======================================================= */
+
+  function openStoryLibrary() {
+
+    activeHighlightType =
+      "";
+
+
+    const stories =
+      getStoryLibraryData();
+
+
+    if (!stories.length) {
+
+      showToast(
+        "📚 Tiada cerita dijumpai."
+      );
+
+      return;
+
+    }
+
+
+    const years =
+      [
+        ...new Set(
+          stories
+            .map(
+              story =>
+                Number(
+                  story.year
+                )
+            )
+            .filter(Boolean)
+        )
+      ]
+        .sort(
+          (
+            a,
+            b
+          ) =>
+            a - b
+        );
+
+
+    const filteredStories =
+      storyLibraryFilter ===
+        "all"
+
+        ? stories
+
+        : stories.filter(
+            story =>
+              String(
+                story.year
+              ) ===
+              String(
+                storyLibraryFilter
+              )
+          );
+
+
+    const filterButtons = `
+
+      <button
+        type="button"
+        class="secondary-button story-year-filter"
+        data-story-year="all"
+        style="
+          ${
+            storyLibraryFilter === "all"
+              ? "font-weight:900; border-color:#ff9f43;"
+              : ""
+          }
+        "
+      >
+        Semua
+      </button>
+
+      ${
+        years
+          .map(
+            year => `
+
+              <button
+                type="button"
+                class="secondary-button story-year-filter"
+                data-story-year="${year}"
+                style="
+                  ${
+                    String(
+                      storyLibraryFilter
+                    ) ===
+                    String(year)
+                      ? "font-weight:900; border-color:#ff9f43;"
+                      : ""
+                  }
+                "
+              >
+                Tahun ${year}
+              </button>
+
+            `
+          )
+          .join("")
+      }
+
+    `;
+
+
+    const cards =
+      filteredStories
+        .map(
+          (
+            story,
+            index
+          ) => {
+
+            const completed =
+              typeof getStudentProgress ===
+                "function"
+                ? (
+                    getStudentProgress()
+                      ?.completedLessons ||
+                    []
+                  ).includes(
+                    story.id
+                  )
+                : false;
+
+
+            const picture =
+              Array.isArray(
+                story.pictures
+              )
+                ? story.pictures[0]
+                : null;
+
+
+            const visual =
+              picture?.image
+
+                ? `
+                  <img
+                    src="${escapeAttribute(
+                      picture.image
+                    )}"
+                    alt="${escapeAttribute(
+                      story.title
+                    )}"
+                    style="
+                      width:100%;
+                      height:170px;
+                      object-fit:cover;
+                      border-radius:18px;
+                      margin-bottom:14px;
+                    "
+                  />
+                `
+
+                : `
+                  <div style="
+                    height:120px;
+                    border-radius:18px;
+                    background:#f4efff;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    font-size:50px;
+                    margin-bottom:14px;
+                  ">
+                    ${escapeHtml(
+                      story.emoji ||
+                      "📖"
+                    )}
+                  </div>
+                `;
+
+
+            return `
+
+              <button
+                type="button"
+                class="story-library-card"
+                data-library-story-id="${escapeAttribute(
+                  story.id
+                )}"
+                style="
+                  display:block;
+                  width:100%;
+                  padding:15px;
+                  border:1px solid #e8e3db;
+                  border-radius:22px;
+                  background:white;
+                  text-align:left;
+                  cursor:pointer;
+                "
+              >
+
+                ${visual}
+
+
+                <div style="
+                  display:flex;
+                  justify-content:space-between;
+                  align-items:flex-start;
+                  gap:10px;
+                ">
+
+                  <div style="flex:1;">
+
+                    <div style="
+                      font-size:11px;
+                      font-weight:900;
+                      color:#8b9297;
+                      letter-spacing:.05em;
+                      margin-bottom:5px;
+                    ">
+                      CERITA ${index + 1}
+                      ·
+                      ${escapeHtml(
+                        story.level ||
+                        `Tahun ${story.year || ""}`
+                      )}
+                    </div>
+
+
+                    <strong style="
+                      display:block;
+                      font-size:19px;
+                      line-height:1.35;
+                      color:#29343b;
+                    ">
+                      ${escapeHtml(
+                        story.title
+                      )}
+                    </strong>
+
+                  </div>
+
+
+                  ${
+                    completed
+                      ? `
+                        <span style="
+                          background:#eaf8f1;
+                          color:#27865e;
+                          border-radius:999px;
+                          padding:6px 9px;
+                          font-size:11px;
+                          font-weight:900;
+                          white-space:nowrap;
+                        ">
+                          ✓ Selesai
+                        </span>
+                      `
+                      : ""
+                  }
+
+                </div>
+
+
+                <div style="
+                  margin-top:8px;
+                  color:#6b55d9;
+                  font-size:13px;
+                  font-weight:800;
+                ">
+                  ${escapeHtml(
+                    story.theme ||
+                    "Bahasa Melayu"
+                  )}
+                </div>
+
+
+                <p style="
+                  margin:9px 0 12px;
+                  color:#68747a;
+                  line-height:1.55;
+                  font-size:14px;
+                ">
+                  ${escapeHtml(
+                    story.description ||
+                    ""
+                  )}
+                </p>
+
+
+                <div style="
+                  display:flex;
+                  justify-content:space-between;
+                  align-items:center;
+                  gap:10px;
+                ">
+
+                  <span style="
+                    font-size:12px;
+                    color:#91989c;
+                  ">
+                    ✍️ ${
+                      escapeHtml(
+                        story.targetWords ||
+                        ""
+                      )
+                    }
+                  </span>
+
+
+                  <strong style="
+                    color:#df8525;
+                    font-size:13px;
+                  ">
+                    Baca →
+                  </strong>
+
+                </div>
+
+              </button>
+
+            `;
+
+          }
+        )
+        .join("");
+
+
+    openModuleScreen(
+      `
+
+        <span class="section-kicker">
+          LANGKAH 1
+        </span>
+
+
+        <h1>
+          📚 Pilih Cerita
+        </h1>
+
+
+        <p style="
+          color:#65727a;
+          line-height:1.7;
+        ">
+          Pilih cerita mengikut tahap kamu.
+          Semasa membaca, kamu boleh mendengar cerita,
+          menekan perkataan untuk melihat maksud
+          dan mengenal pasti jenis perkataan.
+        </p>
+
+
+        <div style="
+          display:flex;
+          flex-wrap:wrap;
+          gap:8px;
+          margin:20px 0;
+        ">
+          ${filterButtons}
+        </div>
+
+
+        <div style="
+          display:grid;
+          grid-template-columns:repeat(
+            auto-fit,
+            minmax(
+              min(100%,260px),
+              1fr
+            )
+          );
+          gap:14px;
+          margin-bottom:25px;
+        ">
+          ${cards}
+        </div>
+
+      `,
+      14
+    );
+
+
+    bindStoryLibraryControls();
+
+  }
+
+
+  /* =======================================================
+     5. BIND STORY LIBRARY
+     ======================================================= */
+
+  function bindStoryLibraryControls() {
+
+    $$(
+      "[data-story-year]"
+    ).forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            storyLibraryFilter =
+              button.dataset.storyYear;
+
+
+            openStoryLibrary();
+
+          }
+        );
+
+      }
+    );
+
+
+    $$(
+      "[data-library-story-id]"
+    ).forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            openSelectedStory(
+              button.dataset
+                .libraryStoryId
+            );
+
+          }
+        );
+
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     6. OPEN SELECTED STORY
+     ======================================================= */
+
+  function openSelectedStory(
+    storyId
+  ) {
+
+    const stories =
+      getStoryLibraryData();
+
+
+    const story =
+      stories.find(
+        item =>
+          String(
+            item.id
+          ) ===
+          String(
+            storyId
+          )
+      );
+
+
+    if (!story) {
+
+      showToast(
+        "Cerita tidak dijumpai."
+      );
+
+      return;
+
+    }
+
+
+    /*
+      Keep stories.js current story synced.
+    */
+
+    if (
+      typeof window.setCurrentStory ===
+        "function"
+    ) {
+
+      try {
+
+        window.setCurrentStory(
+          story.id
+        );
+
+      } catch (error) {
+
+        console.warn(
+          "Unable to set story:",
+          error
+        );
+
+      }
+
+    }
+
+
+    currentStory =
+      createEnhancedStory(
+        story
+      );
+
+
+    appState.currentStoryId =
+      currentStory.id;
+
+
+    saveState();
+
+
+    renderStory(
+      currentStory
+    );
+
+
+    showScreen(
+      "story",
+      false
+    );
+
+  }
+
+
+  /* =======================================================
+     7. ENHANCED STORY NORMALIZER
+     ======================================================= */
+
+  function createEnhancedStory(
+    story
+  ) {
+
+    let paragraphs = [];
+
+
+    if (
+      Array.isArray(
+        story.paragraphs
+      )
+    ) {
+
+      paragraphs =
+        story.paragraphs;
+
+    }
+
+    else {
+
+      const text =
+        String(
+          story.story ||
+          story.content ||
+          story.text ||
+          ""
+        ).trim();
+
+
+      /*
+        Split long story into readable groups.
+      */
+
+      const sentences =
+        text
+          .match(
+            /[^.!?]+[.!?]+|[^.!?]+$/g
+          ) ||
+        [];
+
+
+      for (
+        let i = 0;
+        i < sentences.length;
+        i += 2
+      ) {
+
+        paragraphs.push(
+          sentences
+            .slice(
+              i,
+              i + 2
+            )
+            .join(" ")
+            .trim()
+        );
+
+      }
+
+    }
+
+
+    const firstPicture =
+      Array.isArray(
+        story.pictures
+      )
+        ? story.pictures.find(
+            picture =>
+              picture.image
+          )
+        : null;
+
+
+    return {
+
+      ...story,
+
+      id:
+        story.id ||
+        "story",
+
+      title:
+        story.title ||
+        "Cerita Bahasa Melayu",
+
+      image:
+        story.image ||
+        firstPicture?.image ||
+        "",
+
+      paragraphs,
+
+      grammar:
+        story.grammar ||
+        {},
+
+      dictionary:
+        story.dictionary ||
+        {},
+
+      usefulWords:
+        story.usefulWords ||
+        []
+
+    };
+
+  }
+
+
+  /* =======================================================
+     8. STORY READER HOOK
+
+     The existing Voice patch is preserved.
+     ======================================================= */
+
+  const storyRenderBeforeGrammar =
+    renderStory;
+
+
+  renderStory =
+    function(
+      story
+    ) {
+
+      activeHighlightType =
+        "";
+
+
+      storyRenderBeforeGrammar(
+        story
+      );
+
+
+      addStoryLearningToolbar(
+        story
+      );
+
+  };
+
+
+  /* =======================================================
+     9. LEARNING TOOLBAR
+     ======================================================= */
+
+  function addStoryLearningToolbar(
+    story
+  ) {
+
+    const reader =
+      byId(
+        "storyReader"
+      );
+
+
+    if (!reader) {
+
+      return;
+
+    }
+
+
+    if (
+      byId(
+        "storyLearningToolbar"
+      )
+    ) {
+
+      return;
+
+    }
+
+
+    const toolbar =
+      document.createElement(
+        "div"
+      );
+
+
+    toolbar.id =
+      "storyLearningToolbar";
+
+
+    toolbar.style.cssText = `
+      margin:15px 0 22px;
+      padding:15px;
+      border-radius:20px;
+      background:#fffaf1;
+      border:1px solid #eee3d2;
+    `;
+
+
+    toolbar.innerHTML = `
+
+      <div style="
+        font-size:11px;
+        font-weight:900;
+        letter-spacing:.07em;
+        color:#c47825;
+        margin-bottom:6px;
+      ">
+        🔍 TEROKA BAHASA
+      </div>
+
+
+      <div style="
+        font-size:14px;
+        color:#69747a;
+        line-height:1.5;
+        margin-bottom:12px;
+      ">
+        Tekan kategori untuk melihat perkataan dalam cerita.
+      </div>
+
+
+      <div style="
+        display:flex;
+        flex-wrap:wrap;
+        gap:8px;
+      ">
+
+        <button
+          type="button"
+          class="secondary-button story-highlight-button"
+          data-highlight-type="adjective"
+        >
+          🎨 Kata Adjektif
+        </button>
+
+
+        <button
+          type="button"
+          class="secondary-button story-highlight-button"
+          data-highlight-type="verb"
+        >
+          🏃 Kata Kerja
+        </button>
+
+
+        <button
+          type="button"
+          class="secondary-button story-highlight-button"
+          data-highlight-type="noun"
+        >
+          📦 Kata Nama
+        </button>
+
+
+        <button
+          type="button"
+          class="secondary-button story-highlight-button"
+          data-highlight-type="number"
+        >
+          🔢 Kata Bilangan
+        </button>
+
+
+        <button
+          type="button"
+          class="secondary-button story-highlight-button"
+          data-highlight-type="conjunction"
+        >
+          🔗 Kata Hubung
+        </button>
+
+
+        <button
+          type="button"
+          class="secondary-button story-highlight-button"
+          data-highlight-type="vocabulary"
+        >
+          🧠 Perkataan Baharu
+        </button>
+
+
+        <button
+          id="clearStoryHighlightButton"
+          type="button"
+          class="secondary-button"
+        >
+          ✕ Tutup Highlight
+        </button>
+
+      </div>
+
+
+      <div
+        id="storyHighlightInfo"
+        hidden
+        style="
+          margin-top:13px;
+          padding:12px 14px;
+          border-radius:14px;
+          background:white;
+          color:#626d73;
+          font-size:13px;
+          line-height:1.55;
+        "
+      ></div>
+
+    `;
+
+
+    /*
+      Put grammar toolbar after Voice controls.
+    */
+
+    const voiceControls =
+      byId(
+        "storyVoiceControls"
+      );
+
+
+    if (voiceControls) {
+
+      voiceControls
+        .insertAdjacentElement(
+          "afterend",
+          toolbar
+        );
+
+    }
+
+    else {
+
+      const heading =
+        reader.querySelector(
+          "h1"
+        );
+
+
+      if (heading) {
+
+        heading
+          .insertAdjacentElement(
+            "afterend",
+            toolbar
+          );
+
+      }
+
+      else {
+
+        reader.prepend(
+          toolbar
+        );
+
+      }
+
+    }
+
+
+    bindStoryHighlightButtons(
+      story
+    );
+
+  }
+
+
+  /* =======================================================
+     10. HIGHLIGHT BUTTON EVENTS
+     ======================================================= */
+
+  function bindStoryHighlightButtons(
+    story
+  ) {
+
+    $$(
+      ".story-highlight-button"
+    ).forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            const type =
+              button.dataset
+                .highlightType;
+
+
+            highlightStoryWords(
+              story,
+              type
+            );
+
+          }
+        );
+
+      }
+    );
+
+
+    byId(
+      "clearStoryHighlightButton"
+    )
+      ?.addEventListener(
+        "click",
+        clearStoryHighlights
+      );
+
+  }
+
+
+  /* =======================================================
+     11. GET WORDS FOR CATEGORY
+     ======================================================= */
+
+  function getHighlightWords(
+    story,
+    type
+  ) {
+
+    const grammar =
+      story.grammar ||
+      {};
+
+
+    if (
+      type === "adjective"
+    ) {
+
+      return (
+        grammar.adjective ||
+        []
+      );
+
+    }
+
+
+    if (
+      type === "verb"
+    ) {
+
+      return (
+        grammar.verb ||
+        []
+      );
+
+    }
+
+
+    if (
+      type === "noun"
+    ) {
+
+      return (
+        grammar.noun ||
+        []
+      );
+
+    }
+
+
+    if (
+      type === "number"
+    ) {
+
+      return (
+        grammar.number ||
+        []
+      );
+
+    }
+
+
+    if (
+      type ===
+      "conjunction"
+    ) {
+
+      return COMMON_CONJUNCTIONS;
+
+    }
+
+
+    if (
+      type ===
+      "vocabulary"
+    ) {
+
+      const useful =
+        Array.isArray(
+          story.usefulWords
+        )
+          ? story.usefulWords
+          : [];
+
+
+      const words = [];
+
+
+      useful.forEach(
+        item => {
+
+          String(item)
+            .split(/\s+/)
+            .forEach(
+              word => {
+
+                const clean =
+                  normalizeStoryHighlightWord(
+                    word
+                  );
+
+
+                if (
+                  clean.length >
+                  2
+                ) {
+
+                  words.push(
+                    clean
+                  );
+
+                }
+
+              }
+            );
+
+        }
+      );
+
+
+      return words;
+
+    }
+
+
+    return [];
+
+  }
+
+
+  /* =======================================================
+     12. APPLY HIGHLIGHT
+     ======================================================= */
+
+  function highlightStoryWords(
+    story,
+    type
+  ) {
+
+    activeHighlightType =
+      type;
+
+
+    const words =
+      getHighlightWords(
+        story,
+        type
+      )
+        .map(
+          normalizeStoryHighlightWord
+        );
+
+
+    const wordSet =
+      new Set(words);
+
+
+    let found =
+      0;
+
+
+    $$(
+      "#storyReader .story-word"
+    ).forEach(
+      element => {
+
+        const word =
+          normalizeStoryHighlightWord(
+            element.dataset.word ||
+            element.textContent
+          );
+
+
+        resetHighlightStyle(
+          element
+        );
+
+
+        if (
+          wordSet.has(
+            word
+          )
+        ) {
+
+          applyHighlightStyle(
+            element,
+            type
+          );
+
+
+          found += 1;
+
+        }
+
+      }
+    );
+
+
+    updateHighlightButtons(
+      type
+    );
+
+
+    const info =
+      byId(
+        "storyHighlightInfo"
+      );
+
+
+    if (info) {
+
+      info.hidden =
+        false;
+
+
+      info.innerHTML = `
+
+        <strong>
+          ${
+            escapeHtml(
+              STORY_HIGHLIGHT_LABELS[
+                type
+              ] ||
+              "Perkataan"
+            )
+          }
+        </strong>
+
+        <br>
+
+        ${
+          found
+            ? `${found} perkataan dijumpai dalam cerita. Tekan perkataan yang di-highlight untuk melihat maksudnya.`
+            : "Tiada perkataan kategori ini dijumpai dalam cerita."
+        }
+
+      `;
+
+    }
+
+  }
+
+
+  /* =======================================================
+     13. HIGHLIGHT STYLE
+     ======================================================= */
+
+  function applyHighlightStyle(
+    element,
+    type
+  ) {
+
+    element.dataset
+      .grammarHighlight =
+      type;
+
+
+    element.style
+      .borderRadius =
+      "6px";
+
+
+    element.style
+      .padding =
+      "2px 4px";
+
+
+    element.style
+      .fontWeight =
+      "850";
+
+
+    element.style
+      .transition =
+      "all .2s ease";
+
+
+    /*
+      Different category shades.
+    */
+
+    if (
+      type === "adjective"
+    ) {
+
+      element.style
+        .background =
+        "#fff0a8";
+
+    }
+
+    else if (
+      type === "verb"
+    ) {
+
+      element.style
+        .background =
+        "#dff3ff";
+
+    }
+
+    else if (
+      type === "noun"
+    ) {
+
+      element.style
+        .background =
+        "#e8f7e9";
+
+    }
+
+    else if (
+      type === "number"
+    ) {
+
+      element.style
+        .background =
+        "#f1e6ff";
+
+    }
+
+    else if (
+      type === "conjunction"
+    ) {
+
+      element.style
+        .background =
+        "#ffe5ea";
+
+    }
+
+    else {
+
+      element.style
+        .background =
+        "#ffe8bf";
+
+    }
+
+  }
+
+
+  function resetHighlightStyle(
+    element
+  ) {
+
+    delete element.dataset
+      .grammarHighlight;
+
+
+    element.style
+      .background =
+      "";
+
+
+    element.style
+      .borderRadius =
+      "";
+
+
+    element.style
+      .padding =
+      "";
+
+
+    element.style
+      .fontWeight =
+      "";
+
+
+    element.style
+      .transition =
+      "";
+
+  }
+
+
+  /* =======================================================
+     14. CLEAR HIGHLIGHT
+     ======================================================= */
+
+  function clearStoryHighlights() {
+
+    activeHighlightType =
+      "";
+
+
+    $$(
+      "#storyReader .story-word"
+    ).forEach(
+      element => {
+
+        resetHighlightStyle(
+          element
+        );
+
+      }
+    );
+
+
+    $$(
+      ".story-highlight-button"
+    ).forEach(
+      button => {
+
+        button.style
+          .fontWeight =
+          "";
+
+        button.style
+          .borderColor =
+          "";
+
+      }
+    );
+
+
+    const info =
+      byId(
+        "storyHighlightInfo"
+      );
+
+
+    if (info) {
+
+      info.hidden =
+        true;
+
+    }
+
+  }
+
+
+  /* =======================================================
+     15. ACTIVE BUTTON
+     ======================================================= */
+
+  function updateHighlightButtons(
+    type
+  ) {
+
+    $$(
+      ".story-highlight-button"
+    ).forEach(
+      button => {
+
+        const active =
+          button.dataset
+            .highlightType ===
+          type;
+
+
+        button.style.fontWeight =
+          active
+            ? "900"
+            : "";
+
+
+        button.style.borderColor =
+          active
+            ? "#ff9f43"
+            : "";
+
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     16. OVERRIDE openStory()
+
+     No story ID:
+       Open Story Library.
+
+     Story ID:
+       Open selected story.
+     ======================================================= */
+
+  openStory =
+    function(
+      storyId = null
+    ) {
+
+      if (!storyId) {
+
+        openStoryLibrary();
+
+        return;
+
+      }
+
+
+      openSelectedStory(
+        storyId
+      );
+
+    };
+
+
+  /* =======================================================
+     17. RETURN TO LIBRARY BUTTON
+     ======================================================= */
+
+  const oldAddToolbar =
+    addStoryLearningToolbar;
+
+
+  /*
+    Extend toolbar with Library button.
+  */
+
+  addStoryLearningToolbar =
+    function(
+      story
+    ) {
+
+      oldAddToolbar(
+        story
+      );
+
+
+      const toolbar =
+        byId(
+          "storyLearningToolbar"
+        );
+
+
+      if (
+        !toolbar ||
+        byId(
+          "backToStoryLibraryButton"
+        )
+      ) {
+
+        return;
+
+      }
+
+
+      const button =
+        document.createElement(
+          "button"
+        );
+
+
+      button.id =
+        "backToStoryLibraryButton";
+
+
+      button.type =
+        "button";
+
+
+      button.className =
+        "secondary-button";
+
+
+      button.style.cssText = `
+        width:100%;
+        margin-top:12px;
+      `;
+
+
+      button.textContent =
+        "📚 Pilih Cerita Lain";
+
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          if (
+            "speechSynthesis" in
+            window
+          ) {
+
+            window
+              .speechSynthesis
+              .cancel();
+
+          }
+
+
+          openStoryLibrary();
+
+        }
+      );
+
+
+      toolbar.appendChild(
+        button
+      );
+
+  };
+
+
+  /* =======================================================
+     18. PUBLIC STORY TOOLS
+     ======================================================= */
+
+  window.KaranganStoryReader = {
+
+    openLibrary:
+      openStoryLibrary,
+
+    openStory:
+      openSelectedStory,
+
+    highlight:
+      type => {
+
+        if (
+          currentStory
+        ) {
+
+          highlightStoryWords(
+            currentStory,
+            type
+          );
+
+        }
+
+      },
+
+    clearHighlight:
+      clearStoryHighlights
+
+  };
+
+
+  console.log(
+    "✅ Karangan AI v3.2 Story Library + Grammar Highlight loaded"
+  );
+
+
+})();
+
+
+/* =========================================================
+   END KARANGAN AI v3.2
+   ========================================================= */
+
