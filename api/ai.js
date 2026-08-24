@@ -1,201 +1,176 @@
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({
-      error: "Method not allowed",
-    });
+/* =========================================================
+   KARANGAN AI
+   API / AI CONTROLLER
+   Version 4.0
+
+   Supports:
+   - translate
+   - writing-feedback
+   - mentor
+
+   Translation guarantee:
+   - zh
+   - en
+   - meaning
+   ========================================================= */
+
+
+/* =========================================================
+   CONFIG
+   ========================================================= */
+
+const OPENAI_URL =
+  "https://api.openai.com/v1/responses";
+
+const DEFAULT_MODEL =
+  "gpt-5.6-luna";
+
+
+/* =========================================================
+   MAIN HANDLER
+   ========================================================= */
+
+export default async function handler(
+  req,
+  res
+) {
+
+  if (
+    req.method !== "POST"
+  ) {
+
+    return res
+      .status(405)
+      .json({
+        error:
+          "Method not allowed",
+      });
+
   }
 
+
   try {
-    const body = req.body || {};
+
+    if (
+      !process.env.OPENAI_API_KEY
+    ) {
+
+      return res
+        .status(500)
+        .json({
+          error:
+            "OPENAI_API_KEY 尚未设置。",
+        });
+
+    }
+
+
+    const body =
+      req.body || {};
+
 
     const {
-      type = "mentor",
-      message = "",
-      mode = "teacher",
-      word = "",
-      context = "",
-      text = "",
-      level = "Primary School",
-      language = "Bahasa Melayu",
-      instruction = "",
-    } = body;
 
-    if (!process.env.OPENAI_API_KEY) {
-      return res.status(500).json({
-        error: "OPENAI_API_KEY 尚未设置。",
-      });
-    }
+      type =
+        "mentor",
+
+      message =
+        "",
+
+      mode =
+        "teacher",
+
+      word =
+        "",
+
+      context =
+        "",
+
+      knownChinese =
+        "",
+
+      text =
+        "",
+
+      level =
+        "Primary School",
+
+      language =
+        "Bahasa Melayu",
+
+      instruction =
+        ""
+
+    } = body;
 
 
     /* =====================================================
        TRANSLATION
-       Return structured JSON directly
        ===================================================== */
 
-    if (type === "translate") {
-      if (!word || typeof word !== "string") {
-        return res.status(400).json({
-          error: "Perkataan diperlukan.",
-        });
-      }
+    if (
+      type === "translate"
+    ) {
 
-      const response = await fetch(
-        "https://api.openai.com/v1/responses",
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type": "application/json",
-            Authorization:
-              `Bearer ${process.env.OPENAI_API_KEY}`,
-          },
-
-          body: JSON.stringify({
-            model: "gpt-5.6-luna",
-
-            instructions: `
-Anda ialah kamus Bahasa Melayu Malaysia
-untuk murid sekolah rendah Tahun 3 hingga Tahun 5.
-
-Terangkan SATU perkataan Bahasa Melayu.
-
-Peraturan:
-- Gunakan konteks ayat jika tersedia.
-- Gunakan Bahasa Melayu Malaysia.
-- Jangan gunakan Bahasa Indonesia.
-- Chinese mesti dalam Simplified Chinese.
-- English mesti sentiasa diberikan.
-- Maksud BM mesti pendek dan mudah.
-- Jangan tinggalkan mana-mana medan.
-            `.trim(),
-
-            input: `
-Perkataan: ${word}
-
-Konteks:
-${context || "Tiada konteks."}
-            `.trim(),
-
-            text: {
-              format: {
-                type: "json_schema",
-
-                name: "malay_word_translation",
-
-                strict: true,
-
-                schema: {
-                  type: "object",
-
-                  properties: {
-                    zh: {
-                      type: "string",
-                    },
-
-                    en: {
-                      type: "string",
-                    },
-
-                    meaning: {
-                      type: "string",
-                    },
-                  },
-
-                  required: [
-                    "zh",
-                    "en",
-                    "meaning",
-                  ],
-
-                  additionalProperties: false,
-                },
-              },
-            },
-          }),
-        }
-      );
-
-      const data =
-        await response.json();
-
-
-      if (!response.ok) {
-        console.error(
-          "Translation API error:",
-          data
-        );
-
-        return res.status(
-          response.status
-        ).json({
-          error:
-            data?.error?.message ||
-            "Translation unavailable.",
-        });
-      }
-
-
-      let outputText = "";
-
-
-      if (data.output_text) {
-        outputText =
-          data.output_text;
-
-      } else if (
-        Array.isArray(data.output)
+      if (
+        !word ||
+        typeof word !==
+          "string"
       ) {
-        for (const item of data.output) {
-          if (!Array.isArray(item.content)) {
-            continue;
-          }
 
-          for (const content of item.content) {
-            if (
-              content.type === "output_text" &&
-              content.text
-            ) {
-              outputText += content.text;
-            }
-          }
-        }
+        return res
+          .status(400)
+          .json({
+            error:
+              "Perkataan diperlukan.",
+          });
+
       }
 
 
-      try {
-        const parsed =
-          JSON.parse(outputText);
+      const translation =
+        await generateTranslation({
+
+          word:
+            word.trim(),
+
+          context:
+            String(
+              context || ""
+            ).trim(),
+
+          knownChinese:
+            String(
+              knownChinese || ""
+            ).trim()
+
+        });
 
 
-        return res.status(200).json({
-          type: "translate",
+      return res
+        .status(200)
+        .json({
 
-          word,
+          type:
+            "translate",
+
+          word:
+            word.trim(),
 
           zh:
-            parsed.zh || "",
+            translation.zh,
 
           en:
-            parsed.en || "",
+            translation.en,
 
           meaning:
-            parsed.meaning || "",
+            translation.meaning,
 
           answer:
-            `${parsed.zh} · ${parsed.en}`,
+            `${translation.zh} · ${translation.en}`
+
         });
 
-      } catch (error) {
-        console.error(
-          "Translation JSON parse error:",
-          outputText
-        );
-
-        return res.status(500).json({
-          error:
-            "Translation response format invalid.",
-        });
-      }
     }
 
 
@@ -203,40 +178,60 @@ ${context || "Tiada konteks."}
        WRITING FEEDBACK
        ===================================================== */
 
-    if (type === "writing-feedback") {
-      if (!text || typeof text !== "string") {
-        return res.status(400).json({
-          error: "Karangan diperlukan.",
-        });
+    if (
+      type ===
+      "writing-feedback"
+    ) {
+
+      if (
+        !text ||
+        typeof text !==
+          "string"
+      ) {
+
+        return res
+          .status(400)
+          .json({
+            error:
+              "Karangan diperlukan.",
+          });
+
       }
 
 
-      return runTextAI({
-        res,
+      const answer =
+        await generateText({
 
-        instructions: `
+          instructions: `
 Anda ialah Cikgu Aira,
 guru Bahasa Melayu sekolah rendah Malaysia.
 
-Tahap:
+Tahap murid:
 ${level}
 
 Bahasa:
 ${language}
 
-Berikan maklum balas ringkas dan positif.
+Tugas:
+Semak karangan murid dan berikan maklum balas
+yang ringkas, positif dan mudah difahami.
 
 Semak:
-- isi
-- tatabahasa
-- ejaan
-- kosa kata
-- struktur ayat
+1. Isi
+2. Tatabahasa
+3. Ejaan
+4. Kosa kata
+5. Struktur ayat
 
-Jangan tulis semula seluruh karangan.
-Jangan gunakan Bahasa Indonesia.
+Peraturan:
+- Gunakan Bahasa Melayu Malaysia.
+- Jangan gunakan Bahasa Indonesia.
+- Sesuai untuk murid sekolah rendah.
+- Jangan menulis semula seluruh karangan.
+- Berikan petunjuk supaya murid boleh
+  membaiki tulisan sendiri.
 
-Format:
+Gunakan format:
 
 🌟 Kekuatan:
 ...
@@ -246,16 +241,28 @@ Format:
 
 🧠 Cabaran seterusnya:
 ...
-        `.trim(),
 
-        input: `
+${instruction || ""}
+          `.trim(),
+
+          input: `
 Karangan murid:
 
 ${text}
+          `.trim()
 
-${instruction || ""}
-        `.trim(),
-      });
+        });
+
+
+      return res
+        .status(200)
+        .json({
+          type:
+            "writing-feedback",
+
+          answer
+        });
+
     }
 
 
@@ -263,142 +270,729 @@ ${instruction || ""}
        MENTOR
        ===================================================== */
 
-    if (!message || typeof message !== "string") {
-      return res.status(400).json({
-        error: "请输入内容。",
-      });
+    if (
+      !message ||
+      typeof message !==
+        "string"
+    ) {
+
+      return res
+        .status(400)
+        .json({
+          error:
+            "请输入内容。",
+        });
+
     }
 
 
-    return runTextAI({
-      res,
+    const answer =
+      await generateText({
 
-      instructions: `
+        instructions: `
 Anda ialah Cikgu Aira,
 guru Bahasa Melayu sekolah rendah Malaysia.
 
+Tugas:
+Membantu murid meningkatkan kemahiran
+Bahasa Melayu.
+
 Gaya:
-- Bahasa Melayu Malaysia.
+- Gunakan Bahasa Melayu Malaysia.
 - Jangan gunakan Bahasa Indonesia.
-- Sesuai untuk sekolah rendah.
-- Gunakan penerangan ringkas.
-- Berikan petunjuk.
-- Jangan terus menulis seluruh karangan.
-- Jika murid menggunakan Bahasa Cina,
-  boleh terangkan secara ringkas dalam Bahasa Cina.
+- Sesuai untuk murid sekolah rendah.
+- Gunakan ayat pendek dan jelas.
+- Galakkan murid berfikir.
+- Berikan petunjuk sebelum memberikan jawapan.
+- Jangan menulis seluruh karangan untuk murid.
+- Fokus pada tatabahasa, kosa kata,
+  struktur ayat dan penulisan.
+- Jika murid bertanya dalam Bahasa Cina,
+  boleh terangkan secara ringkas dalam
+  Bahasa Cina.
+- Contoh Bahasa Melayu mesti kekal
+  dalam Bahasa Melayu.
 
 Mode:
 ${mode}
 
 ${instruction || ""}
-      `.trim(),
+        `.trim(),
 
-      input:
-        message,
-    });
+        input:
+          message.trim()
+
+      });
+
+
+    return res
+      .status(200)
+      .json({
+
+        type:
+          "mentor",
+
+        answer
+
+      });
 
 
   } catch (error) {
+
     console.error(
-      "Server error:",
+      "[Karangan AI API]",
       error
     );
 
-    return res.status(500).json({
-      error:
-        "服务器发生错误，请稍后再试。",
-    });
+
+    return res
+      .status(
+        error.status || 500
+      )
+      .json({
+
+        error:
+          error.publicMessage ||
+          "AI 暂时无法回应，请稍后再试。"
+
+      });
+
   }
+
 }
 
 
-/* =====================================================
-   STANDARD TEXT AI
-   ===================================================== */
+/* =========================================================
+   TRANSLATION ENGINE
+   ========================================================= */
 
-async function runTextAI({
-  res,
-  instructions,
-  input,
+async function generateTranslation({
+
+  word,
+
+  context,
+
+  knownChinese
+
 }) {
-  const response = await fetch(
-    "https://api.openai.com/v1/responses",
-    {
-      method: "POST",
 
-      headers: {
-        "Content-Type": "application/json",
-        Authorization:
-          `Bearer ${process.env.OPENAI_API_KEY}`,
-      },
+  const baseInstructions = `
+Anda ialah kamus pintar Bahasa Melayu Malaysia
+untuk murid sekolah rendah Tahun 3 hingga Tahun 5.
 
-      body: JSON.stringify({
-        model:
-          "gpt-5.6-luna",
+Anda mesti menerangkan SATU perkataan Bahasa Melayu.
 
-        instructions,
+WAJIB:
+- "zh" mesti mempunyai terjemahan Simplified Chinese.
+- "en" mesti mempunyai terjemahan English.
+- "meaning" mesti mempunyai penerangan ringkas
+  dalam Bahasa Melayu Malaysia.
+- Ketiga-tiga medan TIDAK BOLEH kosong.
+- Gunakan konteks ayat untuk menentukan maksud tepat.
+- Jangan gunakan Bahasa Indonesia.
+- English mesti sesuai dengan maksud perkataan
+  dalam ayat, bukan terjemahan rawak.
+- Jika perkataan mempunyai beberapa maksud,
+  pilih maksud yang paling sesuai dengan konteks.
+- Maksud BM mesti mudah difahami murid sekolah rendah.
 
-        input,
-      }),
-    }
+Contoh:
+
+Perkataan:
+pertandingan
+
+Output:
+{
+  "zh": "比赛 / 竞赛",
+  "en": "competition / contest",
+  "meaning": "Aktiviti untuk menentukan peserta atau pasukan yang terbaik."
+}
+
+Perkataan:
+mengadakan
+
+Output:
+{
+  "zh": "举办 / 举行",
+  "en": "organize / hold",
+  "meaning": "Menjalankan atau menganjurkan sesuatu aktiviti."
+}
+  `.trim();
+
+
+  const userInput = `
+Perkataan:
+${word}
+
+Konteks ayat:
+${context || "Tiada konteks diberikan."}
+
+Terjemahan Cina sedia ada:
+${knownChinese || "Tiada."}
+
+Berikan terjemahan yang lengkap.
+  `.trim();
+
+
+  /*
+    Attempt 1
+  */
+
+  let result =
+    await requestStructuredTranslation({
+
+      instructions:
+        baseInstructions,
+
+      input:
+        userInput
+
+    });
+
+
+  if (
+    isTranslationComplete(
+      result
+    )
+  ) {
+
+    return cleanTranslation(
+      result
+    );
+
+  }
+
+
+  console.warn(
+    "[Translation] First response incomplete:",
+    word,
+    result
   );
+
+
+  /*
+    Attempt 2
+    Stronger repair request.
+  */
+
+  result =
+    await requestStructuredTranslation({
+
+      instructions: `
+${baseInstructions}
+
+PENTING:
+Jawapan sebelumnya tidak lengkap.
+
+Jangan tinggalkan:
+- zh
+- en
+- meaning
+
+Walaupun terjemahan Chinese sudah diketahui,
+anda MASIH WAJIB memberikan English.
+
+Setiap nilai mesti mempunyai sekurang-kurangnya
+satu perkataan.
+      `.trim(),
+
+      input:
+        userInput
+
+    });
+
+
+  if (
+    isTranslationComplete(
+      result
+    )
+  ) {
+
+    return cleanTranslation(
+      result
+    );
+
+  }
+
+
+  console.error(
+    "[Translation] Second response incomplete:",
+    word,
+    result
+  );
+
+
+  const error =
+    new Error(
+      "Translation incomplete after retry."
+    );
+
+
+  error.status =
+    502;
+
+
+  error.publicMessage =
+    "Terjemahan lengkap tidak dapat dijana. Sila cuba lagi.";
+
+
+  throw error;
+
+}
+
+
+/* =========================================================
+   STRUCTURED TRANSLATION REQUEST
+   ========================================================= */
+
+async function requestStructuredTranslation({
+
+  instructions,
+
+  input
+
+}) {
+
+  const response =
+    await fetch(
+      OPENAI_URL,
+      {
+
+        method:
+          "POST",
+
+        headers: {
+
+          "Content-Type":
+            "application/json",
+
+          Authorization:
+            `Bearer ${process.env.OPENAI_API_KEY}`
+
+        },
+
+        body:
+          JSON.stringify({
+
+            model:
+              DEFAULT_MODEL,
+
+            instructions,
+
+            input,
+
+            text: {
+
+              format: {
+
+                type:
+                  "json_schema",
+
+                name:
+                  "malay_word_translation",
+
+                description:
+                  "Complete Bahasa Melayu word translation for a Malaysian primary school learner.",
+
+                strict:
+                  true,
+
+                schema: {
+
+                  type:
+                    "object",
+
+                  properties: {
+
+                    zh: {
+
+                      type:
+                        "string",
+
+                      description:
+                        "Simplified Chinese translation. Must not be blank."
+
+                    },
+
+                    en: {
+
+                      type:
+                        "string",
+
+                      description:
+                        "English translation. Must not be blank."
+
+                    },
+
+                    meaning: {
+
+                      type:
+                        "string",
+
+                      description:
+                        "Short Bahasa Melayu Malaysia explanation. Must not be blank."
+
+                    }
+
+                  },
+
+                  required: [
+                    "zh",
+                    "en",
+                    "meaning"
+                  ],
+
+                  additionalProperties:
+                    false
+
+                }
+
+              }
+
+            }
+
+          })
+
+      }
+    );
 
 
   const data =
     await response.json();
 
 
-  if (!response.ok) {
+  if (
+    !response.ok
+  ) {
+
     console.error(
-      "OpenAI API error:",
+      "[OpenAI Translation Error]",
       data
     );
 
-    return res
-      .status(response.status)
-      .json({
-        error:
-          data?.error?.message ||
-          "AI 暂时无法回应，请稍后再试。",
-      });
+
+    const error =
+      new Error(
+        data?.error?.message ||
+        "OpenAI translation request failed."
+      );
+
+
+    error.status =
+      response.status;
+
+
+    error.publicMessage =
+      data?.error?.message ||
+      "Translation unavailable.";
+
+
+    throw error;
+
   }
 
 
-  let answer = "";
+  const outputText =
+    extractResponseText(
+      data
+    );
 
 
-  if (data.output_text) {
-    answer =
-      data.output_text;
+  if (!outputText) {
 
-  } else if (
-    Array.isArray(data.output)
+    console.error(
+      "[Translation] Empty output",
+      data
+    );
+
+
+    throw new Error(
+      "Empty structured translation output."
+    );
+
+  }
+
+
+  try {
+
+    return JSON.parse(
+      outputText
+    );
+
+  } catch (error) {
+
+    console.error(
+      "[Translation JSON Parse Error]",
+      outputText
+    );
+
+
+    throw new Error(
+      "Invalid translation JSON."
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   CHECK TRANSLATION
+   ========================================================= */
+
+function isTranslationComplete(
+  result
+) {
+
+  if (
+    !result ||
+    typeof result !==
+      "object"
   ) {
-    for (const item of data.output) {
-      if (!Array.isArray(item.content)) {
-        continue;
-      }
 
-      for (const content of item.content) {
-        if (
-          content.type === "output_text" &&
-          content.text
-        ) {
-          answer +=
-            content.text;
-        }
-      }
-    }
+    return false;
+
   }
+
+
+  const zh =
+    String(
+      result.zh || ""
+    ).trim();
+
+
+  const en =
+    String(
+      result.en || ""
+    ).trim();
+
+
+  const meaning =
+    String(
+      result.meaning || ""
+    ).trim();
+
+
+  return Boolean(
+    zh &&
+    en &&
+    meaning
+  );
+
+}
+
+
+/* =========================================================
+   CLEAN TRANSLATION
+   ========================================================= */
+
+function cleanTranslation(
+  result
+) {
+
+  return {
+
+    zh:
+      String(
+        result.zh
+      ).trim(),
+
+    en:
+      String(
+        result.en
+      ).trim(),
+
+    meaning:
+      String(
+        result.meaning
+      ).trim()
+
+  };
+
+}
+
+
+/* =========================================================
+   STANDARD TEXT AI
+   ========================================================= */
+
+async function generateText({
+
+  instructions,
+
+  input
+
+}) {
+
+  const response =
+    await fetch(
+      OPENAI_URL,
+      {
+
+        method:
+          "POST",
+
+        headers: {
+
+          "Content-Type":
+            "application/json",
+
+          Authorization:
+            `Bearer ${process.env.OPENAI_API_KEY}`
+
+        },
+
+        body:
+          JSON.stringify({
+
+            model:
+              DEFAULT_MODEL,
+
+            instructions,
+
+            input
+
+          })
+
+      }
+    );
+
+
+  const data =
+    await response.json();
+
+
+  if (
+    !response.ok
+  ) {
+
+    console.error(
+      "[OpenAI Text Error]",
+      data
+    );
+
+
+    const error =
+      new Error(
+        data?.error?.message ||
+        "OpenAI request failed."
+      );
+
+
+    error.status =
+      response.status;
+
+
+    error.publicMessage =
+      data?.error?.message ||
+      "AI 暂时无法回应，请稍后再试。";
+
+
+    throw error;
+
+  }
+
+
+  const answer =
+    extractResponseText(
+      data
+    );
 
 
   if (!answer) {
-    answer =
-      "Maaf, saya tidak dapat menghasilkan jawapan sekarang.";
+
+    return (
+      "Maaf, saya tidak dapat menghasilkan jawapan sekarang."
+    );
+
   }
 
 
-  return res.status(200).json({
-    answer,
-  });
+  return answer;
+
 }
+
+
+/* =========================================================
+   RESPONSES API TEXT EXTRACTOR
+   ========================================================= */
+
+function extractResponseText(
+  data
+) {
+
+  if (!data) {
+
+    return "";
+
+  }
+
+
+  if (
+    typeof data.output_text ===
+      "string" &&
+    data.output_text.trim()
+  ) {
+
+    return data.output_text.trim();
+
+  }
+
+
+  let result = "";
+
+
+  if (
+    Array.isArray(
+      data.output
+    )
+  ) {
+
+    for (
+      const item of
+      data.output
+    ) {
+
+      if (
+        !Array.isArray(
+          item?.content
+        )
+      ) {
+
+        continue;
+
+      }
+
+
+      for (
+        const content of
+        item.content
+      ) {
+
+        if (
+          content?.type ===
+            "output_text" &&
+          typeof content.text ===
+            "string"
+        ) {
+
+          result +=
+            content.text;
+
+        }
+
+      }
+
+    }
+
+  }
+
+
+  return result.trim();
+
+}
+
+
+/* =========================================================
+   END KARANGAN AI API v4.0
+   ========================================================= */
