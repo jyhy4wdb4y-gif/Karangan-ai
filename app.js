@@ -116,7 +116,8 @@ let currentTranslationData = null;
 let vocabularyReviewState = {
   words: [],
   index: 0,
-  answered: false
+  answered: false,
+  year: 3
 };
 
 
@@ -2297,30 +2298,32 @@ function startVocabularyReview() {
   const engine =
     getVocabularyEngine();
 
+  const year =
+    Number(engine?.getLearningYear?.() || 3);
 
   let words =
+    engine?.getReviewWordsForYear?.(5, year) ||
+    engine?.getDailyNewWords?.(5, year) ||
     engine?.getReviewWords?.(5) ||
     getVocabularyWords().slice(
       0,
       5
     );
 
-
   if (!words.length) {
     showToast(
-      "Simpan beberapa perkataan dahulu."
+      `Belum ada kosa kata Tahun ${year} untuk diuji.`
     );
 
     return;
   }
 
-
   vocabularyReviewState = {
     words,
     index: 0,
-    answered: false
+    answered: false,
+    year
   };
-
 
   renderVocabularyReviewCard();
 }
@@ -2347,7 +2350,7 @@ function renderVocabularyReviewCard() {
   openModuleScreen(
     `
       <span class="section-kicker">
-        ULANG KAJI
+        ULANG KAJI · TAHUN ${vocabularyReviewState.year || Number(getVocabularyEngine()?.getLearningYear?.() || 3)}
       </span>
 
       <h1>

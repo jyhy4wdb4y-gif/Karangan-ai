@@ -2824,7 +2824,7 @@
 
 
 /* =========================================================
-   LANGKAH 2 CURRICULUM FIX v9.2
+   LANGKAH 2 YEAR-AWARE REVIEW v9.3
    1,650 Kosa Kata & Frasa + 500 Ayat Cantik
    Offline-first. No paid AI required.
    ========================================================= */
@@ -2930,6 +2930,32 @@
   function isAyatMastered(id){ return (dailyState.masteredAyatIds||[]).includes(id); }
   function removeAyat(id){ if(!dailyState.removedAyatIds.includes(id)) dailyState.removedAyatIds.push(id); saveDaily(); return true; }
   function removeDailyWord(word){ const k=normalizeKey(word); if(!dailyState.removedWordKeys.includes(k)) dailyState.removedWordKeys.push(k); const found=window.KaranganVocabulary?.findWord?.(word); if(found) window.KaranganVocabulary?.removeWord?.(found.id); saveDaily(); return true; }
+
+  function getReviewWordsForYear(limit=5,y=getLearningYear()){
+    y=clampYear(y);
+    ensureToday(y);
+    const ys=yearState(y);
+    const unlocked=new Set(ys.unlockedWordIds||[]);
+    const bankById=new Map(MASTER_WORD_BANK.map(x=>[x.id,x]));
+    const engine=window.KaranganVocabulary;
+    const list=(ys.unlockedWordIds||[])
+      .map(id=>bankById.get(id))
+      .filter(Boolean)
+      .map(item=>{
+        const saved=engine?.findWord?.(item.word);
+        return saved ? {...saved,...item,id:saved.id,bankId:item.id,year:y} : {...item,bankId:item.id,year:y};
+      })
+      .filter(item=>!item.mastered && !dailyState.removedWordKeys.includes(normalizeKey(item.word)));
+    list.sort((a,b)=>{
+      const ar=Number(a.reviewCount||0), br=Number(b.reviewCount||0);
+      if(ar!==br) return ar-br;
+      const at=a.lastReviewedAt?new Date(a.lastReviewedAt).getTime():0;
+      const bt=b.lastReviewedAt?new Date(b.lastReviewedAt).getTime():0;
+      return at-bt;
+    });
+    return list.slice(0,Math.max(1,Number(limit)||5));
+  }
+
   function curriculumStats(y=getLearningYear()){
     y=clampYear(y); const ys=yearState(y); return {year:y,totalEligibleWords:eligibleWords(y).length,totalEligibleAyat:eligibleAyat(y).length,unlockedWords:(ys.unlockedWordIds||[]).length,unlockedAyat:(ys.unlockedAyatIds||[]).length,masteredAyat:(dailyState.masteredAyatIds||[]).length,date:dateKey()};
   }
@@ -2937,8 +2963,8 @@
   function getMasterAyatBank(){ return MASTER_AYAT_BANK.map(x=>({...x})); }
 
   const engine=window.KaranganVocabulary || {};
-  Object.assign(engine,{setLearningYear,getLearningYear,ensureDailyContent:ensureToday,getDailyNewWords,getDailyAyat,getUnlockedAyat,markAyatMastered,isAyatMastered,removeAyat,removeDailyWord,curriculumStats,getMasterWordBank,getMasterAyatBank,DAILY_WORD_TARGET:WORD_TARGET,DAILY_AYAT_TARGET:AYAT_TARGET});
+  Object.assign(engine,{setLearningYear,getLearningYear,ensureDailyContent:ensureToday,getDailyNewWords,getDailyAyat,getUnlockedAyat,getReviewWordsForYear,markAyatMastered,isAyatMastered,removeAyat,removeDailyWord,curriculumStats,getMasterWordBank,getMasterAyatBank,DAILY_WORD_TARGET:WORD_TARGET,DAILY_AYAT_TARGET:AYAT_TARGET});
   window.KaranganVocabulary=engine;
-  console.log("✅ Langkah 2 Curriculum Fix v9.2 loaded",{words:MASTER_WORD_BANK.length,ayat:MASTER_AYAT_BANK.length});
+  console.log("✅ Langkah 2 Year-Aware Review v9.3 loaded",{words:MASTER_WORD_BANK.length,ayat:MASTER_AYAT_BANK.length});
 })();
 
