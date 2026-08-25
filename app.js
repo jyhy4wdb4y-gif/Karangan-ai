@@ -10045,7 +10045,7 @@ window.KaranganAI = {
 (() => {
   "use strict";
 
-  const L2_VERSION = "12.7.1";
+  const L2_VERSION = "12.7.2";
   const L2_DAILY_KEY = "karangan_ai_l2_master_v12_2_daily";
 
 
@@ -10607,6 +10607,88 @@ window.KaranganAI = {
     return {word:key,zh:"",en:"",missing:true};
   }
 
+  const L2M_TRANSLATION_CACHE_KEY = "karangan_ai_word_translation_cache_v1272";
+
+  function l2mLoadTranslationCache(){
+    try{
+      const x=JSON.parse(localStorage.getItem(L2M_TRANSLATION_CACHE_KEY)||"{}");
+      return x && typeof x==="object" ? x : {};
+    }catch(_){ return {}; }
+  }
+
+  function l2mSaveTranslationCache(cache){
+    try{ localStorage.setItem(L2M_TRANSLATION_CACHE_KEY,JSON.stringify(cache)); }catch(_){}
+  }
+
+  function l2mParseAITranslation(result){
+    if(!result) return {zh:"",en:""};
+
+    // Direct structured API shapes.
+    const candidates=[
+      result,
+      result.data,
+      result.result,
+      result.translation,
+      result.translations
+    ].filter(Boolean);
+
+    for(const obj of candidates){
+      if(typeof obj==="object"){
+        const zh=obj.zh||obj.chinese||obj["中文"]||obj["Chinese"]||"";
+        const en=obj.en||obj.english||obj["English"]||"";
+        if(zh||en) return {zh:String(zh||"").trim(),en:String(en||"").trim()};
+      }
+    }
+
+    const raw=typeof extractAIText==="function"
+      ? extractAIText(result)
+      : (typeof result==="string" ? result : "");
+
+    if(!raw) return {zh:"",en:""};
+
+    const s=String(raw).trim();
+
+    // JSON / fenced JSON.
+    try{
+      const cleaned=s
+        .replace(/^```json\s*/i,"")
+        .replace(/^```\s*/,"")
+        .replace(/```$/,"")
+        .trim();
+      const parsed=JSON.parse(cleaned);
+      const zh=parsed.zh||parsed.chinese||parsed["中文"]||"";
+      const en=parsed.en||parsed.english||parsed["English"]||"";
+      if(zh||en) return {zh:String(zh||"").trim(),en:String(en||"").trim()};
+    }catch(_){}
+
+    // Delimiter format requested from AI.
+    const delim=s.match(/ZH\s*=\s*(.*?)\s*\|\|\|\s*EN\s*=\s*(.*)/is);
+    if(delim) return {zh:delim[1].trim(),en:delim[2].trim()};
+
+    // Common labels.
+    const zhMatch=s.match(/(?:中文|Chinese|ZH)\s*[:：=-]\s*([^\n|]+)/i);
+    const enMatch=s.match(/(?:English|EN)\s*[:：=-]\s*([^\n|]+)/i);
+    let zh=zhMatch?.[1]?.trim()||"";
+    let en=enMatch?.[1]?.trim()||"";
+
+    // If labels are absent, extract a Chinese-containing line and an English-looking line.
+    if(!zh){
+      const chineseLine=s.split(/\n+/).find(line=>/[\u3400-\u9fff]/.test(line));
+      if(chineseLine) zh=chineseLine.replace(/^[^:：]*[:：]\s*/,"").trim();
+    }
+
+    if(!en){
+      const lines=s.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+      const englishLine=lines.find(line =>
+        /^[A-Za-z][A-Za-z ,/'()-]{1,80}$/.test(line) &&
+        !/^(Chinese|English|ZH|EN)$/i.test(line)
+      );
+      if(englishLine) en=englishLine.replace(/^[^:：]*[:：]\s*/,"").trim();
+    }
+
+    return {zh,en,raw:s};
+  }
+
   async function l2mShowWordTranslation(word){
     const info=l2mLookupWord(word);
     document.getElementById("l2m-word-popup")?.remove();
@@ -10629,12 +10711,21 @@ window.KaranganAI = {
       return;
     }
 
-    render("正在查询…","Searching…","AI fallback");
+    const cache=l2mLoadTranslationCache();
+    const cached=cache[info.word];
+
+    if(cached?.zh || cached?.en){
+      render(cached.zh||"—",cached.en||"—","已缓存 / Cached");
+      return;
+    }
+
+    render("正在查询…","Searching…","AI translation");
 
     try{
       let zh="";
       let en="";
 
+      // Existing dictionary engine first.
       const localResult=l2mEngine()?.lookupWord?.(info.word);
       if(localResult){
         zh=localResult.zh||"";
@@ -10647,41 +10738,44 @@ window.KaranganAI = {
           word:info.word,
           language:"Bahasa Melayu",
           targetLanguages:["Simplified Chinese","English"],
-          instruction:"Translate this single Bahasa Melayu word only. Return JSON only with keys zh and en. Keep both translations short and suitable for a Malaysian primary school student."
+          instruction:
+            "Translate ONLY this single Bahasa Melayu word into Simplified Chinese and English. " +
+            "Use the most common meaning suitable for Malaysian primary school. " +
+            "Reply exactly in this format and nothing else: ZH=<Chinese translation>|||EN=<English translation>"
         });
 
-        const raw=typeof extractAIText==="function"
-          ? extractAIText(result)
-          : (result?.text||result?.answer||result?.message||"");
+        const parsed=l2mParseAITranslation(result);
+        zh=zh||parsed.zh||"";
+        en=en||parsed.en||"";
 
-        if(raw){
-          try{
-            const cleaned=String(raw)
-              .replace(/^```json\s*/i,"")
-              .replace(/^```\s*/,"")
-              .replace(/```$/,"")
-              .trim();
-
-            const parsed=JSON.parse(cleaned);
-            zh=zh||parsed.zh||parsed.chinese||"";
-            en=en||parsed.en||parsed.english||"";
-          }catch(_){
-            const zhMatch=String(raw).match(/(?:zh|chinese|中文)\s*[:：]\s*([^\n]+)/i);
-            const enMatch=String(raw).match(/(?:en|english)\s*[:：]\s*([^\n]+)/i);
-            zh=zh||zhMatch?.[1]?.trim()||"";
-            en=en||enMatch?.[1]?.trim()||"";
-          }
+        // Last-resort: never throw away a useful raw AI answer.
+        if((!zh||!en) && parsed.raw){
+          if(!zh && /[\u3400-\u9fff]/.test(parsed.raw)) zh=parsed.raw;
+          if(!en && /[A-Za-z]{2,}/.test(parsed.raw)) en=parsed.raw;
         }
       }
 
+      if(zh||en){
+        cache[info.word]={
+          zh:zh||"—",
+          en:en||"—",
+          savedAt:Date.now()
+        };
+        l2mSaveTranslationCache(cache);
+      }
+
       render(
-        zh||"暂时找不到翻译",
-        en||"Translation not available yet",
-        zh||en ? "AI translation" : ""
+        zh||"暂时找不到中文翻译",
+        en||"English translation not available yet",
+        zh||en ? "AI translation · 已自动保存" : ""
       );
     }catch(error){
       console.warn("Word-by-word AI translation failed:",error);
-      render("暂时找不到翻译","Translation not available yet");
+      render(
+        "翻译服务暂时无法连接",
+        "Translation service temporarily unavailable",
+        "请稍后再试 / Please try again"
+      );
     }
   }
 
@@ -11029,5 +11123,5 @@ window.KaranganAI = {
     source: "CurriculumDB"
   };
 
-  console.log("✅ MASTER CURRICULUM v12.7.1 + WORD TRANSLATION AI FALLBACK loaded");
+  console.log("✅ MASTER CURRICULUM v12.7.2 + ROBUST AI WORD TRANSLATION CACHE loaded");
 })();
