@@ -10045,7 +10045,7 @@ window.KaranganAI = {
 (() => {
   "use strict";
 
-  const L2_VERSION = "12.7.2";
+  const L2_VERSION = "12.8";
   const L2_DAILY_KEY = "karangan_ai_l2_master_v12_2_daily";
 
 
@@ -10690,7 +10690,7 @@ window.KaranganAI = {
   }
 
   async function l2mShowWordTranslation(word){
-    const info=l2mLookupWord(word);
+    const key=String(word||"").trim().toLocaleLowerCase("ms-MY");
     document.getElementById("l2m-word-popup")?.remove();
 
     const p=document.createElement("div");
@@ -10698,68 +10698,65 @@ window.KaranganAI = {
     p.style.cssText="position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:2147483646;width:min(calc(100vw - 32px),420px);background:#fff;border:1px solid #e9e3f5;border-radius:20px;padding:16px 17px;box-shadow:0 18px 55px rgba(20,22,45,.24);box-sizing:border-box";
 
     const render=(zh,en,status="")=>{
-      p.innerHTML=`<div style="display:flex;justify-content:space-between;gap:12px"><div><div style="font-size:11px;font-weight:900;color:#7866c8">TERJEMAHAN PERKATAAN</div><div style="font-size:25px;font-weight:950;margin-top:3px">${l2mEsc(info.word)}</div></div><button type="button" data-l2m-word-close style="border:0;background:#f4f1fb;width:34px;height:34px;border-radius:50%">✕</button></div><div style="margin-top:12px;padding:11px 13px;background:#f7f4ff;border-radius:13px">🇨🇳 <strong>${l2mEsc(zh||"…")}</strong></div><div style="margin-top:8px;padding:11px 13px;background:#f6f9fb;border-radius:13px">🇬🇧 <strong>${l2mEsc(en||"…")}</strong></div>${status?`<div style="margin-top:8px;font-size:12px;color:#7c858b">${l2mEsc(status)}</div>`:""}<button type="button" data-l2m-word-speak class="secondary-button" style="width:100%;margin-top:11px">🔊 Dengar</button>`;
+      p.innerHTML=`<div style="display:flex;justify-content:space-between;gap:12px"><div><div style="font-size:11px;font-weight:900;color:#7866c8">TERJEMAHAN PERKATAAN</div><div style="font-size:25px;font-weight:950;margin-top:3px">${l2mEsc(key)}</div></div><button type="button" data-l2m-word-close style="border:0;background:#f4f1fb;width:34px;height:34px;border-radius:50%">✕</button></div><div style="margin-top:12px;padding:11px 13px;background:#f7f4ff;border-radius:13px">🇨🇳 <strong>${l2mEsc(zh||"…")}</strong></div><div style="margin-top:8px;padding:11px 13px;background:#f6f9fb;border-radius:13px">🇬🇧 <strong>${l2mEsc(en||"…")}</strong></div>${status?`<div style="margin-top:8px;font-size:12px;color:#7c858b">${l2mEsc(status)}</div>`:""}<button type="button" data-l2m-word-speak class="secondary-button" style="width:100%;margin-top:11px">🔊 Dengar</button>`;
 
       p.querySelector("[data-l2m-word-close]")?.addEventListener("click",()=>p.remove());
-      p.querySelector("[data-l2m-word-speak]")?.addEventListener("click",()=>l2mSpeak(info.word));
+      p.querySelector("[data-l2m-word-speak]")?.addEventListener("click",()=>l2mSpeak(key));
     };
 
     document.body.appendChild(p);
 
-    if(!info.missing){
-      render(info.zh,info.en);
-      return;
-    }
-
     const cache=l2mLoadTranslationCache();
-    const cached=cache[info.word];
-
+    const cached=cache[key];
     if(cached?.zh || cached?.en){
       render(cached.zh||"—",cached.en||"—","已缓存 / Cached");
       return;
     }
 
-    render("正在查询…","Searching…","AI translation");
+    render("正在查询线上 AI…","Searching online AI…","Online AI");
 
     try{
       let zh="";
       let en="";
 
-      // Existing dictionary engine first.
-      const localResult=l2mEngine()?.lookupWord?.(info.word);
-      if(localResult){
-        zh=localResult.zh||"";
-        en=localResult.en||"";
-      }
-
-      if((!zh||!en) && typeof callAI==="function"){
+      // ONLINE AI FIRST
+      if(typeof callAI==="function"){
         const result=await callAI({
           type:"translate",
-          word:info.word,
+          word:key,
           language:"Bahasa Melayu",
           targetLanguages:["Simplified Chinese","English"],
           instruction:
             "Translate ONLY this single Bahasa Melayu word into Simplified Chinese and English. " +
-            "Use the most common meaning suitable for Malaysian primary school. " +
+            "Use the most common Malaysian primary-school meaning. " +
             "Reply exactly in this format and nothing else: ZH=<Chinese translation>|||EN=<English translation>"
         });
 
         const parsed=l2mParseAITranslation(result);
-        zh=zh||parsed.zh||"";
-        en=en||parsed.en||"";
+        zh=parsed.zh||"";
+        en=parsed.en||"";
 
-        // Last-resort: never throw away a useful raw AI answer.
         if((!zh||!en) && parsed.raw){
           if(!zh && /[\u3400-\u9fff]/.test(parsed.raw)) zh=parsed.raw;
           if(!en && /[A-Za-z]{2,}/.test(parsed.raw)) en=parsed.raw;
         }
       }
 
+      // Only if online AI failed, use local/master fallback.
+      if(!zh || !en){
+        const fallback=l2mLookupWord(key);
+        if(!fallback.missing){
+          zh=zh||fallback.zh||"";
+          en=en||fallback.en||"";
+        }
+      }
+
       if(zh||en){
-        cache[info.word]={
+        cache[key]={
           zh:zh||"—",
           en:en||"—",
-          savedAt:Date.now()
+          savedAt:Date.now(),
+          source:"online-ai-first"
         };
         l2mSaveTranslationCache(cache);
       }
@@ -10767,15 +10764,26 @@ window.KaranganAI = {
       render(
         zh||"暂时找不到中文翻译",
         en||"English translation not available yet",
-        zh||en ? "AI translation · 已自动保存" : ""
+        zh||en ? "Online AI · 已自动保存" : "Online AI unavailable"
       );
     }catch(error){
-      console.warn("Word-by-word AI translation failed:",error);
-      render(
-        "翻译服务暂时无法连接",
-        "Translation service temporarily unavailable",
-        "请稍后再试 / Please try again"
-      );
+      console.warn("Online AI word translation failed:",error);
+
+      // Final fallback if network/API fails.
+      const fallback=l2mLookupWord(key);
+      if(!fallback.missing){
+        render(
+          fallback.zh||"—",
+          fallback.en||"—",
+          "Offline fallback"
+        );
+      }else{
+        render(
+          "翻译服务暂时无法连接",
+          "Translation service temporarily unavailable",
+          "请稍后再试 / Please try again"
+        );
+      }
     }
   }
 
@@ -11123,5 +11131,5 @@ window.KaranganAI = {
     source: "CurriculumDB"
   };
 
-  console.log("✅ MASTER CURRICULUM v12.7.2 + ROBUST AI WORD TRANSLATION CACHE loaded");
+  console.log("✅ MASTER CURRICULUM v12.8 + ONLINE AI FIRST WORD TRANSLATION loaded");
 })();
