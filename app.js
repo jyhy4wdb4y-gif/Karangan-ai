@@ -117,7 +117,8 @@ let vocabularyReviewState = {
   words: [],
   index: 0,
   answered: false,
-  year: 3
+  year: 3,
+  active: false
 };
 
 
@@ -1111,6 +1112,15 @@ function bindModuleHeader() {
 
 
 function closeModule() {
+  if (
+    currentScreen === "module" &&
+    vocabularyReviewState?.active
+  ) {
+    vocabularyReviewState.active = false;
+    renderVocabularyModule();
+    return;
+  }
+
   showScreen(
     previousScreen === "module"
       ? "learn"
@@ -2149,6 +2159,7 @@ function bindVocabularyEvents() {
    ========================================================= */
 
 function renderVocabularyModule() {
+  vocabularyReviewState.active = false;
   const words =
     getVocabularyWords();
 
@@ -2322,7 +2333,8 @@ function startVocabularyReview() {
     words,
     index: 0,
     answered: false,
-    year
+    year,
+    active: true
   };
 
   renderVocabularyReviewCard();
@@ -2341,6 +2353,7 @@ function renderVocabularyReviewCard() {
       "vocabulary"
     );
 
+    vocabularyReviewState.active = false;
     renderVocabularyModule();
 
     return;
