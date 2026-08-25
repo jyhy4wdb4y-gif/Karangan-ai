@@ -151,7 +151,13 @@ function showVocabularyReward(type, message, xp=0) {
 
   const overlay = document.createElement("div");
   overlay.id = "vocab-reward-overlay";
+  const particles = good
+    ? ["✦","★","⚡","✧","★","✦","⚡","✧"]
+    : ["✦","💪","✧","⚡","✦","★"];
+
   overlay.innerHTML = `<div class="vocab-reward-pop ${good?"is-good":"is-encourage"}">
+    <div class="smart-energy-ring"></div>
+    <div class="smart-particles">${particles.map((p,i)=>`<span style="--i:${i}">${p}</span>`).join("")}</div>
     <img class="vocab-reward-cartoon" src="${rewardImage}" alt="SMART reward" />
     <div class="vocab-reward-title">${message}</div>
     ${xp?`<div class="vocab-reward-xp">+${xp} XP</div>`:""}
@@ -159,8 +165,8 @@ function showVocabularyReward(type, message, xp=0) {
   </div>`;
   document.body.appendChild(overlay);
   setTimeout(()=>overlay.classList.add("show"),20);
-  setTimeout(()=>overlay.classList.add("hide"),950);
-  setTimeout(()=>overlay.remove(),1250);
+  setTimeout(()=>overlay.classList.add("hide"),2700);
+  setTimeout(()=>overlay.remove(),3000);
 }
 
 (function injectVocabularyRewardStyles(){
@@ -180,26 +186,73 @@ function showVocabularyReward(type, message, xp=0) {
   }
   .show .vocab-reward-pop{transform:scale(1);opacity:1}
   .vocab-reward-cartoon{
-    display:block;
-    width:min(78vw,360px);
-    max-height:44vh;
-    object-fit:contain;
-    margin:0 auto 4px;
-    animation:smartRewardEnter .72s cubic-bezier(.15,1.35,.25,1), smartGlow 1.1s ease-in-out infinite alternate;
+    position:relative;z-index:3;display:block;
+    width:min(78vw,360px);max-height:44vh;object-fit:contain;margin:0 auto 4px;
+    animation:smartFullMotion 3s cubic-bezier(.18,.8,.25,1) both;
     filter:drop-shadow(0 0 18px rgba(66,220,255,.34)) drop-shadow(0 16px 24px rgba(22,25,48,.22));
   }
+  .smart-energy-ring{
+    position:absolute;z-index:1;left:50%;top:43%;width:240px;height:240px;
+    margin:-120px 0 0 -120px;border-radius:50%;
+    border:4px solid rgba(60,220,255,.55);
+    box-shadow:0 0 18px rgba(60,220,255,.55),inset 0 0 18px rgba(132,86,255,.35);
+    animation:smartRing 3s ease-in-out both;
+  }
+  .smart-particles{position:absolute;inset:0;z-index:4;pointer-events:none;overflow:hidden;border-radius:28px}
+  .smart-particles span{
+    position:absolute;left:50%;top:46%;font-size:24px;opacity:0;
+    animation:smartParticle 2.35s ease-out both;
+    animation-delay:calc(var(--i) * .09s);
+  }
+  .smart-particles span:nth-child(1){--x:-145px;--y:-125px}
+  .smart-particles span:nth-child(2){--x:135px;--y:-105px}
+  .smart-particles span:nth-child(3){--x:-120px;--y:80px}
+  .smart-particles span:nth-child(4){--x:145px;--y:70px}
+  .smart-particles span:nth-child(5){--x:-65px;--y:-155px}
+  .smart-particles span:nth-child(6){--x:70px;--y:-150px}
+  .smart-particles span:nth-child(7){--x:-155px;--y:-15px}
+  .smart-particles span:nth-child(8){--x:155px;--y:-5px}
+  .vocab-reward-xp{animation:smartXpPop 3s ease both}
+  .vocab-reward-combo{animation:smartComboPulse 3s ease both}
   .vocab-reward-title{font-size:22px;font-weight:900;line-height:1.25;margin-top:8px}
   .vocab-reward-xp{display:inline-block;margin-top:12px;padding:8px 16px;border-radius:999px;background:linear-gradient(90deg,#26d4ff,#8a5cff);color:#fff;font-weight:900;box-shadow:0 0 18px rgba(80,180,255,.35)}
   .vocab-reward-combo{margin-top:9px;font-size:18px;font-weight:900}
   .is-encourage{background:linear-gradient(180deg,#26152d 0%,#341a35 100%)}
-  @keyframes smartRewardEnter{
-    0%{transform:scale(.35) translateY(38px) rotate(-7deg);opacity:0}
-    55%{transform:scale(1.12) translateY(-8px) rotate(3deg);opacity:1}
-    100%{transform:scale(1) translateY(0) rotate(0);opacity:1}
+  @keyframes smartFullMotion{
+    0%{transform:translateY(80px) scale(.35) rotate(-10deg);opacity:0}
+    16%{transform:translateY(-12px) scale(1.10) rotate(4deg);opacity:1}
+    28%{transform:translateY(0) scale(.98) rotate(-2deg)}
+    42%{transform:translateY(-14px) scale(1.04) rotate(2deg)}
+    56%{transform:translateY(0) scale(1) rotate(-1deg)}
+    70%{transform:translateY(-8px) scale(1.03) rotate(1deg)}
+    86%{transform:translateY(0) scale(1) rotate(0);opacity:1}
+    100%{transform:translateY(-6px) scale(.96);opacity:.92}
   }
-  @keyframes smartGlow{
-    from{filter:drop-shadow(0 0 10px rgba(66,220,255,.22)) drop-shadow(0 16px 24px rgba(22,25,48,.18))}
-    to{filter:drop-shadow(0 0 26px rgba(122,92,255,.55)) drop-shadow(0 16px 28px rgba(22,25,48,.28))}
+  @keyframes smartRing{
+    0%{transform:scale(.25) rotate(0);opacity:0}
+    20%{transform:scale(1) rotate(90deg);opacity:.85}
+    55%{transform:scale(1.18) rotate(220deg);opacity:.55}
+    85%{transform:scale(1.32) rotate(340deg);opacity:.25}
+    100%{transform:scale(1.45) rotate(420deg);opacity:0}
+  }
+  @keyframes smartParticle{
+    0%{transform:translate(0,0) scale(.2) rotate(0);opacity:0}
+    18%{opacity:1}
+    60%{transform:translate(var(--x),var(--y)) scale(1.25) rotate(180deg);opacity:1}
+    100%{transform:translate(calc(var(--x)*1.18),calc(var(--y)*1.18)) scale(.7) rotate(320deg);opacity:0}
+  }
+  @keyframes smartXpPop{
+    0%,22%{transform:translateY(20px) scale(.4);opacity:0}
+    34%{transform:translateY(-5px) scale(1.22);opacity:1}
+    46%,86%{transform:translateY(0) scale(1);opacity:1}
+    100%{transform:translateY(-6px) scale(.96);opacity:.85}
+  }
+  @keyframes smartComboPulse{
+    0%,35%{transform:scale(.5);opacity:0}
+    48%{transform:scale(1.22);opacity:1}
+    60%,82%{transform:scale(1);opacity:1}
+    90%{transform:scale(1.10)}
+    100%{transform:scale(1);opacity:.9}
   }
   `;
   document.head.appendChild(s);
@@ -2441,7 +2494,7 @@ function renderVocabularyReviewCard() {
 
     showVocabularyReward("good", "🎉 Ulang Kaji Selesai! Hebat!", 10);
     vocabularyReviewState.active = false;
-    setTimeout(renderVocabularyModule, 1050);
+    setTimeout(renderVocabularyModule, 3000);
 
     return;
   }
@@ -9735,7 +9788,7 @@ window.KaranganAI = {
           : "🌟 Syabas! Perkataan ini sudah kamu kuasai!",
         3
       );
-      setTimeout(renderVocabularyModule, 950);
+      setTimeout(renderVocabularyModule, 3000);
     });
     $$('[data-l2-remove-word]').forEach(b=>b.onclick=()=>{e?.removeDailyWord?.(b.dataset.l2RemoveWord);renderVocabularyModule();});
     $$('[data-l2-master-ayat]').forEach(b=>b.onclick=()=>{
@@ -9757,7 +9810,7 @@ window.KaranganAI = {
           0
         );
       }
-      setTimeout(renderVocabularyModule, 950);
+      setTimeout(renderVocabularyModule, 3000);
     });
     $$('[data-l2-remove-ayat]').forEach(b=>b.onclick=()=>{e?.removeAyat?.(b.dataset.l2RemoveAyat);renderVocabularyModule();});
     byId('l2Review')?.addEventListener('click',startVocabularyReview);
@@ -9788,7 +9841,7 @@ window.KaranganAI = {
         vocabularyRewardState.combo = 0;
         showVocabularyReward("encourage","💪 Mari ulang kaji ayat ini semula.",0);
       }
-      setTimeout(renderL2AyatHistory,950);
+      setTimeout(renderL2AyatHistory,3000);
     });
     $$('[data-l2-remove-ayat]').forEach(b=>b.onclick=()=>{e?.removeAyat?.(b.dataset.l2RemoveAyat);renderL2AyatHistory();});
     byId('l2BackToday')?.addEventListener('click',renderVocabularyModule);
