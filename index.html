@@ -2653,6 +2653,35 @@
 <script src="stories.js?v=5.0"></script>
 <script src="vocabulary.js?v=5.0"></script>
 <script src="avatar.js?v=2.2"></script>
+  <!-- Karangan AI Production Curriculum Engine -->
+
+<script src="curriculum.js?v=1.0"></script>
+
+<script>
+
+  window.addEventListener("DOMContentLoaded", async () => {
+
+    try {
+
+      await window.CurriculumDB.init();
+
+      console.log("✅ Karangan AI Curriculum READY");
+
+      console.log(window.CurriculumDB.getStats());
+
+      window.KARANGAN_CURRICULUM_READY = true;
+
+    } catch (error) {
+
+      console.error("❌ Curriculum database failed to load:", error);
+
+      window.KARANGAN_CURRICULUM_READY = false;
+
+    }
+
+  });
+
+</script>
 <script src="app.js?v=5.0"></script>
 
 </body>
