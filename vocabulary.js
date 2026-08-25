@@ -2878,6 +2878,32 @@
     return x?.theme||"Ayat Cantik";
   }
 
+  // v10.4: identify how a sentence STARTS, so five cards do not all begin with
+  // "Di rumah...", "Pada pagi itu..." or another repeated frame.
+  function ayatOpeningKey(x){
+    const t=String(x?.text||"").trim().toLowerCase();
+    const first=t.split(/[,.!?]/)[0].trim();
+    const patterns=[
+      "di rumah","di sekolah","di taman","di kawasan","pada pagi","pada hari","pada waktu",
+      "semasa","ketika","selepas","sebelum","tanpa membuang masa","saya berasa","kami berasa",
+      "kami bekerjasama","pengalaman","suasana","pemandangan","langit","udara","bunga","pokok"
+    ];
+    return patterns.find(p=>first.startsWith(p)) || first.split(/\s+/).slice(0,3).join(" ");
+  }
+
+  // v10.4: identify the MAIN IDEA/value. This catches the screenshot case where
+  // different purposes were selected but every sentence still talked about kasih sayang.
+  function ayatFocusKey(x){
+    const t=String(x?.text||"").toLowerCase();
+    const focuses=[
+      "kasih sayang","kerjasama","tanggungjawab","disiplin","semangat kejiranan","usaha gigih",
+      "kebersihan","hormat-menghormati","tolong-menolong","prihatin","kejujuran","keberanian",
+      "kesyukuran","persahabatan","keluarga","alam sekitar","kesihatan","keselamatan",
+      "cuaca","bunga","pokok","langit","pemandangan","pengalaman","aktiviti"
+    ];
+    return focuses.find(f=>t.includes(f)) || String(x?.theme||"Umum").toLowerCase();
+  }
+
   function pickDiverseDaily(items, usedIds, removedCheck, count, groupKey) {
     const pool = items.filter(x => !usedIds.has(x.id) && !removedCheck(x));
     const groups = new Map();
@@ -2901,16 +2927,43 @@
     return result.slice(0, count);
   }
 
+  // True Variety Engine: greedily chooses the next sentence that adds the most
+  // NEW purpose + opening + focus. Purpose alone is not enough.
+  function pickTrueVarietyAyat(items, usedIds, removedCheck, count){
+    const pool=items.filter(x=>!usedIds.has(x.id)&&!removedCheck(x));
+    const result=[];
+    const purposes=new Set(), openings=new Set(), focuses=new Set();
+    while(result.length<count && pool.length){
+      let bestIndex=0, bestScore=-Infinity;
+      for(let i=0;i<pool.length;i++){
+        const x=pool[i];
+        const p=ayatPurposeKey(x), o=ayatOpeningKey(x), f=ayatFocusKey(x);
+        let score=0;
+        if(!purposes.has(p)) score+=6;
+        if(!openings.has(o)) score+=5;
+        if(!focuses.has(f)) score+=7;
+        // Strong penalty for a repeated frame or repeated subject.
+        if(openings.has(o)) score-=7;
+        if(focuses.has(f)) score-=9;
+        // Stable daily rotation so the same first five are not always preferred.
+        score+=((Number(String(x.id||"").replace(/\D/g,""))||i)+new Date().getDate())%11/100;
+        if(score>bestScore){bestScore=score;bestIndex=i;}
+      }
+      const chosen=pool.splice(bestIndex,1)[0];
+      result.push(chosen);
+      purposes.add(ayatPurposeKey(chosen)); openings.add(ayatOpeningKey(chosen)); focuses.add(ayatFocusKey(chosen));
+    }
+    return result;
+  }
+
   function ensureToday(y=getLearningYear()){
     y=clampYear(y); const ys=yearState(y); const key=dateKey();
     if(ys.days[key]) return ys.days[key];
     const usedW=new Set(ys.unlockedWordIds||[]); const removedW=new Set(dailyState.removedWordKeys||[]);
     const nextW=pickDiverseDaily(eligibleWords(y),usedW,x=>removedW.has(normalizeKey(x.word)),WORD_TARGET,x=>x.category||x.theme);
     const usedA=new Set(ys.unlockedAyatIds||[]); const removedA=new Set(dailyState.removedAyatIds||[]);
-    // v10.3: Ayat Cantik must vary by sentence purpose, not only by the bank's broad theme.
-    // This prevents Tahun 4–6 from showing five near-identical "Nilai / Penutup" cards.
-    const nextA=pickDiverseDaily(eligibleAyat(y),usedA,x=>removedA.has(x.id),AYAT_TARGET,ayatPurposeKey);
-    ys.days[key]={wordIds:nextW.map(x=>x.id),ayatIds:nextA.map(x=>x.id),createdAt:new Date().toISOString()};
+    const nextA=pickTrueVarietyAyat(eligibleAyat(y),usedA,x=>removedA.has(x.id),AYAT_TARGET);
+    ys.days[key]={wordIds:nextW.map(x=>x.id),ayatIds:nextA.map(x=>x.id),createdAt:new Date().toISOString(),varietyVersion:10.4};
     ys.unlockedWordIds=[...(ys.unlockedWordIds||[]),...nextW.map(x=>x.id)];
     ys.unlockedAyatIds=[...(ys.unlockedAyatIds||[]),...nextA.map(x=>x.id)];
     const engine=window.KaranganVocabulary;
@@ -2936,21 +2989,24 @@
     y=clampYear(y); const day=ensureToday(y); const byId=new Map(MASTER_AYAT_BANK.map(x=>[x.id,x]));
     let current=(day.ayatIds||[]).map(id=>byId.get(id)).filter(Boolean).filter(a=>!dailyState.removedAyatIds.includes(a.id));
 
-    // v10.3 one-time live repair: if an already-saved day is visually repetitive,
-    // rebuild only today's Ayat Cantik selection. Mastery/history records stay intact.
+    // v10.4 live repair: also repair an already-saved TODAY from v10.3.
+    // We require diversity in purpose, opening AND focus, not just card labels.
     const purposes=new Set(current.map(ayatPurposeKey));
-    if(current.length>=AYAT_TARGET && purposes.size<Math.min(4,AYAT_TARGET)){
+    const openings=new Set(current.map(ayatOpeningKey));
+    const focuses=new Set(current.map(ayatFocusKey));
+    const needsRepair=current.length<AYAT_TARGET || day.varietyVersion!==10.4 ||
+      purposes.size<Math.min(4,AYAT_TARGET) || openings.size<Math.min(4,AYAT_TARGET) || focuses.size<Math.min(4,AYAT_TARGET);
+    if(needsRepair){
       const removedA=new Set(dailyState.removedAyatIds||[]);
       const mastered=new Set(dailyState.masteredAyatIds||[]);
       const pool=eligibleAyat(y).filter(x=>!removedA.has(x.id));
       const preferred=pool.filter(x=>!mastered.has(x.id));
-      const rebuilt=pickDiverseDaily(preferred.length>=AYAT_TARGET?preferred:pool,new Set(),x=>removedA.has(x.id),AYAT_TARGET,ayatPurposeKey);
+      let rebuilt=pickTrueVarietyAyat(preferred.length>=AYAT_TARGET?preferred:pool,new Set(),x=>removedA.has(x.id),AYAT_TARGET);
       if(rebuilt.length){
-        day.ayatIds=rebuilt.map(x=>x.id);
+        day.ayatIds=rebuilt.map(x=>x.id); day.varietyVersion=10.4;
         const ys=yearState(y);
         ys.unlockedAyatIds=[...new Set([...(ys.unlockedAyatIds||[]),...day.ayatIds])];
-        saveDaily();
-        current=rebuilt;
+        saveDaily(); current=rebuilt;
       }
     }
     return current.slice(0,limit);
@@ -2999,6 +3055,6 @@
   const engine=window.KaranganVocabulary || {};
   Object.assign(engine,{setLearningYear,getLearningYear,ensureDailyContent:ensureToday,getDailyNewWords,getDailyAyat,getUnlockedAyat,getReviewWordsForYear,markAyatMastered,isAyatMastered,removeAyat,removeDailyWord,curriculumStats,getMasterWordBank,getMasterAyatBank,DAILY_WORD_TARGET:WORD_TARGET,DAILY_AYAT_TARGET:AYAT_TARGET});
   window.KaranganVocabulary=engine;
-  console.log("✅ Langkah 2 Daily Display Fix v9.9.2 loaded",{words:MASTER_WORD_BANK.length,ayat:MASTER_AYAT_BANK.length});
+  console.log("✅ Langkah 2 v10.4 True Variety Engine loaded",{words:MASTER_WORD_BANK.length,ayat:MASTER_AYAT_BANK.length});
 })();
 
