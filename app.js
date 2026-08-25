@@ -10045,7 +10045,7 @@ window.KaranganAI = {
 (() => {
   "use strict";
 
-  const L2_VERSION = "12.5";
+  const L2_VERSION = "12.6.1";
   const L2_DAILY_KEY = "karangan_ai_l2_master_v12_2_daily";
 
 
@@ -10086,6 +10086,19 @@ window.KaranganAI = {
       }
       .l2m-action:active {
         transform: scale(.95);
+      }
+
+      .l2m-translate-word {
+        cursor: pointer;
+        border-radius: 10px;
+        padding: 2px 5px;
+        margin-left: -5px;
+        transition: background .15s ease, transform .15s ease;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .l2m-translate-word:active {
+        background: #f1edff;
+        transform: scale(.985);
       }
 
       .l2m-card.is-mastered {
@@ -10275,8 +10288,16 @@ window.KaranganAI = {
             <div style="font-size:12px;font-weight:900;color:#6b55d9">
               ${l2mEsc(item.id)} · ${l2mEsc(item.category || item.taxonomy || "Kosa Kata")}
             </div>
-            <div style="font-size:22px;font-weight:950;margin-top:4px">
+            <div
+              class="l2m-translate-word"
+              data-l2m-translate="${l2mEsc(item.id)}"
+              title="Tekan untuk terjemahan"
+              role="button"
+              tabindex="0"
+              style="font-size:22px;font-weight:950;margin-top:4px;position:relative;z-index:8;touch-action:manipulation;-webkit-user-select:none;user-select:none"
+            >
               ${l2mEsc(item.bm)}
+              <span style="font-size:13px;font-weight:800;color:#8b82a8;margin-left:5px">🌐</span>
             </div>
           </div>
           <span class="l2m-master-badge" style="font-size:11px;font-weight:900;padding:5px 9px;border-radius:999px;background:${mastered ? "#e8f8ef" : "#f6f2ff"}">
@@ -10311,6 +10332,9 @@ window.KaranganAI = {
         ` : ""}
 
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+          <button type="button" class="secondary-button l2m-action" data-l2m-translate="${l2mEsc(item.id)}">
+            🌐 翻译 / Translate
+          </button>
           <button type="button" class="secondary-button l2m-action" data-l2m-speak="${l2mEsc(item.bm)}">
             🔊 Dengar
           </button>
@@ -10396,7 +10420,7 @@ window.KaranganAI = {
           100% { transform:translate(calc(-50% + var(--px2)),calc(-50% + var(--py2))) scale(.55) rotate(400deg); opacity:0; }
         }
         #${overlayId} {
-          animation:l2mV125OverlayFlash 1.75s ease-out both;
+          background:rgba(10,14,32,.34);
         }
         #${overlayId} .l2m-v125-pop {
           animation:l2mV125Pop 1.72s cubic-bezier(.2,1.25,.3,1) both;
@@ -10533,11 +10557,107 @@ window.KaranganAI = {
     void overlay.offsetWidth;
 
     setTimeout(() => {
-      overlay.style.transition = "opacity .22s ease";
+      overlay.style.transition = "opacity .18s linear";
       overlay.style.opacity = "0";
-    }, 1760);
+    }, 1780);
 
-    setTimeout(() => overlay.remove(), 2000);
+    setTimeout(() => {
+      if (overlay.isConnected) overlay.remove();
+    }, 2020);
+  }
+
+  function l2mShowTranslation(item) {
+    const overlayId = "l2m-translation-popup";
+    document.getElementById(overlayId)?.remove();
+
+    const overlay = document.createElement("div");
+    overlay.id = overlayId;
+    overlay.setAttribute("style", [
+      "position:fixed",
+      "inset:0",
+      "z-index:2147483600",
+      "display:flex",
+      "align-items:flex-end",
+      "justify-content:center",
+      "padding:18px",
+      "background:rgba(18,20,35,.22)",
+      "box-sizing:border-box"
+    ].join(";"));
+
+    const card = document.createElement("div");
+    card.setAttribute("style", [
+      "width:min(100%,520px)",
+      "max-height:72vh",
+      "overflow:auto",
+      "background:#fff",
+      "border-radius:24px",
+      "padding:20px",
+      "box-shadow:0 18px 55px rgba(20,22,45,.22)",
+      "border:1px solid rgba(115,95,210,.12)",
+      "transform:translateY(0)",
+      "box-sizing:border-box"
+    ].join(";"));
+
+    card.innerHTML = `
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
+        <div>
+          <div style="font-size:11px;font-weight:900;color:#7566c8;letter-spacing:.04em">
+            ${l2mEsc(item.id)} · TERJEMAHAN
+          </div>
+          <div style="font-size:25px;font-weight:950;margin-top:5px">
+            ${l2mEsc(item.bm)}
+          </div>
+        </div>
+        <button
+          type="button"
+          data-l2m-translation-close
+          aria-label="Tutup"
+          style="border:0;background:#f4f1fb;width:36px;height:36px;border-radius:50%;font-size:18px"
+        >✕</button>
+      </div>
+
+      <div style="margin-top:16px;padding:13px 14px;border-radius:15px;background:#f7f4ff">
+        <div style="font-size:12px;font-weight:900;color:#7866c8">中文</div>
+        <div style="font-size:19px;font-weight:900;margin-top:3px">${l2mEsc(item.zh || "—")}</div>
+      </div>
+
+      <div style="margin-top:10px;padding:13px 14px;border-radius:15px;background:#f6f9fb">
+        <div style="font-size:12px;font-weight:900;color:#62717a">ENGLISH</div>
+        <div style="font-size:17px;font-weight:800;margin-top:3px">${l2mEsc(item.en || "—")}</div>
+      </div>
+
+      ${item.meaningBm ? `
+        <div style="margin-top:13px;line-height:1.55">
+          <strong>Makna BM:</strong><br>${l2mEsc(item.meaningBm)}
+        </div>
+      ` : ""}
+
+      ${item.example ? `
+        <div style="margin-top:12px;line-height:1.55">
+          <strong>Ayat Contoh:</strong><br>${l2mEsc(item.example)}
+        </div>
+      ` : ""}
+
+      <div style="display:flex;gap:9px;margin-top:16px">
+        <button type="button" class="secondary-button" data-l2m-translation-speak style="flex:1">
+          🔊 Dengar
+        </button>
+        <button type="button" class="primary-button" data-l2m-translation-ok style="flex:1">
+          Faham ✓
+        </button>
+      </div>
+    `;
+
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+
+    const close = () => overlay.remove();
+    overlay.addEventListener("click", e => {
+      if (e.target === overlay) close();
+    });
+    card.querySelector("[data-l2m-translation-close]")?.addEventListener("click", close);
+    card.querySelector("[data-l2m-translation-ok]")?.addEventListener("click", close);
+    card.querySelector("[data-l2m-translation-speak]")?.addEventListener("click", () => l2mSpeak(item.bm));
   }
 
   function l2mBindCommon(year, afterToggle = () => window.renderVocabularyModule()) {
@@ -10588,8 +10708,24 @@ window.KaranganAI = {
           }
         }
 
-        // Do not redraw the module until the 2-second animation has completed.
-        setTimeout(() => afterToggle(), 2050);
+        // v12.5.2: update the card immediately, while SMART FX is covering the page.
+        // After the animation ends there is NO page/card render and NO delayed UI mutation.
+        const latest = l2mSaved(item);
+        const masteredNow = Boolean(latest?.mastered);
+
+        button.textContent = masteredNow ? "✓ Sudah Kuasai" : "✓ Kuasai";
+        button.disabled = false;
+
+        const card = button.closest(".l2m-card");
+        if (card) {
+          card.classList.toggle("is-mastered", masteredNow);
+
+          const badge = card.querySelector(".l2m-master-badge");
+          if (badge) {
+            badge.textContent = masteredNow ? "DIKUASAI" : "MASTER";
+            badge.style.background = masteredNow ? "#e8f8ef" : "#f6f2ff";
+          }
+        }
       };
     });
   }
@@ -10731,6 +10867,30 @@ window.KaranganAI = {
   } catch (_) {}
 
 
+
+  // v12.6.1 — robust iOS/iPad tap translation.
+  // Delegated capture handler survives renderer changes and dynamic cards.
+  if (!window.__KARANGAN_L2_TRANSLATE_V1261__) {
+    window.__KARANGAN_L2_TRANSLATE_V1261__ = true;
+
+    const openTranslationFromEvent = event => {
+      const target = event.target?.closest?.("[data-l2m-translate]");
+      if (!target) return;
+
+      const year = l2mYear();
+      const item = l2mWords(year).find(
+        x => String(x.id) === String(target.dataset.l2mTranslate)
+      );
+      if (!item) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      l2mShowTranslation(item);
+    };
+
+    document.addEventListener("click", openTranslationFromEvent, true);
+  }
+
   window.KaranganLangkah2Master = {
     version: L2_VERSION,
     render: l2mRender,
@@ -10739,5 +10899,5 @@ window.KaranganAI = {
     source: "CurriculumDB"
   };
 
-  console.log("✅ MASTER CURRICULUM v12.5 + CSS SMART FX loaded");
+  console.log("✅ MASTER CURRICULUM v12.6.1 + IOS TAP TRANSLATION FIX loaded");
 })();
