@@ -121,6 +121,52 @@ let vocabularyReviewState = {
   active: false
 };
 
+let vocabularyRewardState = {
+  xp: Number(localStorage.getItem("karangan_vocab_xp_v1") || 0),
+  combo: 0
+};
+
+function showVocabularyReward(type, message, xp=0) {
+  if (xp > 0) {
+    vocabularyRewardState.xp += xp;
+    localStorage.setItem("karangan_vocab_xp_v1", String(vocabularyRewardState.xp));
+  }
+  document.getElementById("vocab-reward-overlay")?.remove();
+  const good = type === "good";
+  const overlay = document.createElement("div");
+  overlay.id = "vocab-reward-overlay";
+  overlay.innerHTML = `<div class="vocab-reward-pop ${good?"is-good":"is-encourage"}">
+    <div class="vocab-reward-icon">${good?"🌟":"💪"}</div>
+    <div class="vocab-reward-title">${message}</div>
+    ${xp?`<div class="vocab-reward-xp">+${xp} XP</div>`:""}
+    ${good && vocabularyRewardState.combo>=2?`<div class="vocab-reward-combo">🔥 Combo x${vocabularyRewardState.combo}</div>`:""}
+  </div>`;
+  document.body.appendChild(overlay);
+  setTimeout(()=>overlay.classList.add("show"),20);
+  setTimeout(()=>overlay.classList.add("hide"),950);
+  setTimeout(()=>overlay.remove(),1250);
+}
+
+(function injectVocabularyRewardStyles(){
+  if(document.getElementById("vocab-reward-styles")) return;
+  const s=document.createElement("style");
+  s.id="vocab-reward-styles";
+  s.textContent=`
+  #vocab-reward-overlay{position:fixed;inset:0;z-index:99999;pointer-events:none;display:flex;align-items:center;justify-content:center;background:rgba(255,248,235,.18)}
+  #vocab-reward-overlay.hide{opacity:0;transition:opacity .28s ease}
+  .vocab-reward-pop{min-width:min(78vw,420px);max-width:86vw;text-align:center;padding:24px 22px;border-radius:28px;background:#fff;box-shadow:0 18px 55px rgba(41,45,50,.18);transform:scale(.65);opacity:0;transition:transform .34s cubic-bezier(.2,1.35,.35,1),opacity .2s}
+  .show .vocab-reward-pop{transform:scale(1);opacity:1}
+  .vocab-reward-icon{font-size:54px;animation:vocabRewardBounce .55s ease}
+  .vocab-reward-title{font-size:22px;font-weight:900;line-height:1.25;margin-top:8px}
+  .vocab-reward-xp{display:inline-block;margin-top:12px;padding:7px 14px;border-radius:999px;background:#fff3cf;font-weight:900}
+  .vocab-reward-combo{margin-top:9px;font-size:18px;font-weight:900}
+  .is-encourage{background:#fffaf0}
+  @keyframes vocabRewardBounce{0%{transform:scale(.45) rotate(-10deg)}55%{transform:scale(1.22) rotate(6deg)}100%{transform:scale(1)}}
+  `;
+  document.head.appendChild(s);
+})();
+
+
 
 let sentenceBuilderState = {
   task: null,
@@ -2329,6 +2375,7 @@ function startVocabularyReview() {
     return;
   }
 
+  vocabularyRewardState.combo = 0;
   vocabularyReviewState = {
     words,
     index: 0,
@@ -2353,8 +2400,9 @@ function renderVocabularyReviewCard() {
       "vocabulary"
     );
 
+    showVocabularyReward("good", "🎉 Ulang Kaji Selesai! Hebat!", 10);
     vocabularyReviewState.active = false;
-    renderVocabularyModule();
+    setTimeout(renderVocabularyModule, 1050);
 
     return;
   }
@@ -2530,14 +2578,41 @@ function submitVocabularyReview(
       correct
     );
 
+  if (correct) {
+    vocabularyRewardState.combo += 1;
+    const messages = [
+      "Hebat! Kamu semakin mahir!",
+      "Bagus! Ingatan kamu semakin kuat!",
+      "Syabas! Teruskan usaha!",
+      "Cemerlang! Kamu berjaya mengingatinya!"
+    ];
+    showVocabularyReward(
+      "good",
+      vocabularyRewardState.combo >= 5
+        ? "🔥 Super Memory!"
+        : messages[(vocabularyRewardState.combo - 1) % messages.length],
+      5
+    );
+  } else {
+    vocabularyRewardState.combo = 0;
+    const messages = [
+      "Tak apa, cuba lagi!",
+      "Jangan berputus asa — kamu hampir berjaya!",
+      "Kita ulang sekali lagi. Kamu boleh!",
+      "Usaha lagi sedikit. Teruskan!"
+    ];
+    showVocabularyReward(
+      "encourage",
+      messages[Math.floor(Math.random() * messages.length)],
+      0
+    );
+  }
 
-  vocabularyReviewState.index +=
-    1;
-
+  vocabularyReviewState.index += 1;
 
   setTimeout(
     renderVocabularyReviewCard,
-    250
+    1050
   );
 }
 
