@@ -2865,6 +2865,19 @@
   function eligibleAyat(y){ return MASTER_AYAT_BANK.filter(x=>Number(x.year||x.minYear||3)===y); }
   function normalizeKey(w){ return String(w||"").trim().toLowerCase(); }
 
+  function ayatPurposeKey(x){
+    const t=String(x?.text||"").toLowerCase();
+    if(t.includes("semakin memahami")||t.includes("belajar tentang pentingnya")) return "Kesedaran";
+    if(t.includes("nilai ")&&t.includes("perlu diamalkan")) return "Nilai";
+    if(t.includes("dapat membantu kita")) return "Kesan Baik";
+    if(t.includes("hendaklah memupuk")) return "Amalan";
+    if(t.includes("dapat mengeratkan")) return "Hubungan";
+    if(t.includes("berazam")) return "Azam / Penutup";
+    if(t.includes("berasa")) return "Perasaan";
+    if(t.includes("berpeluang")||t.includes("aktiviti")||t.includes("program")) return "Aktiviti";
+    return x?.theme||"Ayat Cantik";
+  }
+
   function pickDiverseDaily(items, usedIds, removedCheck, count, groupKey) {
     const pool = items.filter(x => !usedIds.has(x.id) && !removedCheck(x));
     const groups = new Map();
@@ -2894,7 +2907,9 @@
     const usedW=new Set(ys.unlockedWordIds||[]); const removedW=new Set(dailyState.removedWordKeys||[]);
     const nextW=pickDiverseDaily(eligibleWords(y),usedW,x=>removedW.has(normalizeKey(x.word)),WORD_TARGET,x=>x.category||x.theme);
     const usedA=new Set(ys.unlockedAyatIds||[]); const removedA=new Set(dailyState.removedAyatIds||[]);
-    const nextA=pickDiverseDaily(eligibleAyat(y),usedA,x=>removedA.has(x.id),AYAT_TARGET,x=>x.theme);
+    // v10.3: Ayat Cantik must vary by sentence purpose, not only by the bank's broad theme.
+    // This prevents Tahun 4–6 from showing five near-identical "Nilai / Penutup" cards.
+    const nextA=pickDiverseDaily(eligibleAyat(y),usedA,x=>removedA.has(x.id),AYAT_TARGET,ayatPurposeKey);
     ys.days[key]={wordIds:nextW.map(x=>x.id),ayatIds:nextA.map(x=>x.id),createdAt:new Date().toISOString()};
     ys.unlockedWordIds=[...(ys.unlockedWordIds||[]),...nextW.map(x=>x.id)];
     ys.unlockedAyatIds=[...(ys.unlockedAyatIds||[]),...nextA.map(x=>x.id)];
@@ -2919,7 +2934,26 @@
   }
   function getDailyAyat(limit=AYAT_TARGET,y=getLearningYear()){
     y=clampYear(y); const day=ensureToday(y); const byId=new Map(MASTER_AYAT_BANK.map(x=>[x.id,x]));
-    return (day.ayatIds||[]).slice(0,limit).map(id=>byId.get(id)).filter(Boolean).filter(a=>!dailyState.removedAyatIds.includes(a.id));
+    let current=(day.ayatIds||[]).map(id=>byId.get(id)).filter(Boolean).filter(a=>!dailyState.removedAyatIds.includes(a.id));
+
+    // v10.3 one-time live repair: if an already-saved day is visually repetitive,
+    // rebuild only today's Ayat Cantik selection. Mastery/history records stay intact.
+    const purposes=new Set(current.map(ayatPurposeKey));
+    if(current.length>=AYAT_TARGET && purposes.size<Math.min(4,AYAT_TARGET)){
+      const removedA=new Set(dailyState.removedAyatIds||[]);
+      const mastered=new Set(dailyState.masteredAyatIds||[]);
+      const pool=eligibleAyat(y).filter(x=>!removedA.has(x.id));
+      const preferred=pool.filter(x=>!mastered.has(x.id));
+      const rebuilt=pickDiverseDaily(preferred.length>=AYAT_TARGET?preferred:pool,new Set(),x=>removedA.has(x.id),AYAT_TARGET,ayatPurposeKey);
+      if(rebuilt.length){
+        day.ayatIds=rebuilt.map(x=>x.id);
+        const ys=yearState(y);
+        ys.unlockedAyatIds=[...new Set([...(ys.unlockedAyatIds||[]),...day.ayatIds])];
+        saveDaily();
+        current=rebuilt;
+      }
+    }
+    return current.slice(0,limit);
   }
   function getUnlockedAyat(y=getLearningYear()){
     const ids=new Set(yearState(y).unlockedAyatIds||[]); return MASTER_AYAT_BANK.filter(x=>ids.has(x.id) && !dailyState.removedAyatIds.includes(x.id));

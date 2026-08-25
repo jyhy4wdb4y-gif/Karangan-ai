@@ -9758,14 +9758,44 @@ window.KaranganAI = {
       <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-l2-master="${escapeAttribute(item.id||"")}" class="secondary-button">✓ Sudah Kuasai</button><button type="button" data-l2-remove-word="${escapeAttribute(item.word||"")}" class="secondary-button">🗑 Buang</button></div>
     </div>`;
   }
-  function l2AyatCard(item,e){
-    const mastered=e?.isAyatMastered?.(item.id);
-    return `<div style="padding:16px;border-radius:18px;background:#fff7e7;margin-bottom:10px;opacity:${mastered?.78:1}">
-      <small>${escapeHtml(item.theme||"Ayat Cantik")}</small><strong style="display:block;font-size:18px;line-height:1.5;margin:5px 0">✨ ${escapeHtml(item.text)}</strong>
-      <div>🇨🇳 ${escapeHtml(item.zh||"")}</div><div style="margin-top:4px">🇬🇧 ${escapeHtml(item.en||"")}</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" data-l2-speak="${escapeAttribute(item.text)}" class="secondary-button">🔊 Dengar</button><button type="button" data-l2-master-ayat="${escapeAttribute(item.id)}" class="secondary-button">${mastered?'↩ Belajar Semula':'✓ Sudah Kuasai'}</button><button type="button" data-l2-remove-ayat="${escapeAttribute(item.id)}" class="secondary-button">🗑 Buang</button></div>
-    </div>`;
+  function l2AyatMeta(item){
+    const t=String(item?.text||"").toLowerCase();
+    const theme=String(item?.theme||"").toLowerCase();
+    if(t.includes("berasa")||theme.includes("perasaan")) return {key:"feeling",icon:"💛",label:"Perasaan"};
+    if(t.includes("cuaca")||t.includes("langit")||theme.includes("cuaca")) return {key:"weather",icon:"🌤️",label:"Cuaca"};
+    if(t.includes("pemandangan")||t.includes("bunga")||t.includes("pokok")||theme.includes("pemandangan")) return {key:"nature",icon:"🌿",label:"Pemandangan"};
+    if(t.includes("berazam")) return {key:"goal",icon:"🚀",label:"Azam / Penutup"};
+    if(t.includes("semakin memahami")||t.includes("belajar tentang pentingnya")) return {key:"idea",icon:"💡",label:"Kesedaran"};
+    if(t.includes("dapat mengeratkan")) return {key:"friend",icon:"🤝",label:"Hubungan"};
+    if(t.includes("hendaklah memupuk")||t.includes("perlu diamalkan")) return {key:"value",icon:"🌟",label:"Nilai Murni"};
+    if(t.includes("dapat membantu kita")) return {key:"growth",icon:"🌱",label:"Kesan Baik"};
+    if(theme.includes("aktiviti")||t.includes("aktiviti")||t.includes("program")) return {key:"activity",icon:"🎯",label:"Aktiviti"};
+    if(theme.includes("penutup")) return {key:"closing",icon:"🏁",label:"Penutup"};
+    return {key:"spark",icon:"✨",label:item?.theme||"Ayat Cantik"};
   }
+  function l2AyatCard(item,e,isToday=false){
+    const mastered=e?.isAyatMastered?.(item.id);
+    const meta=l2AyatMeta(item);
+    return `<article class="l2-ayat-card l2-ayat-${meta.key} ${mastered?'is-mastered':''}">
+      <div class="l2-ayat-top"><span class="l2-ayat-icon">${meta.icon}</span><span class="l2-ayat-theme">${escapeHtml(meta.label)}</span><span class="l2-ayat-status">${mastered?'✓ DIKUASAI':(isToday?'BARU':'KOLEKSI')}</span></div>
+      <strong class="l2-ayat-main">${escapeHtml(item.text)}</strong>
+      <div class="l2-ayat-translation"><div>🇨🇳 <span>${escapeHtml(item.zh||"")}</span></div><div>🇬🇧 <span>${escapeHtml(item.en||"")}</span></div></div>
+      <div class="l2-ayat-actions"><button type="button" data-l2-speak="${escapeAttribute(item.text)}" class="secondary-button">🔊 Dengar</button><button type="button" data-l2-master-ayat="${escapeAttribute(item.id)}" class="secondary-button">${mastered?'↩ Belajar Semula':'✓ Sudah Kuasai'}</button><button type="button" data-l2-remove-ayat="${escapeAttribute(item.id)}" class="secondary-button">🗑 Buang</button></div>
+    </article>`;
+  }
+
+  (function injectL2AyatCollectionStyles(){
+    if(byId("l2-ayat-v103-styles")) return;
+    const st=document.createElement("style"); st.id="l2-ayat-v103-styles";
+    st.textContent=`
+      .l2-ayat-card{position:relative;overflow:hidden;padding:17px 18px 16px;border-radius:22px;margin-bottom:13px;border:1px solid rgba(40,50,65,.07);box-shadow:0 5px 18px rgba(35,42,55,.045);background:linear-gradient(135deg,#fff9ec,#fff4dd)}
+      .l2-ayat-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:rgba(255,145,55,.72)}
+      .l2-ayat-top{display:flex;align-items:center;gap:8px;margin-bottom:10px}.l2-ayat-icon{font-size:22px}.l2-ayat-theme{font-size:14px;font-weight:850;letter-spacing:.01em}.l2-ayat-status{margin-left:auto;font-size:10px;font-weight:950;letter-spacing:.08em;padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.78);border:1px solid rgba(30,40,50,.08)}
+      .l2-ayat-main{display:block;font-size:19px;line-height:1.48;margin:0 0 11px;color:#26343a}.l2-ayat-translation{font-size:14px;line-height:1.45;color:#738087}.l2-ayat-translation div+div{margin-top:4px}.l2-ayat-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
+      .l2-ayat-feeling{background:linear-gradient(135deg,#fff6f4,#fff0e9)}.l2-ayat-feeling:before{background:#ff8e82}.l2-ayat-weather{background:linear-gradient(135deg,#f3fbff,#eef8ff)}.l2-ayat-weather:before{background:#67bce9}.l2-ayat-nature{background:linear-gradient(135deg,#f2fbf4,#ebf8ef)}.l2-ayat-nature:before{background:#67bd7d}.l2-ayat-goal{background:linear-gradient(135deg,#f6f2ff,#efeaff)}.l2-ayat-goal:before{background:#8d75df}.l2-ayat-idea{background:linear-gradient(135deg,#fffbea,#fff6d7)}.l2-ayat-idea:before{background:#e8b93e}.l2-ayat-friend{background:linear-gradient(135deg,#effaf8,#e9f7f5)}.l2-ayat-friend:before{background:#43aa9a}.l2-ayat-value{background:linear-gradient(135deg,#fff5e9,#fff0dc)}.l2-ayat-value:before{background:#f09b45}.l2-ayat-growth{background:linear-gradient(135deg,#f2faee,#ebf7e5)}.l2-ayat-growth:before{background:#78b85a}.l2-ayat-activity{background:linear-gradient(135deg,#eef7ff,#e9f2ff)}.l2-ayat-activity:before{background:#5f96df}.l2-ayat-closing{background:linear-gradient(135deg,#f5f3fa,#efedf6)}.l2-ayat-closing:before{background:#7e7795}.l2-ayat-card.is-mastered{opacity:.76}.l2-ayat-card.is-mastered .l2-ayat-status{background:#eaf8ef;color:#2d8556}
+      @media (min-width:700px){.l2-ayat-main{font-size:20px}.l2-ayat-translation{font-size:15px}}
+    `; document.head.appendChild(st);
+  })();
   function bindL2(){
     const e=l2Engine();
     $$('[data-l2-year]').forEach(b=>b.onclick=()=>{
@@ -9828,7 +9858,7 @@ window.KaranganAI = {
   }
   function renderL2AyatHistory(){
     const e=l2Engine(); const list=e?.getUnlockedAyat?.(l2Year())||[];
-    openModuleScreen(`<span class="section-kicker">LANGKAH 2</span><h1>✨ Koleksi Ayat Cantik</h1><p>Semua ayat yang telah dibuka setakat ini.</p>${list.map(x=>l2AyatCard(x,e)).join('')||'<p>Belum ada ayat.</p>'}<button id="l2BackToday" class="primary-button" type="button" style="width:100%;margin-top:18px">← Kembali ke Hari Ini</button>`,28);
+    openModuleScreen(`<span class="section-kicker">LANGKAH 2</span><h1>✨ Koleksi Ayat Cantik</h1><p>Semua ayat yang telah dibuka setakat ini.</p>${list.map(x=>l2AyatCard(x,e,false)).join('')||'<p>Belum ada ayat.</p>'}<button id="l2BackToday" class="primary-button" type="button" style="width:100%;margin-top:18px">← Kembali ke Hari Ini</button>`,28);
     $$('[data-l2-speak]').forEach(b=>b.onclick=()=>l2Speak(b.dataset.l2Speak));
     $$('[data-l2-master-ayat]').forEach(b=>b.onclick=()=>{
       const id=b.dataset.l2MasterAyat;
@@ -9853,7 +9883,7 @@ window.KaranganAI = {
     openModuleScreen(`<span class="section-kicker">LANGKAH 2 · TAHUN ${year}</span><h1>🧠 Kosa Kata Hari Ini</h1>${l2YearSelector(year)}<p>Setiap hari kamu membuka Langkah 2, sistem memberikan sehingga <strong>10 kosa kata/frasa baharu</strong> dan <strong>5 Ayat Cantik baharu</strong>. Kandungan lama kekal dalam koleksi kamu.</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0"><span class="section-kicker">Hari Ini ${daily.length}/10</span><span class="section-kicker">Dipelajari ${stats.unlockedWords||0}</span><span class="section-kicker">Dikuasai ${all.filter(w=>w.mastered).length}</span></div>
       ${daily.map(l2WordCard).join('')||'<div style="padding:18px;background:#eef9f3;border-radius:16px">🎉 Semua kandungan yang tersedia untuk tahap ini telah dibuka.</div>'}
-      <h2 style="margin-top:28px">✨ 5 Ayat Cantik Hari Ini</h2><p>Ayat serba guna untuk membantu karangan menjadi lebih hidup dan matang.</p>${ayat.map(x=>l2AyatCard(x,e)).join('')||'<p>Tiada ayat baharu hari ini.</p>'}
+      <h2 style="margin-top:28px">✨ 5 Ayat Cantik Hari Ini</h2><p>Ayat serba guna untuk membantu karangan menjadi lebih hidup dan matang.</p>${ayat.map(x=>l2AyatCard(x,e,true)).join('')||'<p>Tiada ayat baharu hari ini.</p>'}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px"><button id="l2All" class="secondary-button" type="button">📚 Semua Kosa Kata</button><button id="l2AyatHistory" class="secondary-button" type="button">✨ Koleksi Ayat</button></div>
       <button id="l2Review" class="primary-button" type="button" style="width:100%;margin-top:10px">🎯 Mula Ulang Kaji</button>
       <div style="margin-top:18px;padding:14px;background:#f7f5ff;border-radius:14px;color:#65727a">Master Bank: ${stats.totalEligibleWords||0} kosa kata/frasa tersedia untuk Tahun ${year} · ${stats.totalEligibleAyat||0} Ayat Cantik.</div>`,28);
