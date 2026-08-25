@@ -9685,9 +9685,41 @@ window.KaranganAI = {
       showToast(`🎓 Tahun ${y} dipilih`);
     });
     $$('[data-l2-speak]').forEach(b=>b.onclick=()=>l2Speak(b.dataset.l2Speak));
-    $$('[data-l2-master]').forEach(b=>b.onclick=()=>{if(b.dataset.l2Master)e?.markMastered?.(b.dataset.l2Master,true);renderVocabularyModule();});
+    $$('[data-l2-master]').forEach(b=>b.onclick=()=>{
+      if(!b.dataset.l2Master) return;
+      e?.markMastered?.(b.dataset.l2Master,true);
+      vocabularyRewardState.combo += 1;
+      showVocabularyReward(
+        "good",
+        vocabularyRewardState.combo >= 5
+          ? "🔥 Hebat! Banyak perkataan sudah kamu kuasai!"
+          : "🌟 Syabas! Perkataan ini sudah kamu kuasai!",
+        3
+      );
+      setTimeout(renderVocabularyModule, 950);
+    });
     $$('[data-l2-remove-word]').forEach(b=>b.onclick=()=>{e?.removeDailyWord?.(b.dataset.l2RemoveWord);renderVocabularyModule();});
-    $$('[data-l2-master-ayat]').forEach(b=>b.onclick=()=>{const id=b.dataset.l2MasterAyat;e?.markAyatMastered?.(id,!e?.isAyatMastered?.(id));renderVocabularyModule();});
+    $$('[data-l2-master-ayat]').forEach(b=>b.onclick=()=>{
+      const id=b.dataset.l2MasterAyat;
+      const wasMastered=Boolean(e?.isAyatMastered?.(id));
+      e?.markAyatMastered?.(id,!wasMastered);
+      if(!wasMastered){
+        vocabularyRewardState.combo += 1;
+        showVocabularyReward(
+          "good",
+          "✨ Bagus! Ayat cantik ini sudah kamu kuasai!",
+          3
+        );
+      }else{
+        vocabularyRewardState.combo = 0;
+        showVocabularyReward(
+          "encourage",
+          "💪 Bagus! Mari belajar ayat ini sekali lagi.",
+          0
+        );
+      }
+      setTimeout(renderVocabularyModule, 950);
+    });
     $$('[data-l2-remove-ayat]').forEach(b=>b.onclick=()=>{e?.removeAyat?.(b.dataset.l2RemoveAyat);renderVocabularyModule();});
     byId('l2Review')?.addEventListener('click',startVocabularyReview);
     byId('l2All')?.addEventListener('click',renderL2AllWords);
@@ -9706,7 +9738,19 @@ window.KaranganAI = {
     const e=l2Engine(); const list=e?.getUnlockedAyat?.(l2Year())||[];
     openModuleScreen(`<span class="section-kicker">LANGKAH 2</span><h1>✨ Koleksi Ayat Cantik</h1><p>Semua ayat yang telah dibuka setakat ini.</p>${list.map(x=>l2AyatCard(x,e)).join('')||'<p>Belum ada ayat.</p>'}<button id="l2BackToday" class="primary-button" type="button" style="width:100%;margin-top:18px">← Kembali ke Hari Ini</button>`,28);
     $$('[data-l2-speak]').forEach(b=>b.onclick=()=>l2Speak(b.dataset.l2Speak));
-    $$('[data-l2-master-ayat]').forEach(b=>b.onclick=()=>{const id=b.dataset.l2MasterAyat;e?.markAyatMastered?.(id,!e?.isAyatMastered?.(id));renderL2AyatHistory();});
+    $$('[data-l2-master-ayat]').forEach(b=>b.onclick=()=>{
+      const id=b.dataset.l2MasterAyat;
+      const wasMastered=Boolean(e?.isAyatMastered?.(id));
+      e?.markAyatMastered?.(id,!wasMastered);
+      if(!wasMastered){
+        vocabularyRewardState.combo += 1;
+        showVocabularyReward("good","✨ Syabas! Ayat ini sudah dikuasai!",3);
+      }else{
+        vocabularyRewardState.combo = 0;
+        showVocabularyReward("encourage","💪 Mari ulang kaji ayat ini semula.",0);
+      }
+      setTimeout(renderL2AyatHistory,950);
+    });
     $$('[data-l2-remove-ayat]').forEach(b=>b.onclick=()=>{e?.removeAyat?.(b.dataset.l2RemoveAyat);renderL2AyatHistory();});
     byId('l2BackToday')?.addEventListener('click',renderVocabularyModule);
   }
