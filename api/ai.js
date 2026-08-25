@@ -1,7 +1,7 @@
 /* =========================================================
    KARANGAN AI
    API / AI CONTROLLER
-   Version 4.2
+   Version 4.3 Auto Groq Model
 
    Supports:
    - translate
@@ -29,8 +29,13 @@ const DEFAULT_MODEL =
 const GROQ_URL =
   "https://api.groq.com/openai/v1/chat/completions";
 
-const GROQ_TRANSLATION_MODEL =
-  "llama-3.3-70b-versatile";
+const GROQ_MODELS_URL =
+  "https://api.groq.com/openai/v1/models";
+
+let cachedGroqModel = "";
+let cachedGroqModelAt = 0;
+const GROQ_MODEL_CACHE_MS = 30 * 60 * 1000;
+
 
 
 /* =========================================================
@@ -584,6 +589,102 @@ Setiap nilai mesti mempunyai sekurang-kurangnya satu perkataan.
 }
 
 
+
+async function getGroqTranslationModel() {
+
+  const now = Date.now();
+
+  if (
+    cachedGroqModel &&
+    now - cachedGroqModelAt < GROQ_MODEL_CACHE_MS
+  ) {
+    return cachedGroqModel;
+  }
+
+  const response = await fetch(
+    GROQ_MODELS_URL,
+    {
+      method: "GET",
+      headers: {
+        Authorization:
+          `Bearer ${process.env.GROQ_API_KEY}`
+      }
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error(
+      "[Groq Models Error]",
+      data
+    );
+
+    const error = new Error(
+      data?.error?.message ||
+      "Unable to load Groq models."
+    );
+
+    error.status = response.status;
+    throw error;
+  }
+
+  const modelIds = Array.isArray(data?.data)
+    ? data.data
+        .map(item => String(item?.id || "").trim())
+        .filter(Boolean)
+    : [];
+
+  if (!modelIds.length) {
+    throw new Error(
+      "Groq returned no available models."
+    );
+  }
+
+  /*
+    Prefer general-purpose text models.
+    Do NOT hard-code one model as mandatory:
+    the API key's live /models list is the source of truth.
+  */
+  const preferredPatterns = [
+    /gpt-oss/i,
+    /llama.*70b.*versatile/i,
+    /llama.*instant/i,
+    /qwen/i,
+    /gemma/i
+  ];
+
+  const excluded =
+    /(whisper|speech|tts|audio|guard|moderation|vision)/i;
+
+  const textModels =
+    modelIds.filter(id => !excluded.test(id));
+
+  let selected = "";
+
+  for (const pattern of preferredPatterns) {
+    selected =
+      textModels.find(id => pattern.test(id)) || "";
+
+    if (selected) break;
+  }
+
+  if (!selected) {
+    selected = textModels[0] || modelIds[0];
+  }
+
+  cachedGroqModel = selected;
+  cachedGroqModelAt = now;
+
+  console.log(
+    "[Groq Auto Model]",
+    selected
+  );
+
+  return selected;
+}
+
+
 async function requestGroqTranslation({
 
   word,
@@ -614,7 +715,7 @@ async function requestGroqTranslation({
           JSON.stringify({
 
             model:
-              GROQ_TRANSLATION_MODEL,
+              await getGroqTranslationModel(),
 
             temperature:
               0,
@@ -1215,5 +1316,5 @@ function extractResponseText(
 
 
 /* =========================================================
-   END KARANGAN AI API v4.2
+   END KARANGAN AI API v4.3
    ========================================================= */
