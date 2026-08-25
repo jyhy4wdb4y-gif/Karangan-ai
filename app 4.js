@@ -151,6 +151,7 @@ function showVocabularyReward(type, message, xp=0) {
 
   const overlay = document.createElement("div");
   overlay.id = "l2m-smart-overlay-v124";
+    overlay.style.opacity = "1";
   const particles = good
     ? ["✦","★","⚡","✧","★","✦","⚡","✧"]
     : ["✦","💪","✧","⚡","✦","★"];
@@ -10044,7 +10045,7 @@ window.KaranganAI = {
 (() => {
   "use strict";
 
-  const L2_VERSION = "12.2.4";
+  const L2_VERSION = "12.6";
   const L2_DAILY_KEY = "karangan_ai_l2_master_v12_2_daily";
 
 
@@ -10085,6 +10086,19 @@ window.KaranganAI = {
       }
       .l2m-action:active {
         transform: scale(.95);
+      }
+
+      .l2m-translate-word {
+        cursor: pointer;
+        border-radius: 10px;
+        padding: 2px 5px;
+        margin-left: -5px;
+        transition: background .15s ease, transform .15s ease;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .l2m-translate-word:active {
+        background: #f1edff;
+        transform: scale(.985);
       }
 
       .l2m-card.is-mastered {
@@ -10274,8 +10288,14 @@ window.KaranganAI = {
             <div style="font-size:12px;font-weight:900;color:#6b55d9">
               ${l2mEsc(item.id)} · ${l2mEsc(item.category || item.taxonomy || "Kosa Kata")}
             </div>
-            <div style="font-size:22px;font-weight:950;margin-top:4px">
+            <div
+              class="l2m-translate-word"
+              data-l2m-translate="${l2mEsc(item.id)}"
+              title="Tekan untuk terjemahan"
+              style="font-size:22px;font-weight:950;margin-top:4px"
+            >
               ${l2mEsc(item.bm)}
+              <span style="font-size:13px;font-weight:800;color:#8b82a8;margin-left:5px">🌐</span>
             </div>
           </div>
           <span class="l2m-master-badge" style="font-size:11px;font-weight:900;padding:5px 9px;border-radius:999px;background:${mastered ? "#e8f8ef" : "#f6f2ff"}">
@@ -10343,83 +10363,308 @@ window.KaranganAI = {
   }
 
   function l2mShowMasterReward(masteredOn) {
-    // Guaranteed v12.2.3 SMART overlay — no dependency on the legacy reward function.
-    document.getElementById("vocab-reward-overlay")?.remove();
+    // v12.5 — CSS-only SMART special effects for maximum iOS compatibility.
+    const overlayId = "l2m-smart-overlay-v125";
+    document.getElementById(overlayId)?.remove();
 
-    if (!document.getElementById("l2m-smart-reward-style")) {
+    if (!document.getElementById("l2m-smart-fx-v125-style")) {
       const style = document.createElement("style");
-      style.id = "l2m-smart-reward-style";
+      style.id = "l2m-smart-fx-v125-style";
       style.textContent = `
-        #vocab-reward-overlay{
-          position:fixed;inset:0;z-index:2147483647;
-          display:flex;align-items:center;justify-content:center;
-          background:rgba(255,248,235,.18);
-          opacity:0;pointer-events:none;
-          transition:opacity .16s ease;
+        @keyframes l2mV125OverlayFlash {
+          0%   { background:rgba(10,14,32,.08); }
+          12%  { background:rgba(73,105,255,.35); }
+          28%  { background:rgba(10,14,32,.40); }
+          100% { background:rgba(10,14,32,.34); }
         }
-        #l2m-smart-overlay-v124.show{opacity:1}
-        #l2m-smart-overlay-v124.hide{opacity:0}
-        #l2m-smart-overlay-v124 .l2m-smart-pop{
-          width:min(86vw,430px);padding:20px 18px;border-radius:28px;
-          text-align:center;color:#fff;
-          background:linear-gradient(180deg,#11152d,#171c3a);
-          border:1px solid rgba(80,220,255,.28);
-          box-shadow:0 18px 60px rgba(10,14,32,.36);
-          transform:translateY(50px) scale(.55);
-          opacity:0;
+        @keyframes l2mV125Pop {
+          0%   { transform:translateY(70px) scale(.35) rotate(-10deg); opacity:0; }
+          16%  { transform:translateY(-16px) scale(1.18) rotate(5deg); opacity:1; }
+          30%  { transform:translateY(2px) scale(.94) rotate(-3deg); opacity:1; }
+          48%  { transform:translateY(-10px) scale(1.07) rotate(2deg); opacity:1; }
+          66%  { transform:translateY(0) scale(1) rotate(-1deg); opacity:1; }
+          82%  { transform:translateY(-6px) scale(1.03) rotate(1deg); opacity:1; }
+          100% { transform:translateY(0) scale(.99) rotate(0); opacity:1; }
         }
-        #l2m-smart-overlay-v124.show .l2m-smart-pop{
-          animation:l2mSmartPop 1.72s cubic-bezier(.2,1.15,.3,1) both;
+        @keyframes l2mV125SmartImg {
+          0%   { transform:scale(.45) rotate(-8deg); filter:brightness(1) drop-shadow(0 0 0 rgba(80,220,255,0)); }
+          18%  { transform:scale(1.18) rotate(5deg); filter:brightness(1.35) drop-shadow(0 0 34px rgba(80,220,255,.95)); }
+          35%  { transform:scale(.96) rotate(-3deg); }
+          55%  { transform:scale(1.08) rotate(2deg); filter:brightness(1.15) drop-shadow(0 0 28px rgba(150,90,255,.85)); }
+          76%  { transform:scale(1) rotate(-1deg); }
+          100% { transform:scale(1) rotate(0); filter:brightness(1) drop-shadow(0 14px 24px rgba(22,25,48,.24)); }
         }
-        #l2m-smart-overlay-v124 .l2m-smart-img{
-          width:min(72vw,330px);max-height:38vh;object-fit:contain;
-          display:block;margin:0 auto 4px;
-          filter:drop-shadow(0 0 16px rgba(75,215,255,.32));
+        @keyframes l2mV125Ring {
+          0%   { transform:scale(.15) rotate(0deg); opacity:0; }
+          15%  { transform:scale(.72) rotate(60deg); opacity:1; }
+          38%  { transform:scale(1.05) rotate(150deg); opacity:.9; }
+          65%  { transform:scale(1.35) rotate(280deg); opacity:.45; }
+          100% { transform:scale(1.7) rotate(450deg); opacity:0; }
         }
-        #l2m-smart-overlay-v124 .l2m-smart-title{
-          font-size:22px;font-weight:950;line-height:1.25;margin-top:6px;
+        @keyframes l2mV125Xp {
+          0%,22% { transform:scale(.25) translateY(12px); opacity:0; }
+          38%    { transform:scale(1.25) translateY(-3px); opacity:1; }
+          55%    { transform:scale(.95) translateY(0); }
+          75%    { transform:scale(1.08); }
+          100%   { transform:scale(1); opacity:1; }
         }
-        #l2m-smart-overlay-v124 .l2m-smart-sub{
-          display:inline-block;margin-top:10px;padding:7px 14px;
-          border-radius:999px;background:linear-gradient(90deg,#26d4ff,#8a5cff);
-          font-weight:900;
+        @keyframes l2mV125Particle {
+          0%   { transform:translate(-50%,-50%) scale(.15) rotate(0deg); opacity:0; }
+          18%  { opacity:1; }
+          68%  { transform:translate(calc(-50% + var(--px)),calc(-50% + var(--py))) scale(1.35) rotate(220deg); opacity:1; }
+          100% { transform:translate(calc(-50% + var(--px2)),calc(-50% + var(--py2))) scale(.55) rotate(400deg); opacity:0; }
         }
-        @keyframes l2mSmartPop{
-          0%{transform:translateY(50px) scale(.55) rotate(-4deg);opacity:0}
-          15%{transform:translateY(-8px) scale(1.08) rotate(2deg);opacity:1}
-          30%{transform:translateY(0) scale(.98) rotate(-1deg);opacity:1}
-          55%{transform:translateY(-8px) scale(1.03);opacity:1}
-          82%{transform:translateY(0) scale(1);opacity:1}
-          100%{transform:translateY(-4px) scale(.98);opacity:.96}
+        #${overlayId} {
+          background:rgba(10,14,32,.34);
+        }
+        #${overlayId} .l2m-v125-pop {
+          animation:l2mV125Pop 1.72s cubic-bezier(.2,1.25,.3,1) both;
+        }
+        #${overlayId} .l2m-v125-smart {
+          animation:l2mV125SmartImg 1.55s cubic-bezier(.2,1.2,.3,1) both;
+        }
+        #${overlayId} .l2m-v125-ring {
+          animation:l2mV125Ring 1.65s ease-out both;
+        }
+        #${overlayId} .l2m-v125-xp {
+          animation:l2mV125Xp 1.6s cubic-bezier(.2,1.25,.3,1) both;
+        }
+        #${overlayId} .l2m-v125-particle {
+          animation:l2mV125Particle 1.35s ease-out both;
+          animation-delay:calc(var(--delay) * 1ms);
         }
       `;
       document.head.appendChild(style);
     }
 
     const overlay = document.createElement("div");
-    overlay.id = "vocab-reward-overlay";
-    overlay.innerHTML = `
-      <div class="l2m-smart-pop">
-        <img
-          class="l2m-smart-img"
-          src="${masteredOn ? "smart-hebat.png" : "smart-encourage.png"}"
-          alt="SMART reward"
-        />
-        <div class="l2m-smart-title">
-          ${masteredOn ? "🌟 Syabas! Sudah Kuasai!" : "💪 Mari cuba lagi!"}
+    overlay.id = overlayId;
+    overlay.setAttribute("style", [
+      "position:fixed",
+      "inset:0",
+      "z-index:2147483647",
+      "display:flex",
+      "align-items:center",
+      "justify-content:center",
+      "pointer-events:none",
+      "overflow:hidden"
+    ].join(";"));
+
+    const wrap = document.createElement("div");
+    wrap.setAttribute("style", [
+      "position:relative",
+      "width:min(90vw,460px)",
+      "min-height:380px",
+      "display:flex",
+      "align-items:center",
+      "justify-content:center"
+    ].join(";"));
+
+    const ring = document.createElement("div");
+    ring.className = "l2m-v125-ring";
+    ring.setAttribute("style", [
+      "position:absolute",
+      "left:50%",
+      "top:48%",
+      "width:230px",
+      "height:230px",
+      "margin:-115px 0 0 -115px",
+      "border-radius:50%",
+      "border:5px solid rgba(80,225,255,.92)",
+      "box-shadow:0 0 24px rgba(80,225,255,.95),0 0 50px rgba(110,85,255,.55),inset 0 0 22px rgba(139,93,255,.5)"
+    ].join(";"));
+
+    const pop = document.createElement("div");
+    pop.className = "l2m-v125-pop";
+    pop.setAttribute("style", [
+      "position:relative",
+      "z-index:3",
+      "width:min(86vw,430px)",
+      "padding:20px 18px",
+      "border-radius:28px",
+      "text-align:center",
+      "color:#fff",
+      "background:linear-gradient(180deg,#11152d,#171c3a)",
+      "border:1px solid rgba(80,220,255,.42)",
+      "box-shadow:0 18px 60px rgba(10,14,32,.42),0 0 38px rgba(91,150,255,.30)"
+    ].join(";"));
+
+    pop.innerHTML = `
+      <img
+        class="l2m-v125-smart"
+        src="${masteredOn ? "/smart-hebat.png" : "/smart-encourage.png"}"
+        alt="SMART reward"
+        style="
+          width:min(72vw,330px);
+          max-height:38vh;
+          object-fit:contain;
+          display:block;
+          margin:0 auto 4px;
+        "
+        onerror="this.style.display='none'"
+      />
+      <div style="font-size:24px;font-weight:950;line-height:1.25;margin-top:6px;text-shadow:0 0 14px rgba(120,220,255,.45)">
+        ${masteredOn ? "🌟 Syabas! Sudah Kuasai!" : "💪 Mari cuba lagi!"}
+      </div>
+      ${masteredOn
+        ? '<div class="l2m-v125-xp" style="display:inline-block;margin-top:10px;padding:8px 16px;border-radius:999px;background:linear-gradient(90deg,#26d4ff,#8a5cff);font-weight:900;box-shadow:0 0 22px rgba(80,180,255,.60)">+3 XP · Hebat!</div>'
+        : ''
+      }
+    `;
+
+    wrap.appendChild(ring);
+    wrap.appendChild(pop);
+
+    const particles = ["✦","★","⚡","✧","★","✦","⚡","✧","★","✦","⚡","★"];
+    particles.forEach((symbol, i) => {
+      const angle = (Math.PI * 2 * i) / particles.length;
+      const radius = 145 + (i % 3) * 24;
+      const px = Math.round(Math.cos(angle) * radius);
+      const py = Math.round(Math.sin(angle) * radius);
+      const px2 = Math.round(px * 1.18);
+      const py2 = Math.round(py * 1.18);
+
+      const p = document.createElement("span");
+      p.className = "l2m-v125-particle";
+      p.textContent = symbol;
+      p.setAttribute("style", [
+        "position:absolute",
+        "left:50%",
+        "top:48%",
+        "z-index:6",
+        "font-size:26px",
+        "font-weight:900",
+        "color:#fff",
+        "text-shadow:0 0 14px rgba(100,220,255,1),0 0 22px rgba(145,95,255,.85)",
+        `--px:${px}px`,
+        `--py:${py}px`,
+        `--px2:${px2}px`,
+        `--py2:${py2}px`,
+        `--delay:${i * 45}`
+      ].join(";"));
+      wrap.appendChild(p);
+    });
+
+    overlay.appendChild(wrap);
+    document.body.appendChild(overlay);
+
+    // Force style calculation before animation frames on Safari/iOS.
+    void overlay.offsetWidth;
+
+    setTimeout(() => {
+      overlay.style.transition = "opacity .18s linear";
+      overlay.style.opacity = "0";
+    }, 1780);
+
+    setTimeout(() => {
+      if (overlay.isConnected) overlay.remove();
+    }, 2020);
+  }
+
+  function l2mShowTranslation(item) {
+    const overlayId = "l2m-translation-popup";
+    document.getElementById(overlayId)?.remove();
+
+    const overlay = document.createElement("div");
+    overlay.id = overlayId;
+    overlay.setAttribute("style", [
+      "position:fixed",
+      "inset:0",
+      "z-index:2147483600",
+      "display:flex",
+      "align-items:flex-end",
+      "justify-content:center",
+      "padding:18px",
+      "background:rgba(18,20,35,.22)",
+      "box-sizing:border-box"
+    ].join(";"));
+
+    const card = document.createElement("div");
+    card.setAttribute("style", [
+      "width:min(100%,520px)",
+      "max-height:72vh",
+      "overflow:auto",
+      "background:#fff",
+      "border-radius:24px",
+      "padding:20px",
+      "box-shadow:0 18px 55px rgba(20,22,45,.22)",
+      "border:1px solid rgba(115,95,210,.12)",
+      "transform:translateY(0)",
+      "box-sizing:border-box"
+    ].join(";"));
+
+    card.innerHTML = `
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
+        <div>
+          <div style="font-size:11px;font-weight:900;color:#7566c8;letter-spacing:.04em">
+            ${l2mEsc(item.id)} · TERJEMAHAN
+          </div>
+          <div style="font-size:25px;font-weight:950;margin-top:5px">
+            ${l2mEsc(item.bm)}
+          </div>
         </div>
-        ${masteredOn ? '<div class="l2m-smart-sub">+ XP · Hebat!</div>' : ''}
+        <button
+          type="button"
+          data-l2m-translation-close
+          aria-label="Tutup"
+          style="border:0;background:#f4f1fb;width:36px;height:36px;border-radius:50%;font-size:18px"
+        >✕</button>
+      </div>
+
+      <div style="margin-top:16px;padding:13px 14px;border-radius:15px;background:#f7f4ff">
+        <div style="font-size:12px;font-weight:900;color:#7866c8">中文</div>
+        <div style="font-size:19px;font-weight:900;margin-top:3px">${l2mEsc(item.zh || "—")}</div>
+      </div>
+
+      <div style="margin-top:10px;padding:13px 14px;border-radius:15px;background:#f6f9fb">
+        <div style="font-size:12px;font-weight:900;color:#62717a">ENGLISH</div>
+        <div style="font-size:17px;font-weight:800;margin-top:3px">${l2mEsc(item.en || "—")}</div>
+      </div>
+
+      ${item.meaningBm ? `
+        <div style="margin-top:13px;line-height:1.55">
+          <strong>Makna BM:</strong><br>${l2mEsc(item.meaningBm)}
+        </div>
+      ` : ""}
+
+      ${item.example ? `
+        <div style="margin-top:12px;line-height:1.55">
+          <strong>Ayat Contoh:</strong><br>${l2mEsc(item.example)}
+        </div>
+      ` : ""}
+
+      <div style="display:flex;gap:9px;margin-top:16px">
+        <button type="button" class="secondary-button" data-l2m-translation-speak style="flex:1">
+          🔊 Dengar
+        </button>
+        <button type="button" class="primary-button" data-l2m-translation-ok style="flex:1">
+          Faham ✓
+        </button>
       </div>
     `;
 
+    overlay.appendChild(card);
     document.body.appendChild(overlay);
 
-    setTimeout(() => overlay.classList.add("show"), 10);
-    setTimeout(() => overlay.classList.add("hide"), 1700);
-    setTimeout(() => overlay.remove(), 2000);
+    const close = () => overlay.remove();
+    overlay.addEventListener("click", e => {
+      if (e.target === overlay) close();
+    });
+    card.querySelector("[data-l2m-translation-close]")?.addEventListener("click", close);
+    card.querySelector("[data-l2m-translation-ok]")?.addEventListener("click", close);
+    card.querySelector("[data-l2m-translation-speak]")?.addEventListener("click", () => l2mSpeak(item.bm));
   }
 
-  function l2mBindCommon(year) {
+  function l2mBindCommon(year, afterToggle = () => window.renderVocabularyModule()) {
+    document.querySelectorAll("[data-l2m-translate]").forEach(target => {
+      target.onclick = () => {
+        const item = l2mWords(year).find(
+          x => String(x.id) === String(target.dataset.l2mTranslate)
+        );
+        if (item) l2mShowTranslation(item);
+      };
+    });
+
     document.querySelectorAll("[data-l2m-speak]").forEach(button => {
       button.onclick = () => l2mSpeak(button.dataset.l2mSpeak);
     });
@@ -10467,8 +10712,24 @@ window.KaranganAI = {
           }
         }
 
-        // Do not redraw the module until the 2-second animation has completed.
-        setTimeout(() => window.renderVocabularyModule(), 2050);
+        // v12.5.2: update the card immediately, while SMART FX is covering the page.
+        // After the animation ends there is NO page/card render and NO delayed UI mutation.
+        const latest = l2mSaved(item);
+        const masteredNow = Boolean(latest?.mastered);
+
+        button.textContent = masteredNow ? "✓ Sudah Kuasai" : "✓ Kuasai";
+        button.disabled = false;
+
+        const card = button.closest(".l2m-card");
+        if (card) {
+          card.classList.toggle("is-mastered", masteredNow);
+
+          const badge = card.querySelector(".l2m-master-badge");
+          if (badge) {
+            badge.textContent = masteredNow ? "DIKUASAI" : "MASTER";
+            badge.style.background = masteredNow ? "#e8f8ef" : "#f6f2ff";
+          }
+        }
       };
     });
   }
@@ -10491,7 +10752,7 @@ window.KaranganAI = {
       </button>
     `, 28);
 
-    l2mBindCommon(year);
+    l2mBindCommon(year, () => l2mRenderAllWords(year));
     byId("l2mBackToday")?.addEventListener("click", window.renderVocabularyModule);
   }
 
@@ -10609,6 +10870,7 @@ window.KaranganAI = {
     renderVocabularyModule = l2mRender;
   } catch (_) {}
 
+
   window.KaranganLangkah2Master = {
     version: L2_VERSION,
     render: l2mRender,
@@ -10617,5 +10879,5 @@ window.KaranganAI = {
     source: "CurriculumDB"
   };
 
-  console.log("✅ MASTER CURRICULUM v12.2.4 + IOS SMART ANIMATION FIX loaded");
+  console.log("✅ MASTER CURRICULUM v12.6 + TAP TRANSLATION loaded");
 })();
