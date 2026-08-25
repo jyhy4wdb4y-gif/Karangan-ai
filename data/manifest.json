@@ -1,0 +1,13 @@
+{
+  "name": "Karangan AI Production Curriculum Database",
+  "version": "1.0.0",
+  "status": "production-ready export from frozen Curriculum Master",
+  "sourceWorkbook": "Karangan-AI-v11-Curriculum-Master-FINAL.xlsx",
+  "files": {
+    "vocabulary.json": "Canonical 2,400 vocabulary/frasa records",
+    "ayat-cantik.json": "Canonical 1,050 Ayat Cantik records",
+    "curriculum-index.json": "Year/category/taxonomy/function indexes using stable IDs"
+  },
+  "stableIdPolicy": "Never renumber existing IDs. Future curriculum updates must preserve IDs used by learner progress, XP, favourites, quizzes and AI Tutor.",
+  "encoding": "UTF-8"
+}
