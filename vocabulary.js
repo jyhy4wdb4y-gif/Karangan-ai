@@ -2824,7 +2824,7 @@
 
 
 /* =========================================================
-   LANGKAH 2 GRADED LEARNING v9.0
+   LANGKAH 2 YEAR SELECTOR v9.1
    1,650 Kosa Kata & Frasa + 500 Ayat Cantik
    Offline-first. No paid AI required.
    ========================================================= */
@@ -2857,12 +2857,12 @@
   let dailyState = safeLoad();
   function saveDaily(){ try{ localStorage.setItem(DAILY_STORAGE_KEY, JSON.stringify(dailyState)); }catch(_){} }
   function dateKey(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
-  function clampYear(y){ y=Number(y); return [3,4,5].includes(y)?y:3; }
+  function clampYear(y){ y=Number(y); return [1,2,3,4,5,6].includes(y)?y:3; }
   function setLearningYear(y){ dailyState.learningYear=clampYear(y); saveDaily(); return dailyState.learningYear; }
   function getLearningYear(){ return clampYear(dailyState.learningYear); }
   function yearState(y){ y=clampYear(y); if(!dailyState.byYear[y]) dailyState.byYear[y]={days:{}, unlockedWordIds:[], unlockedAyatIds:[]}; return dailyState.byYear[y]; }
-  function eligibleWords(y){ return MASTER_WORD_BANK.filter(x=>Number(x.minYear||3)<=y); }
-  function eligibleAyat(y){ return MASTER_AYAT_BANK.filter(x=>Number(x.minYear||3)<=y); }
+  function eligibleWords(y){ return MASTER_WORD_BANK.filter(x=>Number(x.minYear||1)<=y && Number(x.maxYear||6)>=y); }
+  function eligibleAyat(y){ return MASTER_AYAT_BANK.filter(x=>Number(x.minYear||1)<=y && Number(x.maxYear||6)>=y); }
   function normalizeKey(w){ return String(w||"").trim().toLowerCase(); }
 
   function pickDiverseDaily(items, usedIds, removedCheck, count, groupKey) {
@@ -2939,6 +2939,6 @@
   const engine=window.KaranganVocabulary || {};
   Object.assign(engine,{setLearningYear,getLearningYear,ensureDailyContent:ensureToday,getDailyNewWords,getDailyAyat,getUnlockedAyat,markAyatMastered,isAyatMastered,removeAyat,removeDailyWord,curriculumStats,getMasterWordBank,getMasterAyatBank,DAILY_WORD_TARGET:WORD_TARGET,DAILY_AYAT_TARGET:AYAT_TARGET});
   window.KaranganVocabulary=engine;
-  console.log("✅ Langkah 2 Graded Learning v9 loaded",{words:MASTER_WORD_BANK.length,ayat:MASTER_AYAT_BANK.length});
+  console.log("✅ Langkah 2 Year Selector v9.1 loaded",{words:MASTER_WORD_BANK.length,ayat:MASTER_AYAT_BANK.length});
 })();
 

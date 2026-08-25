@@ -9528,7 +9528,7 @@ window.KaranganAI = {
 })();
 
 /* =========================================================
-   LANGKAH 2 FINAL DAILY UI v6.0
+   LANGKAH 2 YEAR SELECTOR UI v9.1
    10 Kosa Kata + 5 Ayat Cantik per active day
    ========================================================= */
 (() => {
@@ -9537,9 +9537,18 @@ window.KaranganAI = {
   function l2Engine(){ return window.KaranganVocabulary || null; }
   function l2Year(){
     const e=l2Engine();
-    const y=Number(currentStory?.year || e?.getLearningYear?.() || 3);
-    e?.setLearningYear?.([3,4,5].includes(y)?y:3);
-    return e?.getLearningYear?.() || 3;
+    const saved=Number(e?.getLearningYear?.() || 3);
+    const y=[1,2,3,4,5,6].includes(saved)?saved:3;
+    e?.setLearningYear?.(y);
+    return y;
+  }
+  function l2YearSelector(year){
+    return `<div style="margin:14px 0 18px;padding:14px;background:#f7f5ff;border-radius:16px">
+      <div style="font-weight:850;margin-bottom:10px">🎓 Pilih Tahun</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+        ${[1,2,3,4,5,6].map(y=>`<button type="button" data-l2-year="${y}" class="${y===year?'primary-button':'secondary-button'}" style="padding:10px 6px">Tahun ${y}</button>`).join('')}
+      </div>
+    </div>`;
   }
   function l2Speak(text){
     if(window.KaranganVoiceV5?.speak) return window.KaranganVoiceV5.speak(text);
@@ -9565,6 +9574,14 @@ window.KaranganAI = {
   }
   function bindL2(){
     const e=l2Engine();
+    $$('[data-l2-year]').forEach(b=>b.onclick=()=>{
+      const y=Number(b.dataset.l2Year);
+      if(![1,2,3,4,5,6].includes(y)) return;
+      e?.setLearningYear?.(y);
+      e?.ensureDailyContent?.(y);
+      renderVocabularyModule();
+      showToast(`🎓 Tahun ${y} dipilih`);
+    });
     $$('[data-l2-speak]').forEach(b=>b.onclick=()=>l2Speak(b.dataset.l2Speak));
     $$('[data-l2-master]').forEach(b=>b.onclick=()=>{if(b.dataset.l2Master)e?.markMastered?.(b.dataset.l2Master,true);renderVocabularyModule();});
     $$('[data-l2-remove-word]').forEach(b=>b.onclick=()=>{e?.removeDailyWord?.(b.dataset.l2RemoveWord);renderVocabularyModule();});
@@ -9595,7 +9612,7 @@ window.KaranganAI = {
   renderVocabularyModule=function(){
     const e=l2Engine(); const year=l2Year(); e?.ensureDailyContent?.(year);
     const daily=e?.getDailyNewWords?.(10,year)||[]; const ayat=e?.getDailyAyat?.(5,year)||[]; const all=getVocabularyWords(); const stats=e?.curriculumStats?.(year)||{};
-    openModuleScreen(`<span class="section-kicker">LANGKAH 2 · TAHUN ${year}</span><h1>🧠 Kosa Kata Hari Ini</h1><p>Setiap hari kamu membuka Langkah 2, sistem memberikan sehingga <strong>10 kosa kata/frasa baharu</strong> dan <strong>5 Ayat Cantik baharu</strong>. Kandungan lama kekal dalam koleksi kamu.</p>
+    openModuleScreen(`<span class="section-kicker">LANGKAH 2 · TAHUN ${year}</span><h1>🧠 Kosa Kata Hari Ini</h1>${l2YearSelector(year)}<p>Setiap hari kamu membuka Langkah 2, sistem memberikan sehingga <strong>10 kosa kata/frasa baharu</strong> dan <strong>5 Ayat Cantik baharu</strong>. Kandungan lama kekal dalam koleksi kamu.</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0"><span class="section-kicker">Hari Ini ${daily.length}/10</span><span class="section-kicker">Dipelajari ${stats.unlockedWords||0}</span><span class="section-kicker">Dikuasai ${all.filter(w=>w.mastered).length}</span></div>
       ${daily.map(l2WordCard).join('')||'<div style="padding:18px;background:#eef9f3;border-radius:16px">🎉 Semua kandungan yang tersedia untuk tahap ini telah dibuka.</div>'}
       <h2 style="margin-top:28px">✨ 5 Ayat Cantik Hari Ini</h2><p>Ayat serba guna untuk membantu karangan menjadi lebih hidup dan matang.</p>${ayat.map(x=>l2AyatCard(x,e)).join('')||'<p>Tiada ayat baharu hari ini.</p>'}
@@ -9605,6 +9622,6 @@ window.KaranganAI = {
     bindL2();
   };
 
-  console.log("✅ Langkah 2 Final Daily UI v6 loaded");
+  console.log("✅ Langkah 2 Year Selector UI v9.1 loaded");
 })();
 
