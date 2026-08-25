@@ -127,7 +127,13 @@ let vocabularyRewardState = {
 
 function showVocabularyReward(type, message, xp=0) {
   if (xp > 0) {
-    addXP(xp);
+    if (window.KaranganAI?.addXP) {
+      window.KaranganAI.addXP(xp);
+    } else {
+      appState.xp += Number(xp) || 0;
+      saveState();
+      updateAllUI();
+    }
   }
   document.getElementById("vocab-reward-overlay")?.remove();
   const good = type === "good";
