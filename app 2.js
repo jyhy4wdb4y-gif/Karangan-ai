@@ -10045,7 +10045,7 @@ window.KaranganAI = {
 (() => {
   "use strict";
 
-  const L2_VERSION = "12.4";
+  const L2_VERSION = "12.5.1";
   const L2_DAILY_KEY = "karangan_ai_l2_master_v12_2_daily";
 
 
@@ -10344,9 +10344,79 @@ window.KaranganAI = {
   }
 
   function l2mShowMasterReward(masteredOn) {
-    // v12.4 — SMART reward with 2-second special effects.
-    const overlayId = "l2m-smart-overlay-v124";
+    // v12.5 — CSS-only SMART special effects for maximum iOS compatibility.
+    const overlayId = "l2m-smart-overlay-v125";
     document.getElementById(overlayId)?.remove();
+
+    if (!document.getElementById("l2m-smart-fx-v125-style")) {
+      const style = document.createElement("style");
+      style.id = "l2m-smart-fx-v125-style";
+      style.textContent = `
+        @keyframes l2mV125OverlayFlash {
+          0%   { background:rgba(10,14,32,.08); }
+          12%  { background:rgba(73,105,255,.35); }
+          28%  { background:rgba(10,14,32,.40); }
+          100% { background:rgba(10,14,32,.34); }
+        }
+        @keyframes l2mV125Pop {
+          0%   { transform:translateY(70px) scale(.35) rotate(-10deg); opacity:0; }
+          16%  { transform:translateY(-16px) scale(1.18) rotate(5deg); opacity:1; }
+          30%  { transform:translateY(2px) scale(.94) rotate(-3deg); opacity:1; }
+          48%  { transform:translateY(-10px) scale(1.07) rotate(2deg); opacity:1; }
+          66%  { transform:translateY(0) scale(1) rotate(-1deg); opacity:1; }
+          82%  { transform:translateY(-6px) scale(1.03) rotate(1deg); opacity:1; }
+          100% { transform:translateY(0) scale(.99) rotate(0); opacity:1; }
+        }
+        @keyframes l2mV125SmartImg {
+          0%   { transform:scale(.45) rotate(-8deg); filter:brightness(1) drop-shadow(0 0 0 rgba(80,220,255,0)); }
+          18%  { transform:scale(1.18) rotate(5deg); filter:brightness(1.35) drop-shadow(0 0 34px rgba(80,220,255,.95)); }
+          35%  { transform:scale(.96) rotate(-3deg); }
+          55%  { transform:scale(1.08) rotate(2deg); filter:brightness(1.15) drop-shadow(0 0 28px rgba(150,90,255,.85)); }
+          76%  { transform:scale(1) rotate(-1deg); }
+          100% { transform:scale(1) rotate(0); filter:brightness(1) drop-shadow(0 14px 24px rgba(22,25,48,.24)); }
+        }
+        @keyframes l2mV125Ring {
+          0%   { transform:scale(.15) rotate(0deg); opacity:0; }
+          15%  { transform:scale(.72) rotate(60deg); opacity:1; }
+          38%  { transform:scale(1.05) rotate(150deg); opacity:.9; }
+          65%  { transform:scale(1.35) rotate(280deg); opacity:.45; }
+          100% { transform:scale(1.7) rotate(450deg); opacity:0; }
+        }
+        @keyframes l2mV125Xp {
+          0%,22% { transform:scale(.25) translateY(12px); opacity:0; }
+          38%    { transform:scale(1.25) translateY(-3px); opacity:1; }
+          55%    { transform:scale(.95) translateY(0); }
+          75%    { transform:scale(1.08); }
+          100%   { transform:scale(1); opacity:1; }
+        }
+        @keyframes l2mV125Particle {
+          0%   { transform:translate(-50%,-50%) scale(.15) rotate(0deg); opacity:0; }
+          18%  { opacity:1; }
+          68%  { transform:translate(calc(-50% + var(--px)),calc(-50% + var(--py))) scale(1.35) rotate(220deg); opacity:1; }
+          100% { transform:translate(calc(-50% + var(--px2)),calc(-50% + var(--py2))) scale(.55) rotate(400deg); opacity:0; }
+        }
+        #${overlayId} {
+          animation:l2mV125OverlayFlash 1.75s ease-out both;
+        }
+        #${overlayId} .l2m-v125-pop {
+          animation:l2mV125Pop 1.72s cubic-bezier(.2,1.25,.3,1) both;
+        }
+        #${overlayId} .l2m-v125-smart {
+          animation:l2mV125SmartImg 1.55s cubic-bezier(.2,1.2,.3,1) both;
+        }
+        #${overlayId} .l2m-v125-ring {
+          animation:l2mV125Ring 1.65s ease-out both;
+        }
+        #${overlayId} .l2m-v125-xp {
+          animation:l2mV125Xp 1.6s cubic-bezier(.2,1.25,.3,1) both;
+        }
+        #${overlayId} .l2m-v125-particle {
+          animation:l2mV125Particle 1.35s ease-out both;
+          animation-delay:calc(var(--delay) * 1ms);
+        }
+      `;
+      document.head.appendChild(style);
+    }
 
     const overlay = document.createElement("div");
     overlay.id = overlayId;
@@ -10357,23 +10427,22 @@ window.KaranganAI = {
       "display:flex",
       "align-items:center",
       "justify-content:center",
-      "background:radial-gradient(circle at center,rgba(55,70,160,.18),rgba(10,14,32,.42))",
       "pointer-events:none",
-      "overflow:hidden",
-      "opacity:1"
+      "overflow:hidden"
     ].join(";"));
 
     const wrap = document.createElement("div");
     wrap.setAttribute("style", [
       "position:relative",
-      "width:min(88vw,450px)",
-      "min-height:360px",
+      "width:min(90vw,460px)",
+      "min-height:380px",
       "display:flex",
       "align-items:center",
       "justify-content:center"
     ].join(";"));
 
     const ring = document.createElement("div");
+    ring.className = "l2m-v125-ring";
     ring.setAttribute("style", [
       "position:absolute",
       "left:50%",
@@ -10382,12 +10451,12 @@ window.KaranganAI = {
       "height:230px",
       "margin:-115px 0 0 -115px",
       "border-radius:50%",
-      "border:4px solid rgba(77,225,255,.72)",
-      "box-shadow:0 0 22px rgba(77,225,255,.72),inset 0 0 20px rgba(139,93,255,.42)",
-      "opacity:0"
+      "border:5px solid rgba(80,225,255,.92)",
+      "box-shadow:0 0 24px rgba(80,225,255,.95),0 0 50px rgba(110,85,255,.55),inset 0 0 22px rgba(139,93,255,.5)"
     ].join(";"));
 
     const pop = document.createElement("div");
+    pop.className = "l2m-v125-pop";
     pop.setAttribute("style", [
       "position:relative",
       "z-index:3",
@@ -10397,14 +10466,13 @@ window.KaranganAI = {
       "text-align:center",
       "color:#fff",
       "background:linear-gradient(180deg,#11152d,#171c3a)",
-      "border:1px solid rgba(80,220,255,.34)",
-      "box-shadow:0 18px 60px rgba(10,14,32,.42),0 0 34px rgba(91,150,255,.18)",
-      "transform:scale(1)",
-      "opacity:1"
+      "border:1px solid rgba(80,220,255,.42)",
+      "box-shadow:0 18px 60px rgba(10,14,32,.42),0 0 38px rgba(91,150,255,.30)"
     ].join(";"));
 
     pop.innerHTML = `
       <img
+        class="l2m-v125-smart"
         src="${masteredOn ? "/smart-hebat.png" : "/smart-encourage.png"}"
         alt="SMART reward"
         style="
@@ -10413,16 +10481,14 @@ window.KaranganAI = {
           object-fit:contain;
           display:block;
           margin:0 auto 4px;
-          filter:drop-shadow(0 0 20px rgba(75,215,255,.42))
-                 drop-shadow(0 14px 24px rgba(22,25,48,.24));
         "
         onerror="this.style.display='none'"
       />
-      <div style="font-size:23px;font-weight:950;line-height:1.25;margin-top:6px">
+      <div style="font-size:24px;font-weight:950;line-height:1.25;margin-top:6px;text-shadow:0 0 14px rgba(120,220,255,.45)">
         ${masteredOn ? "🌟 Syabas! Sudah Kuasai!" : "💪 Mari cuba lagi!"}
       </div>
       ${masteredOn
-        ? '<div style="display:inline-block;margin-top:10px;padding:7px 14px;border-radius:999px;background:linear-gradient(90deg,#26d4ff,#8a5cff);font-weight:900;box-shadow:0 0 18px rgba(80,180,255,.35)">+3 XP · Hebat!</div>'
+        ? '<div class="l2m-v125-xp" style="display:inline-block;margin-top:10px;padding:8px 16px;border-radius:999px;background:linear-gradient(90deg,#26d4ff,#8a5cff);font-weight:900;box-shadow:0 0 22px rgba(80,180,255,.60)">+3 XP · Hebat!</div>'
         : ''
       }
     `;
@@ -10430,69 +10496,41 @@ window.KaranganAI = {
     wrap.appendChild(ring);
     wrap.appendChild(pop);
 
-    const particles = ["✦","★","⚡","✧","★","✦","⚡","✧","★","✦"];
+    const particles = ["✦","★","⚡","✧","★","✦","⚡","✧","★","✦","⚡","★"];
     particles.forEach((symbol, i) => {
+      const angle = (Math.PI * 2 * i) / particles.length;
+      const radius = 145 + (i % 3) * 24;
+      const px = Math.round(Math.cos(angle) * radius);
+      const py = Math.round(Math.sin(angle) * radius);
+      const px2 = Math.round(px * 1.18);
+      const py2 = Math.round(py * 1.18);
+
       const p = document.createElement("span");
+      p.className = "l2m-v125-particle";
       p.textContent = symbol;
       p.setAttribute("style", [
         "position:absolute",
         "left:50%",
         "top:48%",
-        "z-index:5",
-        "font-size:24px",
-        "opacity:0",
-        "text-shadow:0 0 12px rgba(120,220,255,.9)"
+        "z-index:6",
+        "font-size:26px",
+        "font-weight:900",
+        "color:#fff",
+        "text-shadow:0 0 14px rgba(100,220,255,1),0 0 22px rgba(145,95,255,.85)",
+        `--px:${px}px`,
+        `--py:${py}px`,
+        `--px2:${px2}px`,
+        `--py2:${py2}px`,
+        `--delay:${i * 45}`
       ].join(";"));
       wrap.appendChild(p);
-
-      const angle = (Math.PI * 2 * i) / particles.length;
-      const radius = 120 + (i % 3) * 22;
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius;
-
-      try {
-        p.animate(
-          [
-            { transform:"translate(-50%,-50%) scale(.2) rotate(0deg)", opacity:0 },
-            { transform:`translate(calc(-50% + ${x*.45}px),calc(-50% + ${y*.45}px)) scale(1.25) rotate(120deg)`, opacity:1, offset:.30 },
-            { transform:`translate(calc(-50% + ${x}px),calc(-50% + ${y}px)) scale(.75) rotate(300deg)`, opacity:0 }
-          ],
-          {
-            duration:1500,
-            delay:i*55,
-            easing:"cubic-bezier(.15,.7,.25,1)",
-            fill:"forwards"
-          }
-        );
-      } catch (_) {}
     });
 
     overlay.appendChild(wrap);
     document.body.appendChild(overlay);
 
-    try {
-      ring.animate(
-        [
-          { transform:"scale(.25) rotate(0deg)", opacity:0 },
-          { transform:"scale(1) rotate(90deg)", opacity:.9, offset:.22 },
-          { transform:"scale(1.22) rotate(230deg)", opacity:.55, offset:.62 },
-          { transform:"scale(1.45) rotate(420deg)", opacity:0 }
-        ],
-        { duration:1750, easing:"ease-in-out", fill:"both" }
-      );
-
-      pop.animate(
-        [
-          { transform:"translateY(55px) scale(.45) rotate(-7deg)", opacity:0 },
-          { transform:"translateY(-10px) scale(1.10) rotate(3deg)", opacity:1, offset:.17 },
-          { transform:"translateY(0) scale(.98) rotate(-2deg)", opacity:1, offset:.32 },
-          { transform:"translateY(-12px) scale(1.04) rotate(1deg)", opacity:1, offset:.55 },
-          { transform:"translateY(0) scale(1)", opacity:1, offset:.78 },
-          { transform:"translateY(-4px) scale(.98)", opacity:.96 }
-        ],
-        { duration:1750, easing:"cubic-bezier(.2,1.2,.3,1)", fill:"both" }
-      );
-    } catch (_) {}
+    // Force style calculation before animation frames on Safari/iOS.
+    void overlay.offsetWidth;
 
     setTimeout(() => {
       overlay.style.transition = "opacity .22s ease";
@@ -10550,8 +10588,27 @@ window.KaranganAI = {
           }
         }
 
-        // Do not redraw the module until the 2-second animation has completed.
-        setTimeout(() => afterToggle(), 2050);
+        // v12.5.1: update this card in-place instead of rebuilding the whole page.
+        // Rebuilding openModuleScreen after the overlay ends caused the visible page flash.
+        setTimeout(() => {
+          button.disabled = false;
+
+          const latest = l2mSaved(item);
+          const masteredNow = Boolean(latest?.mastered);
+
+          button.textContent = masteredNow ? "✓ Sudah Kuasai" : "✓ Kuasai";
+
+          const card = button.closest(".l2m-card");
+          if (card) {
+            card.classList.toggle("is-mastered", masteredNow);
+
+            const badge = card.querySelector(".l2m-master-badge");
+            if (badge) {
+              badge.textContent = masteredNow ? "DIKUASAI" : "MASTER";
+              badge.style.background = masteredNow ? "#e8f8ef" : "#f6f2ff";
+            }
+          }
+        }, 2000);
       };
     });
   }
@@ -10701,5 +10758,5 @@ window.KaranganAI = {
     source: "CurriculumDB"
   };
 
-  console.log("✅ MASTER CURRICULUM v12.4 + SMART FX loaded");
+  console.log("✅ MASTER CURRICULUM v12.5.1 + CSS SMART FX + NO PAGE FLASH loaded");
 })();
