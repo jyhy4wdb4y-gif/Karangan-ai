@@ -10045,7 +10045,7 @@ window.KaranganAI = {
 (() => {
   "use strict";
 
-  const L2_VERSION = "12.7";
+  const L2_VERSION = "12.7.1";
   const L2_DAILY_KEY = "karangan_ai_l2_master_v12_2_daily";
 
 
@@ -10300,7 +10300,6 @@ window.KaranganAI = {
               style="font-size:22px;font-weight:950;margin-top:4px;position:relative;z-index:8;touch-action:manipulation;-webkit-user-select:none;user-select:none"
             >
               ${l2mEsc(item.bm)}
-              <span style="font-size:13px;font-weight:800;color:#8b82a8;margin-left:5px">🌐</span>
             </div>
           </div>
           <span class="l2m-master-badge" style="font-size:11px;font-weight:900;padding:5px 9px;border-radius:999px;background:${mastered ? "#e8f8ef" : "#f6f2ff"}">
@@ -10335,9 +10334,6 @@ window.KaranganAI = {
         ` : ""}
 
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-          <button type="button" class="secondary-button l2m-action" data-l2m-translate="${l2mEsc(item.id)}">
-            🌐 翻译 / Translate
-          </button>
           <button type="button" class="secondary-button l2m-action" data-l2m-speak="${l2mEsc(item.bm)}">
             🔊 Dengar
           </button>
@@ -10608,19 +10604,85 @@ window.KaranganAI = {
       const found=l2mWords(year).find(x=>String(x.bm||"").trim().toLocaleLowerCase("ms-MY")===key);
       if(found) return {word:key,zh:found.zh||"—",en:found.en||"—"};
     }
-    return {word:key,zh:"词库暂时没有这个单词的独立翻译",en:"No standalone translation in the current vocabulary bank"};
+    return {word:key,zh:"",en:"",missing:true};
   }
 
-  function l2mShowWordTranslation(word){
+  async function l2mShowWordTranslation(word){
     const info=l2mLookupWord(word);
     document.getElementById("l2m-word-popup")?.remove();
+
     const p=document.createElement("div");
     p.id="l2m-word-popup";
     p.style.cssText="position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:2147483646;width:min(calc(100vw - 32px),420px);background:#fff;border:1px solid #e9e3f5;border-radius:20px;padding:16px 17px;box-shadow:0 18px 55px rgba(20,22,45,.24);box-sizing:border-box";
-    p.innerHTML=`<div style="display:flex;justify-content:space-between;gap:12px"><div><div style="font-size:11px;font-weight:900;color:#7866c8">TERJEMAHAN PERKATAAN</div><div style="font-size:25px;font-weight:950;margin-top:3px">${l2mEsc(info.word)}</div></div><button type="button" data-l2m-word-close style="border:0;background:#f4f1fb;width:34px;height:34px;border-radius:50%">✕</button></div><div style="margin-top:12px;padding:11px 13px;background:#f7f4ff;border-radius:13px">🇨🇳 <strong>${l2mEsc(info.zh)}</strong></div><div style="margin-top:8px;padding:11px 13px;background:#f6f9fb;border-radius:13px">🇬🇧 <strong>${l2mEsc(info.en)}</strong></div><button type="button" data-l2m-word-speak class="secondary-button" style="width:100%;margin-top:11px">🔊 Dengar</button>`;
+
+    const render=(zh,en,status="")=>{
+      p.innerHTML=`<div style="display:flex;justify-content:space-between;gap:12px"><div><div style="font-size:11px;font-weight:900;color:#7866c8">TERJEMAHAN PERKATAAN</div><div style="font-size:25px;font-weight:950;margin-top:3px">${l2mEsc(info.word)}</div></div><button type="button" data-l2m-word-close style="border:0;background:#f4f1fb;width:34px;height:34px;border-radius:50%">✕</button></div><div style="margin-top:12px;padding:11px 13px;background:#f7f4ff;border-radius:13px">🇨🇳 <strong>${l2mEsc(zh||"…")}</strong></div><div style="margin-top:8px;padding:11px 13px;background:#f6f9fb;border-radius:13px">🇬🇧 <strong>${l2mEsc(en||"…")}</strong></div>${status?`<div style="margin-top:8px;font-size:12px;color:#7c858b">${l2mEsc(status)}</div>`:""}<button type="button" data-l2m-word-speak class="secondary-button" style="width:100%;margin-top:11px">🔊 Dengar</button>`;
+
+      p.querySelector("[data-l2m-word-close]")?.addEventListener("click",()=>p.remove());
+      p.querySelector("[data-l2m-word-speak]")?.addEventListener("click",()=>l2mSpeak(info.word));
+    };
+
     document.body.appendChild(p);
-    p.querySelector("[data-l2m-word-close]")?.addEventListener("click",()=>p.remove());
-    p.querySelector("[data-l2m-word-speak]")?.addEventListener("click",()=>l2mSpeak(info.word));
+
+    if(!info.missing){
+      render(info.zh,info.en);
+      return;
+    }
+
+    render("正在查询…","Searching…","AI fallback");
+
+    try{
+      let zh="";
+      let en="";
+
+      const localResult=l2mEngine()?.lookupWord?.(info.word);
+      if(localResult){
+        zh=localResult.zh||"";
+        en=localResult.en||"";
+      }
+
+      if((!zh||!en) && typeof callAI==="function"){
+        const result=await callAI({
+          type:"translate",
+          word:info.word,
+          language:"Bahasa Melayu",
+          targetLanguages:["Simplified Chinese","English"],
+          instruction:"Translate this single Bahasa Melayu word only. Return JSON only with keys zh and en. Keep both translations short and suitable for a Malaysian primary school student."
+        });
+
+        const raw=typeof extractAIText==="function"
+          ? extractAIText(result)
+          : (result?.text||result?.answer||result?.message||"");
+
+        if(raw){
+          try{
+            const cleaned=String(raw)
+              .replace(/^```json\s*/i,"")
+              .replace(/^```\s*/,"")
+              .replace(/```$/,"")
+              .trim();
+
+            const parsed=JSON.parse(cleaned);
+            zh=zh||parsed.zh||parsed.chinese||"";
+            en=en||parsed.en||parsed.english||"";
+          }catch(_){
+            const zhMatch=String(raw).match(/(?:zh|chinese|中文)\s*[:：]\s*([^\n]+)/i);
+            const enMatch=String(raw).match(/(?:en|english)\s*[:：]\s*([^\n]+)/i);
+            zh=zh||zhMatch?.[1]?.trim()||"";
+            en=en||enMatch?.[1]?.trim()||"";
+          }
+        }
+      }
+
+      render(
+        zh||"暂时找不到翻译",
+        en||"Translation not available yet",
+        zh||en ? "AI translation" : ""
+      );
+    }catch(error){
+      console.warn("Word-by-word AI translation failed:",error);
+      render("暂时找不到翻译","Translation not available yet");
+    }
   }
 
   function l2mShowTranslation(item) {
@@ -10967,5 +11029,5 @@ window.KaranganAI = {
     source: "CurriculumDB"
   };
 
-  console.log("✅ MASTER CURRICULUM v12.7 + WORD-BY-WORD TRANSLATION loaded");
+  console.log("✅ MASTER CURRICULUM v12.7.1 + WORD TRANSLATION AI FALLBACK loaded");
 })();
