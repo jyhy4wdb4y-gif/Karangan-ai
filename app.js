@@ -122,14 +122,12 @@ let vocabularyReviewState = {
 };
 
 let vocabularyRewardState = {
-  xp: Number(localStorage.getItem("karangan_vocab_xp_v1") || 0),
   combo: 0
 };
 
 function showVocabularyReward(type, message, xp=0) {
   if (xp > 0) {
-    vocabularyRewardState.xp += xp;
-    localStorage.setItem("karangan_vocab_xp_v1", String(vocabularyRewardState.xp));
+    addXP(xp);
   }
   document.getElementById("vocab-reward-overlay")?.remove();
   const good = type === "good";
