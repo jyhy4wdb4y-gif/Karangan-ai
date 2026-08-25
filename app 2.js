@@ -165,8 +165,8 @@ function showVocabularyReward(type, message, xp=0) {
   </div>`;
   document.body.appendChild(overlay);
   setTimeout(()=>overlay.classList.add("show"),20);
-  setTimeout(()=>overlay.classList.add("hide"),2700);
-  setTimeout(()=>overlay.remove(),3000);
+  setTimeout(()=>overlay.classList.add("hide"),1700);
+  setTimeout(()=>overlay.remove(),2000);
 }
 
 (function injectVocabularyRewardStyles(){
@@ -10044,7 +10044,7 @@ window.KaranganAI = {
 (() => {
   "use strict";
 
-  const L2_VERSION = "12.2.1";
+  const L2_VERSION = "12.2.2";
   const L2_DAILY_KEY = "karangan_ai_l2_master_v12_2_daily";
 
 
@@ -10342,6 +10342,42 @@ window.KaranganAI = {
     `;
   }
 
+  function l2mShowMasterReward(masteredOn) {
+    if (typeof showVocabularyReward === "function") {
+      if (masteredOn) {
+        showVocabularyReward(
+          "good",
+          vocabularyRewardState?.combo >= 5
+            ? "🔥 Super Memory!"
+            : "🌟 Syabas! Perkataan ini sudah kamu kuasai!",
+          3
+        );
+      } else {
+        showVocabularyReward(
+          "encourage",
+          "💪 Mari ulang kaji perkataan ini semula.",
+          0
+        );
+      }
+      return;
+    }
+
+    // Fallback animation if the legacy reward function is unavailable.
+    document.getElementById("vocab-reward-overlay")?.remove();
+    const overlay = document.createElement("div");
+    overlay.id = "vocab-reward-overlay";
+    overlay.innerHTML = `
+      <div class="vocab-reward-pop is-good">
+        <img class="vocab-reward-cartoon" src="${masteredOn ? "smart-hebat.png" : "smart-encourage.png"}" alt="SMART reward" />
+        <div class="vocab-reward-title">${masteredOn ? "🌟 Syabas!" : "💪 Cuba lagi!"}</div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    setTimeout(() => overlay.classList.add("show"), 20);
+    setTimeout(() => overlay.classList.add("hide"), 1700);
+    setTimeout(() => overlay.remove(), 2000);
+  }
+
   function l2mBindCommon(year) {
     document.querySelectorAll("[data-l2m-speak]").forEach(button => {
       button.onclick = () => l2mSpeak(button.dataset.l2mSpeak);
@@ -10375,25 +10411,13 @@ window.KaranganAI = {
           if (typeof vocabularyRewardState !== "undefined") {
             if (!wasMastered) {
               vocabularyRewardState.combo += 1;
-              if (typeof showVocabularyReward === "function") {
-                showVocabularyReward(
-                  "good",
-                  vocabularyRewardState.combo >= 5
-                    ? "🔥 Super Memory!"
-                    : "🌟 Syabas! Perkataan ini sudah kamu kuasai!",
-                  2
-                );
-              }
+              l2mShowMasterReward(true);
             } else {
               vocabularyRewardState.combo = 0;
-              if (typeof showVocabularyReward === "function") {
-                showVocabularyReward(
-                  "encourage",
-                  "💪 Mari ulang kaji perkataan ini semula.",
-                  0
-                );
-              }
+              l2mShowMasterReward(false);
             }
+          } else {
+            l2mShowMasterReward(!wasMastered);
           }
         }
 
@@ -10546,5 +10570,5 @@ window.KaranganAI = {
     source: "CurriculumDB"
   };
 
-  console.log("✅ MASTER CURRICULUM v12.2.1 + 2S ANIMATION loaded");
+  console.log("✅ MASTER CURRICULUM v12.2.2 + FIXED 2S SMART ANIMATION loaded");
 })();
