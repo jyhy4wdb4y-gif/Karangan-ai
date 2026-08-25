@@ -10034,3 +10034,411 @@ window.KaranganAI = {
   console.log("✅ Langkah 2 Year Selector UI v9.1 loaded");
 })();
 
+/* =========================================================
+   KARANGAN AI — MASTER CURRICULUM v12.1
+   FINAL LANGKAH 2 OWNER
+   Data source:
+     CurriculumDB.getVocabularyByYear(year)
+     CurriculumDB.getAyatByYear(year)
+   ========================================================= */
+(() => {
+  "use strict";
+
+  const L2_VERSION = "12.1";
+  const L2_DAILY_KEY = "karangan_ai_l2_master_v12_1_daily";
+
+  function l2mDB() {
+    return window.CurriculumDB || null;
+  }
+
+  function l2mEngine() {
+    return window.KaranganVocabulary || null;
+  }
+
+  function l2mYear() {
+    const e = l2mEngine();
+    let y = Number(
+      e?.getLearningYear?.() ||
+      localStorage.getItem("karangan_ai_learning_year") ||
+      1
+    );
+    if (![1,2,3,4,5,6].includes(y)) y = 1;
+    return y;
+  }
+
+  function l2mSetYear(year) {
+    const y = Number(year);
+    if (![1,2,3,4,5,6].includes(y)) return;
+    try { localStorage.setItem("karangan_ai_learning_year", String(y)); } catch (_) {}
+    try { l2mEngine()?.setLearningYear?.(y); } catch (_) {}
+  }
+
+  function l2mEsc(v) {
+    return String(v ?? "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
+  }
+
+  function l2mWords(year) {
+    const db = l2mDB();
+    if (!db?.ready) return [];
+    return db.getVocabularyByYear(year).map(x => ({
+      ...x,
+      word: x.bm || "",
+      translation: [x.zh, x.en].filter(Boolean).join(" · "),
+      meaning: x.meaningBm || "",
+      usage: x.writingUse || ""
+    }));
+  }
+
+  function l2mAyat(year) {
+    const db = l2mDB();
+    if (!db?.ready) return [];
+    return db.getAyatByYear(year);
+  }
+
+  function l2mDateKey() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  }
+
+  function l2mHash(seed) {
+    let h = 2166136261;
+    for (let i=0;i<seed.length;i++) {
+      h ^= seed.charCodeAt(i);
+      h = Math.imul(h,16777619);
+    }
+    return h >>> 0;
+  }
+
+  function l2mPick(list,count,seed) {
+    const a = [...list];
+    let s = l2mHash(seed) || 1;
+    const rnd = () => {
+      s ^= s << 13; s ^= s >>> 17; s ^= s << 5;
+      return (s >>> 0) / 4294967296;
+    };
+    for (let i=a.length-1;i>0;i--) {
+      const j = Math.floor(rnd()*(i+1));
+      [a[i],a[j]]=[a[j],a[i]];
+    }
+    return a.slice(0,Math.min(count,a.length));
+  }
+
+  function l2mToday(year) {
+    const allW = l2mWords(year);
+    const allA = l2mAyat(year);
+    const date = l2mDateKey();
+
+    let state = {};
+    try { state = JSON.parse(localStorage.getItem(L2_DAILY_KEY) || "{}"); } catch (_) {}
+
+    state[year] ||= {};
+    let rec = state[year][date];
+
+    const wm = new Map(allW.map(x => [String(x.id), x]));
+    const am = new Map(allA.map(x => [String(x.id), x]));
+
+    const valid = rec &&
+      Array.isArray(rec.w) &&
+      Array.isArray(rec.a) &&
+      rec.w.every(id => wm.has(String(id))) &&
+      rec.a.every(id => am.has(String(id)));
+
+    if (!valid) {
+      rec = {
+        w: l2mPick(allW,10,`${date}|${year}|v12.1|words`).map(x=>x.id),
+        a: l2mPick(allA,5,`${date}|${year}|v12.1|ayat`).map(x=>x.id)
+      };
+      state[year][date] = rec;
+      try { localStorage.setItem(L2_DAILY_KEY, JSON.stringify(state)); } catch (_) {}
+    }
+
+    return {
+      words: rec.w.map(id => wm.get(String(id))).filter(Boolean),
+      ayat: rec.a.map(id => am.get(String(id))).filter(Boolean)
+    };
+  }
+
+  function l2mSpeak(text) {
+    if (window.KaranganVoiceV5?.speak) {
+      return window.KaranganVoiceV5.speak(text);
+    }
+    if (!("speechSynthesis" in window)) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(String(text || ""));
+    u.lang = "ms-MY";
+    u.rate = .88;
+    speechSynthesis.speak(u);
+  }
+
+  function l2mSaved(item) {
+    try {
+      return l2mEngine()?.findWord?.(item.bm || item.word) || null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function l2mWordCard(item) {
+    const saved = l2mSaved(item);
+    const mastered = Boolean(saved?.mastered);
+
+    return `
+      <div style="padding:17px;border:1px solid #ece8e1;border-radius:20px;background:white;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+          <div>
+            <div style="font-size:12px;font-weight:900;color:#6b55d9">
+              ${l2mEsc(item.id)} · ${l2mEsc(item.category || item.taxonomy || "Kosa Kata")}
+            </div>
+            <div style="font-size:22px;font-weight:950;margin-top:4px">
+              ${l2mEsc(item.bm)}
+            </div>
+          </div>
+          <span style="font-size:11px;font-weight:900;padding:5px 9px;border-radius:999px;background:${mastered ? "#e8f8ef" : "#f6f2ff"}">
+            ${mastered ? "DIKUASAI" : "MASTER"}
+          </span>
+        </div>
+
+        <div style="margin-top:8px;color:#6b55d9;font-weight:800">
+          🇨🇳 ${l2mEsc(item.zh || "")}
+        </div>
+
+        <div style="margin-top:4px;color:#5f6a70">
+          🇬🇧 ${l2mEsc(item.en || "")}
+        </div>
+
+        ${item.meaningBm ? `
+          <div style="margin-top:10px;padding:10px 12px;border-radius:12px;background:#faf9f7">
+            <strong>Makna BM:</strong> ${l2mEsc(item.meaningBm)}
+          </div>
+        ` : ""}
+
+        ${item.example ? `
+          <div style="margin-top:9px;line-height:1.55">
+            <strong>Ayat Contoh:</strong> ${l2mEsc(item.example)}
+          </div>
+        ` : ""}
+
+        ${item.writingUse ? `
+          <div style="margin-top:7px;color:#65727a">
+            <strong>Kegunaan Karangan:</strong> ${l2mEsc(item.writingUse)}
+          </div>
+        ` : ""}
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+          <button type="button" class="secondary-button" data-l2m-speak="${l2mEsc(item.bm)}">
+            🔊 Dengar
+          </button>
+          <button type="button" class="secondary-button" data-l2m-master="${l2mEsc(item.id)}">
+            ${mastered ? "✓ Sudah Kuasai" : "✓ Kuasai"}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  function l2mAyatCard(item) {
+    return `
+      <div style="padding:17px;border:1px solid #f0dfbd;border-radius:20px;background:#fff8ea;margin-bottom:12px">
+        <div style="font-size:12px;font-weight:900;color:#8c6a2e">
+          ${l2mEsc(item.id)} · ${l2mEsc(item.function || "Ayat Cantik")}
+        </div>
+        <div style="font-size:19px;font-weight:900;line-height:1.55;margin-top:6px">
+          ${l2mEsc(item.text || "")}
+        </div>
+        ${item.purpose ? `
+          <div style="margin-top:8px;color:#6f6657">
+            <strong>Fungsi:</strong> ${l2mEsc(item.purpose)}
+          </div>
+        ` : ""}
+        <button type="button" class="secondary-button" data-l2m-speak="${l2mEsc(item.text || "")}" style="margin-top:10px">
+          🔊 Dengar
+        </button>
+      </div>
+    `;
+  }
+
+  function l2mBindCommon(year) {
+    document.querySelectorAll("[data-l2m-speak]").forEach(button => {
+      button.onclick = () => l2mSpeak(button.dataset.l2mSpeak);
+    });
+
+    document.querySelectorAll("[data-l2m-master]").forEach(button => {
+      button.onclick = () => {
+        const item = l2mWords(year).find(x => String(x.id) === String(button.dataset.l2mMaster));
+        if (!item) return;
+
+        const e = l2mEngine();
+        let saved = l2mSaved(item);
+
+        if (!saved) {
+          const result = e?.addWord?.({
+            word: item.bm,
+            translation: [item.zh,item.en].filter(Boolean).join(" · "),
+            meaning: item.meaningBm || "",
+            example: item.example || "",
+            category: item.category || item.taxonomy || "Kosa Kata",
+            source: "curriculum-master-v12.1",
+            emoji: "🧠"
+          });
+          saved = result?.word || l2mSaved(item);
+        }
+
+        if (saved) {
+          e?.markMastered?.(saved.id, !saved.mastered);
+        }
+
+        window.renderVocabularyModule();
+      };
+    });
+  }
+
+  function l2mRenderAllWords(year) {
+    const list = l2mWords(year);
+
+    openModuleScreen(`
+      <span class="section-kicker">MASTER CURRICULUM v${L2_VERSION}</span>
+      <h1>📚 Semua Kosa Kata · Tahun ${year}</h1>
+
+      <div style="padding:12px 14px;background:#eaf8f0;border-radius:14px;margin:12px 0 18px">
+        ✅ Curriculum Master FINAL · <strong>${list.length}</strong> item
+      </div>
+
+      ${list.map(l2mWordCard).join("") || "<p>Tiada data.</p>"}
+
+      <button id="l2mBackToday" class="primary-button" type="button" style="width:100%;margin-top:18px">
+        ← Kembali ke Hari Ini
+      </button>
+    `, 28);
+
+    l2mBindCommon(year);
+    byId("l2mBackToday")?.addEventListener("click", window.renderVocabularyModule);
+  }
+
+  function l2mRender() {
+    const db = l2mDB();
+
+    if (!db?.ready) {
+      openModuleScreen(`
+        <span class="section-kicker">MASTER CURRICULUM v${L2_VERSION}</span>
+        <h1>🧠 Kosa Kata</h1>
+        <p>Sedang memuatkan Curriculum Master FINAL...</p>
+      `,28);
+      return;
+    }
+
+    const year = l2mYear();
+    const today = l2mToday(year);
+    const totalWords = l2mWords(year).length;
+    const totalAyat = l2mAyat(year).length;
+
+    openModuleScreen(`
+      <span class="section-kicker">MASTER CURRICULUM v${L2_VERSION}</span>
+      <h1>🧠 Kosa Kata Hari Ini</h1>
+
+      <div style="padding:14px;background:#f7f5ff;border-radius:16px;margin:14px 0 18px">
+        <div style="font-weight:900;margin-bottom:10px">🎓 Pilih Tahun</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+          ${[1,2,3,4,5,6].map(y => `
+            <button
+              type="button"
+              data-l2m-year="${y}"
+              class="${y === year ? "primary-button" : "secondary-button"}"
+            >
+              Tahun ${y}
+            </button>
+          `).join("")}
+        </div>
+      </div>
+
+      <div style="padding:12px 14px;background:#eaf8f0;border-radius:14px;margin-bottom:14px">
+        ✅ <strong>Curriculum Master FINAL</strong> · Tahun ${year} · ${totalWords} Vocabulary/Frasa · ${totalAyat} Ayat Cantik
+      </div>
+
+      ${today.words.map(l2mWordCard).join("") || "<p>Tiada kosa kata.</p>"}
+
+      <h2 style="margin-top:28px">✨ 5 Ayat Cantik Hari Ini</h2>
+      ${today.ayat.map(l2mAyatCard).join("") || "<p>Tiada Ayat Cantik.</p>"}
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px">
+        <button id="l2mAllWords" class="secondary-button" type="button">
+          📚 Semua Kosa Kata
+        </button>
+        <button id="l2mReview" class="primary-button" type="button">
+          🎯 Mula Ulang Kaji
+        </button>
+      </div>
+    `,28);
+
+    document.querySelectorAll("[data-l2m-year]").forEach(button => {
+      button.onclick = () => {
+        l2mSetYear(Number(button.dataset.l2mYear));
+        window.renderVocabularyModule();
+      };
+    });
+
+    l2mBindCommon(year);
+
+    byId("l2mAllWords")?.addEventListener("click", () => {
+      l2mRenderAllWords(year);
+    });
+
+    byId("l2mReview")?.addEventListener("click", () => {
+      const review = today.words.slice(0,5).map(item => {
+        const e = l2mEngine();
+        let saved = l2mSaved(item);
+
+        if (!saved) {
+          const result = e?.addWord?.({
+            word: item.bm,
+            translation: [item.zh,item.en].filter(Boolean).join(" · "),
+            meaning: item.meaningBm || "",
+            example: item.example || "",
+            category: item.category || item.taxonomy || "Kosa Kata",
+            source: "curriculum-master-v12.1",
+            emoji: "🧠"
+          });
+          saved = result?.word || l2mSaved(item);
+        }
+
+        return saved || {
+          id: item.id,
+          word: item.bm,
+          translation: [item.zh,item.en].filter(Boolean).join(" · "),
+          meaning: item.meaningBm || "",
+          example: item.example || ""
+        };
+      });
+
+      vocabularyRewardState.combo = 0;
+      vocabularyReviewState = {
+        words: review,
+        index: 0,
+        answered: false,
+        year,
+        active: true
+      };
+      renderVocabularyReviewCard();
+    });
+  }
+
+  window.renderVocabularyModule = l2mRender;
+
+  try {
+    renderVocabularyModule = l2mRender;
+  } catch (_) {}
+
+  window.KaranganLangkah2Master = {
+    version: L2_VERSION,
+    render: l2mRender,
+    getWords: l2mWords,
+    getAyat: l2mAyat,
+    source: "CurriculumDB"
+  };
+
+  console.log("✅ MASTER CURRICULUM v12.1 loaded");
+})();
