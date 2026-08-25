@@ -2375,7 +2375,6 @@ function renderVocabularyModule() {
 }
 
 
-/* Langkah 2 v9.9.1 — Tahun 1–6 Ulang Kaji Data Fix */
 function startVocabularyReview() {
   const engine =
     getVocabularyEngine();
@@ -2383,33 +2382,16 @@ function startVocabularyReview() {
   const year =
     Number(engine?.getLearningYear?.() || 3);
 
-  engine?.ensureDailyContent?.(year);
-
   let words =
-    engine?.getReviewWordsForYear?.(5, year) || [];
+    engine?.getReviewWordsForYear?.(5, year) ||
+    engine?.getDailyNewWords?.(5, year) ||
+    engine?.getReviewWords?.(5) ||
+    getVocabularyWords().slice(
+      0,
+      5
+    );
 
-  if (!Array.isArray(words) || !words.length) {
-    words =
-      engine?.getDailyNewWords?.(5, year) || [];
-  }
-
-  if (!Array.isArray(words) || !words.length) {
-    const bank =
-      engine?.getMasterWordBank?.() || [];
-
-    words = bank
-      .filter(
-        item =>
-          Number(
-            item.year ||
-            item.minYear ||
-            3
-          ) === year
-      )
-      .slice(0, 5);
-  }
-
-  if (!Array.isArray(words) || !words.length) {
+  if (!words.length) {
     showToast(
       `Belum ada kosa kata Tahun ${year} untuk diuji.`
     );
@@ -9700,12 +9682,13 @@ window.KaranganAI = {
     speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(String(text||"")); u.lang="ms-MY"; u.rate=.88; speechSynthesis.speak(u);
   }
   function l2WordCard(item){
-    return `<div style="padding:16px;border:1px solid #ece8e1;border-radius:18px;background:#fff;margin-bottom:10px">
+    const mastered=Boolean(item.mastered);
+    return `<div style="padding:16px;border:1px solid #ece8e1;border-radius:18px;background:#fff;margin-bottom:10px;opacity:${mastered?.78:1}">
       <div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><div><small>${escapeHtml(item.category||"Kosa Kata")}</small><strong style="display:block;font-size:20px">${escapeHtml(item.word||"")}</strong></div><button type="button" data-l2-speak="${escapeAttribute(item.word||"")}" class="secondary-button">🔊</button></div>
       <div style="color:#6b55d9;font-weight:800;margin-top:6px">${escapeHtml(item.translation||[item.zh,item.en].filter(Boolean).join(" · "))}</div>
       ${item.meaning?`<p style="color:#65727a;line-height:1.55">🇲🇾 ${escapeHtml(item.meaning)}</p>`:""}
       ${item.example?`<p style="background:#faf8ff;padding:10px;border-radius:12px">📝 ${escapeHtml(item.example)}</p>`:""}
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-l2-master="${escapeAttribute(item.id||"")}" class="secondary-button">✓ Sudah Kuasai</button><button type="button" data-l2-remove-word="${escapeAttribute(item.word||"")}" class="secondary-button">🗑 Buang</button></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-l2-master="${escapeAttribute(item.id||"")}" data-l2-mastered="${mastered?'1':'0'}" class="secondary-button">${mastered?'↩ Belajar Semula':'✓ Sudah Kuasai'}</button><button type="button" data-l2-remove-word="${escapeAttribute(item.word||"")}" class="secondary-button">🗑 Buang</button></div>
     </div>`;
   }
   function l2AyatCard(item,e){
@@ -9729,15 +9712,27 @@ window.KaranganAI = {
     $$('[data-l2-speak]').forEach(b=>b.onclick=()=>l2Speak(b.dataset.l2Speak));
     $$('[data-l2-master]').forEach(b=>b.onclick=()=>{
       if(!b.dataset.l2Master) return;
-      e?.markMastered?.(b.dataset.l2Master,true);
-      vocabularyRewardState.combo += 1;
-      showVocabularyReward(
-        "good",
-        vocabularyRewardState.combo >= 5
-          ? "🔥 Hebat! Banyak perkataan sudah kamu kuasai!"
-          : "🌟 Syabas! Perkataan ini sudah kamu kuasai!",
-        3
-      );
+      const wasMastered=b.dataset.l2Mastered==="1";
+      e?.markMastered?.(b.dataset.l2Master,!wasMastered);
+
+      if(!wasMastered){
+        vocabularyRewardState.combo += 1;
+        showVocabularyReward(
+          "good",
+          vocabularyRewardState.combo >= 5
+            ? "🔥 Hebat! Banyak perkataan sudah kamu kuasai!"
+            : "🌟 Syabas! Perkataan ini sudah kamu kuasai!",
+          3
+        );
+      }else{
+        vocabularyRewardState.combo = 0;
+        showVocabularyReward(
+          "encourage",
+          "💪 Bagus! Mari ulang kaji perkataan ini semula.",
+          0
+        );
+      }
+
       setTimeout(renderVocabularyModule, 950);
     });
     $$('[data-l2-remove-word]').forEach(b=>b.onclick=()=>{e?.removeDailyWord?.(b.dataset.l2RemoveWord);renderVocabularyModule();});
@@ -9802,7 +9797,7 @@ window.KaranganAI = {
     const daily=e?.getDailyNewWords?.(10,year)||[]; const ayat=e?.getDailyAyat?.(5,year)||[]; const all=getVocabularyWords(); const stats=e?.curriculumStats?.(year)||{};
     openModuleScreen(`<span class="section-kicker">LANGKAH 2 · TAHUN ${year}</span><h1>🧠 Kosa Kata Hari Ini</h1>${l2YearSelector(year)}<p>Setiap hari kamu membuka Langkah 2, sistem memberikan sehingga <strong>10 kosa kata/frasa baharu</strong> dan <strong>5 Ayat Cantik baharu</strong>. Kandungan lama kekal dalam koleksi kamu.</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0"><span class="section-kicker">Hari Ini ${daily.length}/10</span><span class="section-kicker">Dipelajari ${stats.unlockedWords||0}</span><span class="section-kicker">Dikuasai ${all.filter(w=>w.mastered).length}</span></div>
-      ${daily.map(l2WordCard).join('')||'<div style="padding:18px;background:#eef9f3;border-radius:16px">🎉 Semua kandungan yang tersedia untuk tahap ini telah dibuka.</div>'}
+      ${daily.map(l2WordCard).join('')||'<div style="padding:18px;background:#eef9f3;border-radius:16px">📚 Tiada kosa kata ditetapkan untuk hari ini.</div>'}
       <h2 style="margin-top:28px">✨ 5 Ayat Cantik Hari Ini</h2><p>Ayat serba guna untuk membantu karangan menjadi lebih hidup dan matang.</p>${ayat.map(x=>l2AyatCard(x,e)).join('')||'<p>Tiada ayat baharu hari ini.</p>'}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px"><button id="l2All" class="secondary-button" type="button">📚 Semua Kosa Kata</button><button id="l2AyatHistory" class="secondary-button" type="button">✨ Koleksi Ayat</button></div>
       <button id="l2Review" class="primary-button" type="button" style="width:100%;margin-top:10px">🎯 Mula Ulang Kaji</button>
@@ -9810,6 +9805,6 @@ window.KaranganAI = {
     bindL2();
   };
 
-  console.log("✅ Langkah 2 Year Selector UI v9.1 loaded");
+  console.log("✅ Langkah 2 Daily Display Fix v9.9.2 loaded");
 })();
 
