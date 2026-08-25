@@ -2878,103 +2878,30 @@
     return x?.theme||"Ayat Cantik";
   }
 
-
-  // v10.5 — Kosa Kata Quality & Variety Engine
-  // Detects mechanical phrase families such as:
-  // "bekerjasama di sekolah dengan tekun / ikhlas / tertib"
-  // and prevents several variants of the same skeleton appearing together.
-  function wordSkeletonKey(item){
-    let w=normalizeKey(item?.word||"");
-    w=w
-      .replace(/\b(dengan penuh semangat|dengan bersungguh-sungguh|dengan tekun|dengan ikhlas|dengan tertib|dengan gembira|dengan berhati-hati|dengan baik)\b/g,"")
-      .replace(/\b(di sekolah|di rumah|di kelas|di taman|di perpustakaan|di kantin|di padang|di kawasan sekolah|dalam kehidupan seharian)\b/g,"")
-      .replace(/\s+/g," ")
-      .trim();
-    return w || normalizeKey(item?.word||"");
+  // v10.4: identify how a sentence STARTS, so five cards do not all begin with
+  // "Di rumah...", "Pada pagi itu..." or another repeated frame.
+  function ayatOpeningKey(x){
+    const t=String(x?.text||"").trim().toLowerCase();
+    const first=t.split(/[,.!?]/)[0].trim();
+    const patterns=[
+      "di rumah","di sekolah","di taman","di kawasan","pada pagi","pada hari","pada waktu",
+      "semasa","ketika","selepas","sebelum","tanpa membuang masa","saya berasa","kami berasa",
+      "kami bekerjasama","pengalaman","suasana","pemandangan","langit","udara","bunga","pokok"
+    ];
+    return patterns.find(p=>first.startsWith(p)) || first.split(/\s+/).slice(0,3).join(" ");
   }
 
-  function wordOpeningKey(item){
-    return normalizeKey(item?.word||"")
-      .split(/\s+/)
-      .slice(0,2)
-      .join(" ");
-  }
-
-  function isMechanicalWord(item){
-    const w=normalizeKey(item?.word||"");
-    const ex=normalizeKey(item?.example||"");
-    const cat=String(item?.category||"");
-    return (
-      /Frasa Situasi|Frasa Contoh/.test(cat) ||
-      /\bdi (sekolah|rumah|kelas|taman|perpustakaan|kantin|padang)\b.*\bdengan\b/.test(w) ||
-      /^pada hari itu, kami /.test(ex)
-    );
-  }
-
-  function pickQualityWordDaily(items, usedIds, removedCheck, count){
-    const pool=items.filter(x=>!usedIds.has(x.id) && !removedCheck(x));
-    const result=[];
-    const usedSkeletons=new Set();
-    const usedOpenings=new Map();
-    const usedCategories=new Map();
-
-    const score=x=>{
-      const cat=String(x?.category||"");
-      let s=0;
-      if(!isMechanicalWord(x)) s+=8;
-      if(/Kata Adjektif|Kata Kerja|Kata Nama|Perasaan|Nilai Murni|Penanda Wacana|Frasa Nilai|Frasa Deskriptif|Frasa Keterangan|Frasa Tema/.test(cat)) s+=5;
-      if(/Frasa Situasi|Frasa Contoh/.test(cat)) s-=4;
-      const wc=normalizeKey(x?.word||"").split(/\s+/).filter(Boolean).length;
-      if(wc>=1 && wc<=5) s+=3;
-      if(wc>8) s-=2;
-      return s;
-    };
-
-    const sorted=[...pool].sort((a,b)=>score(b)-score(a));
-
-    // Pass 1: strict — unique phrase skeleton, max 2 same opening/category.
-    for(const x of sorted){
-      if(result.length>=count) break;
-      const sk=wordSkeletonKey(x);
-      const op=wordOpeningKey(x);
-      const cat=String(x.category||x.theme||"Umum");
-      if(usedSkeletons.has(sk)) continue;
-      if((usedOpenings.get(op)||0)>=2) continue;
-      if((usedCategories.get(cat)||0)>=3) continue;
-      result.push(x);
-      usedSkeletons.add(sk);
-      usedOpenings.set(op,(usedOpenings.get(op)||0)+1);
-      usedCategories.set(cat,(usedCategories.get(cat)||0)+1);
-    }
-
-    // Pass 2: keep skeleton unique, relax category/opening limits.
-    for(const x of sorted){
-      if(result.length>=count) break;
-      if(result.some(r=>r.id===x.id)) continue;
-      const sk=wordSkeletonKey(x);
-      if(usedSkeletons.has(sk)) continue;
-      result.push(x);
-      usedSkeletons.add(sk);
-    }
-
-    // Pass 3: final fallback if a year's bank is highly templated.
-    for(const x of sorted){
-      if(result.length>=count) break;
-      if(!result.some(r=>r.id===x.id)) result.push(x);
-    }
-
-    return result.slice(0,count);
-  }
-
-  function wordSelectionNeedsRepair(list,count=WORD_TARGET){
-    if(!Array.isArray(list) || list.length<count) return false;
-    const skeletons=new Set(list.map(wordSkeletonKey));
-    const openings=list.map(wordOpeningKey);
-    const openingCounts=new Map();
-    openings.forEach(k=>openingCounts.set(k,(openingCounts.get(k)||0)+1));
-    const worstOpening=Math.max(0,...openingCounts.values());
-    const mechanical=list.filter(isMechanicalWord).length;
-    return skeletons.size < Math.min(count,8) || worstOpening>=4 || mechanical>=7;
+  // v10.4: identify the MAIN IDEA/value. This catches the screenshot case where
+  // different purposes were selected but every sentence still talked about kasih sayang.
+  function ayatFocusKey(x){
+    const t=String(x?.text||"").toLowerCase();
+    const focuses=[
+      "kasih sayang","kerjasama","tanggungjawab","disiplin","semangat kejiranan","usaha gigih",
+      "kebersihan","hormat-menghormati","tolong-menolong","prihatin","kejujuran","keberanian",
+      "kesyukuran","persahabatan","keluarga","alam sekitar","kesihatan","keselamatan",
+      "cuaca","bunga","pokok","langit","pemandangan","pengalaman","aktiviti"
+    ];
+    return focuses.find(f=>t.includes(f)) || String(x?.theme||"Umum").toLowerCase();
   }
 
   function pickDiverseDaily(items, usedIds, removedCheck, count, groupKey) {
@@ -3000,16 +2927,43 @@
     return result.slice(0, count);
   }
 
+  // True Variety Engine: greedily chooses the next sentence that adds the most
+  // NEW purpose + opening + focus. Purpose alone is not enough.
+  function pickTrueVarietyAyat(items, usedIds, removedCheck, count){
+    const pool=items.filter(x=>!usedIds.has(x.id)&&!removedCheck(x));
+    const result=[];
+    const purposes=new Set(), openings=new Set(), focuses=new Set();
+    while(result.length<count && pool.length){
+      let bestIndex=0, bestScore=-Infinity;
+      for(let i=0;i<pool.length;i++){
+        const x=pool[i];
+        const p=ayatPurposeKey(x), o=ayatOpeningKey(x), f=ayatFocusKey(x);
+        let score=0;
+        if(!purposes.has(p)) score+=6;
+        if(!openings.has(o)) score+=5;
+        if(!focuses.has(f)) score+=7;
+        // Strong penalty for a repeated frame or repeated subject.
+        if(openings.has(o)) score-=7;
+        if(focuses.has(f)) score-=9;
+        // Stable daily rotation so the same first five are not always preferred.
+        score+=((Number(String(x.id||"").replace(/\D/g,""))||i)+new Date().getDate())%11/100;
+        if(score>bestScore){bestScore=score;bestIndex=i;}
+      }
+      const chosen=pool.splice(bestIndex,1)[0];
+      result.push(chosen);
+      purposes.add(ayatPurposeKey(chosen)); openings.add(ayatOpeningKey(chosen)); focuses.add(ayatFocusKey(chosen));
+    }
+    return result;
+  }
+
   function ensureToday(y=getLearningYear()){
     y=clampYear(y); const ys=yearState(y); const key=dateKey();
     if(ys.days[key]) return ys.days[key];
     const usedW=new Set(ys.unlockedWordIds||[]); const removedW=new Set(dailyState.removedWordKeys||[]);
-    const nextW=pickQualityWordDaily(eligibleWords(y),usedW,x=>removedW.has(normalizeKey(x.word)),WORD_TARGET);
+    const nextW=pickDiverseDaily(eligibleWords(y),usedW,x=>removedW.has(normalizeKey(x.word)),WORD_TARGET,x=>x.category||x.theme);
     const usedA=new Set(ys.unlockedAyatIds||[]); const removedA=new Set(dailyState.removedAyatIds||[]);
-    // v10.3: Ayat Cantik must vary by sentence purpose, not only by the bank's broad theme.
-    // This prevents Tahun 4–6 from showing five near-identical "Nilai / Penutup" cards.
-    const nextA=pickDiverseDaily(eligibleAyat(y),usedA,x=>removedA.has(x.id),AYAT_TARGET,ayatPurposeKey);
-    ys.days[key]={wordIds:nextW.map(x=>x.id),ayatIds:nextA.map(x=>x.id),createdAt:new Date().toISOString()};
+    const nextA=pickTrueVarietyAyat(eligibleAyat(y),usedA,x=>removedA.has(x.id),AYAT_TARGET);
+    ys.days[key]={wordIds:nextW.map(x=>x.id),ayatIds:nextA.map(x=>x.id),createdAt:new Date().toISOString(),varietyVersion:10.4};
     ys.unlockedWordIds=[...(ys.unlockedWordIds||[]),...nextW.map(x=>x.id)];
     ys.unlockedAyatIds=[...(ys.unlockedAyatIds||[]),...nextA.map(x=>x.id)];
     const engine=window.KaranganVocabulary;
@@ -3026,62 +2980,33 @@
   function getDailyNewWords(limit=WORD_TARGET,y=getLearningYear()){
     y=clampYear(y); const day=ensureToday(y); const engine=window.KaranganVocabulary;
     const byId=new Map(MASTER_WORD_BANK.map(x=>[x.id,x]));
-    let raw=(day.wordIds||[]).map(id=>byId.get(id)).filter(Boolean)
-      .filter(item=>!dailyState.removedWordKeys.includes(normalizeKey(item.word)));
-
-    // v10.5 live repair for an already-saved repetitive day.
-    // Keeps history/mastery intact; only today's displayed selection is rebalanced.
-    if(wordSelectionNeedsRepair(raw,Math.min(WORD_TARGET,limit))){
-      const removedW=new Set(dailyState.removedWordKeys||[]);
-      const ys=yearState(y);
-      const today'sIds=new Set(day.wordIds||[]);
-      const historicalUsed=new Set((ys.unlockedWordIds||[]).filter(id=>!today'sIds.has(id)));
-      let rebuilt=pickQualityWordDaily(
-        eligibleWords(y),
-        historicalUsed,
-        x=>removedW.has(normalizeKey(x.word)),
-        WORD_TARGET
-      );
-      if(rebuilt.length<WORD_TARGET){
-        rebuilt=pickQualityWordDaily(
-          eligibleWords(y),
-          new Set(),
-          x=>removedW.has(normalizeKey(x.word)),
-          WORD_TARGET
-        );
-      }
-      if(rebuilt.length){
-        day.wordIds=rebuilt.map(x=>x.id);
-        ys.unlockedWordIds=[...new Set([...(ys.unlockedWordIds||[]),...day.wordIds])];
-        saveDaily();
-        raw=rebuilt;
-      }
-    }
-
-    return raw.slice(0,limit).map(item=>{
+    return (day.wordIds||[]).slice(0,limit).map(id=>byId.get(id)).filter(Boolean).map(item=>{
       const saved=engine?.findWord?.(item.word);
       return saved ? {...saved,...item,id:saved.id,bankId:item.id,year:y} : {...item,bankId:item.id,year:y};
-    });
+    }).filter(item=>!dailyState.removedWordKeys.includes(normalizeKey(item.word)));
   }
   function getDailyAyat(limit=AYAT_TARGET,y=getLearningYear()){
     y=clampYear(y); const day=ensureToday(y); const byId=new Map(MASTER_AYAT_BANK.map(x=>[x.id,x]));
     let current=(day.ayatIds||[]).map(id=>byId.get(id)).filter(Boolean).filter(a=>!dailyState.removedAyatIds.includes(a.id));
 
-    // v10.3 one-time live repair: if an already-saved day is visually repetitive,
-    // rebuild only today's Ayat Cantik selection. Mastery/history records stay intact.
+    // v10.4 live repair: also repair an already-saved TODAY from v10.3.
+    // We require diversity in purpose, opening AND focus, not just card labels.
     const purposes=new Set(current.map(ayatPurposeKey));
-    if(current.length>=AYAT_TARGET && purposes.size<Math.min(4,AYAT_TARGET)){
+    const openings=new Set(current.map(ayatOpeningKey));
+    const focuses=new Set(current.map(ayatFocusKey));
+    const needsRepair=current.length<AYAT_TARGET || day.varietyVersion!==10.4 ||
+      purposes.size<Math.min(4,AYAT_TARGET) || openings.size<Math.min(4,AYAT_TARGET) || focuses.size<Math.min(4,AYAT_TARGET);
+    if(needsRepair){
       const removedA=new Set(dailyState.removedAyatIds||[]);
       const mastered=new Set(dailyState.masteredAyatIds||[]);
       const pool=eligibleAyat(y).filter(x=>!removedA.has(x.id));
       const preferred=pool.filter(x=>!mastered.has(x.id));
-      const rebuilt=pickDiverseDaily(preferred.length>=AYAT_TARGET?preferred:pool,new Set(),x=>removedA.has(x.id),AYAT_TARGET,ayatPurposeKey);
+      let rebuilt=pickTrueVarietyAyat(preferred.length>=AYAT_TARGET?preferred:pool,new Set(),x=>removedA.has(x.id),AYAT_TARGET);
       if(rebuilt.length){
-        day.ayatIds=rebuilt.map(x=>x.id);
+        day.ayatIds=rebuilt.map(x=>x.id); day.varietyVersion=10.4;
         const ys=yearState(y);
         ys.unlockedAyatIds=[...new Set([...(ys.unlockedAyatIds||[]),...day.ayatIds])];
-        saveDaily();
-        current=rebuilt;
+        saveDaily(); current=rebuilt;
       }
     }
     return current.slice(0,limit);
@@ -3130,6 +3055,6 @@
   const engine=window.KaranganVocabulary || {};
   Object.assign(engine,{setLearningYear,getLearningYear,ensureDailyContent:ensureToday,getDailyNewWords,getDailyAyat,getUnlockedAyat,getReviewWordsForYear,markAyatMastered,isAyatMastered,removeAyat,removeDailyWord,curriculumStats,getMasterWordBank,getMasterAyatBank,DAILY_WORD_TARGET:WORD_TARGET,DAILY_AYAT_TARGET:AYAT_TARGET});
   window.KaranganVocabulary=engine;
-  console.log("✅ Langkah 2 v10.5 Kosa Kata Quality & Variety Engine |  Daily Display Fix v9.9.2 loaded",{words:MASTER_WORD_BANK.length,ayat:MASTER_AYAT_BANK.length});
+  console.log("✅ Langkah 2 v10.4 True Variety Engine loaded",{words:MASTER_WORD_BANK.length,ayat:MASTER_AYAT_BANK.length});
 })();
 
