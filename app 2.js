@@ -135,7 +135,7 @@ function showVocabularyReward(type, message, xp=0) {
       updateAllUI();
     }
   }
-  document.getElementById("vocab-reward-overlay")?.remove();
+  document.getElementById("l2m-smart-overlay-v124")?.remove();
   const good = type === "good";
   let rewardImage = "smart-bagus.png";
 
@@ -150,7 +150,8 @@ function showVocabularyReward(type, message, xp=0) {
   }
 
   const overlay = document.createElement("div");
-  overlay.id = "vocab-reward-overlay";
+  overlay.id = "l2m-smart-overlay-v124";
+    overlay.style.opacity = "1";
   const particles = good
     ? ["✦","★","⚡","✧","★","✦","⚡","✧"]
     : ["✦","💪","✧","⚡","✦","★"];
@@ -174,8 +175,8 @@ function showVocabularyReward(type, message, xp=0) {
   const s=document.createElement("style");
   s.id="vocab-reward-styles";
   s.textContent=`
-  #vocab-reward-overlay{position:fixed;inset:0;z-index:99999;pointer-events:none;display:flex;align-items:center;justify-content:center;background:rgba(255,248,235,.18)}
-  #vocab-reward-overlay.hide{opacity:0;transition:opacity .28s ease}
+  #l2m-smart-overlay-v124{position:fixed;inset:0;z-index:99999;pointer-events:none;display:flex;align-items:center;justify-content:center;background:rgba(255,248,235,.18)}
+  #l2m-smart-overlay-v124.hide{opacity:0;transition:opacity .28s ease}
   .vocab-reward-pop{
     min-width:min(82vw,440px);max-width:88vw;text-align:center;padding:22px 20px;border-radius:28px;
     background:linear-gradient(180deg,#11152d 0%,#171c3a 100%);
@@ -10044,7 +10045,7 @@ window.KaranganAI = {
 (() => {
   "use strict";
 
-  const L2_VERSION = "12.2.2";
+  const L2_VERSION = "12.4";
   const L2_DAILY_KEY = "karangan_ai_l2_master_v12_2_daily";
 
 
@@ -10343,53 +10344,185 @@ window.KaranganAI = {
   }
 
   function l2mShowMasterReward(masteredOn) {
-    if (typeof showVocabularyReward === "function") {
-      if (masteredOn) {
-        showVocabularyReward(
-          "good",
-          vocabularyRewardState?.combo >= 5
-            ? "🔥 Super Memory!"
-            : "🌟 Syabas! Perkataan ini sudah kamu kuasai!",
-          3
-        );
-      } else {
-        showVocabularyReward(
-          "encourage",
-          "💪 Mari ulang kaji perkataan ini semula.",
-          0
-        );
-      }
-      return;
-    }
+    // v12.4 — SMART reward with 2-second special effects.
+    const overlayId = "l2m-smart-overlay-v124";
+    document.getElementById(overlayId)?.remove();
 
-    // Fallback animation if the legacy reward function is unavailable.
-    document.getElementById("vocab-reward-overlay")?.remove();
     const overlay = document.createElement("div");
-    overlay.id = "vocab-reward-overlay";
-    overlay.innerHTML = `
-      <div class="vocab-reward-pop is-good">
-        <img class="vocab-reward-cartoon" src="${masteredOn ? "smart-hebat.png" : "smart-encourage.png"}" alt="SMART reward" />
-        <div class="vocab-reward-title">${masteredOn ? "🌟 Syabas!" : "💪 Cuba lagi!"}</div>
+    overlay.id = overlayId;
+    overlay.setAttribute("style", [
+      "position:fixed",
+      "inset:0",
+      "z-index:2147483647",
+      "display:flex",
+      "align-items:center",
+      "justify-content:center",
+      "background:radial-gradient(circle at center,rgba(55,70,160,.18),rgba(10,14,32,.42))",
+      "pointer-events:none",
+      "overflow:hidden",
+      "opacity:1"
+    ].join(";"));
+
+    const wrap = document.createElement("div");
+    wrap.setAttribute("style", [
+      "position:relative",
+      "width:min(88vw,450px)",
+      "min-height:360px",
+      "display:flex",
+      "align-items:center",
+      "justify-content:center"
+    ].join(";"));
+
+    const ring = document.createElement("div");
+    ring.setAttribute("style", [
+      "position:absolute",
+      "left:50%",
+      "top:48%",
+      "width:230px",
+      "height:230px",
+      "margin:-115px 0 0 -115px",
+      "border-radius:50%",
+      "border:4px solid rgba(77,225,255,.72)",
+      "box-shadow:0 0 22px rgba(77,225,255,.72),inset 0 0 20px rgba(139,93,255,.42)",
+      "opacity:0"
+    ].join(";"));
+
+    const pop = document.createElement("div");
+    pop.setAttribute("style", [
+      "position:relative",
+      "z-index:3",
+      "width:min(86vw,430px)",
+      "padding:20px 18px",
+      "border-radius:28px",
+      "text-align:center",
+      "color:#fff",
+      "background:linear-gradient(180deg,#11152d,#171c3a)",
+      "border:1px solid rgba(80,220,255,.34)",
+      "box-shadow:0 18px 60px rgba(10,14,32,.42),0 0 34px rgba(91,150,255,.18)",
+      "transform:scale(1)",
+      "opacity:1"
+    ].join(";"));
+
+    pop.innerHTML = `
+      <img
+        src="${masteredOn ? "/smart-hebat.png" : "/smart-encourage.png"}"
+        alt="SMART reward"
+        style="
+          width:min(72vw,330px);
+          max-height:38vh;
+          object-fit:contain;
+          display:block;
+          margin:0 auto 4px;
+          filter:drop-shadow(0 0 20px rgba(75,215,255,.42))
+                 drop-shadow(0 14px 24px rgba(22,25,48,.24));
+        "
+        onerror="this.style.display='none'"
+      />
+      <div style="font-size:23px;font-weight:950;line-height:1.25;margin-top:6px">
+        ${masteredOn ? "🌟 Syabas! Sudah Kuasai!" : "💪 Mari cuba lagi!"}
       </div>
+      ${masteredOn
+        ? '<div style="display:inline-block;margin-top:10px;padding:7px 14px;border-radius:999px;background:linear-gradient(90deg,#26d4ff,#8a5cff);font-weight:900;box-shadow:0 0 18px rgba(80,180,255,.35)">+3 XP · Hebat!</div>'
+        : ''
+      }
     `;
+
+    wrap.appendChild(ring);
+    wrap.appendChild(pop);
+
+    const particles = ["✦","★","⚡","✧","★","✦","⚡","✧","★","✦"];
+    particles.forEach((symbol, i) => {
+      const p = document.createElement("span");
+      p.textContent = symbol;
+      p.setAttribute("style", [
+        "position:absolute",
+        "left:50%",
+        "top:48%",
+        "z-index:5",
+        "font-size:24px",
+        "opacity:0",
+        "text-shadow:0 0 12px rgba(120,220,255,.9)"
+      ].join(";"));
+      wrap.appendChild(p);
+
+      const angle = (Math.PI * 2 * i) / particles.length;
+      const radius = 120 + (i % 3) * 22;
+      const x = Math.cos(angle) * radius;
+      const y = Math.sin(angle) * radius;
+
+      try {
+        p.animate(
+          [
+            { transform:"translate(-50%,-50%) scale(.2) rotate(0deg)", opacity:0 },
+            { transform:`translate(calc(-50% + ${x*.45}px),calc(-50% + ${y*.45}px)) scale(1.25) rotate(120deg)`, opacity:1, offset:.30 },
+            { transform:`translate(calc(-50% + ${x}px),calc(-50% + ${y}px)) scale(.75) rotate(300deg)`, opacity:0 }
+          ],
+          {
+            duration:1500,
+            delay:i*55,
+            easing:"cubic-bezier(.15,.7,.25,1)",
+            fill:"forwards"
+          }
+        );
+      } catch (_) {}
+    });
+
+    overlay.appendChild(wrap);
     document.body.appendChild(overlay);
-    setTimeout(() => overlay.classList.add("show"), 20);
-    setTimeout(() => overlay.classList.add("hide"), 1700);
+
+    try {
+      ring.animate(
+        [
+          { transform:"scale(.25) rotate(0deg)", opacity:0 },
+          { transform:"scale(1) rotate(90deg)", opacity:.9, offset:.22 },
+          { transform:"scale(1.22) rotate(230deg)", opacity:.55, offset:.62 },
+          { transform:"scale(1.45) rotate(420deg)", opacity:0 }
+        ],
+        { duration:1750, easing:"ease-in-out", fill:"both" }
+      );
+
+      pop.animate(
+        [
+          { transform:"translateY(55px) scale(.45) rotate(-7deg)", opacity:0 },
+          { transform:"translateY(-10px) scale(1.10) rotate(3deg)", opacity:1, offset:.17 },
+          { transform:"translateY(0) scale(.98) rotate(-2deg)", opacity:1, offset:.32 },
+          { transform:"translateY(-12px) scale(1.04) rotate(1deg)", opacity:1, offset:.55 },
+          { transform:"translateY(0) scale(1)", opacity:1, offset:.78 },
+          { transform:"translateY(-4px) scale(.98)", opacity:.96 }
+        ],
+        { duration:1750, easing:"cubic-bezier(.2,1.2,.3,1)", fill:"both" }
+      );
+    } catch (_) {}
+
+    setTimeout(() => {
+      overlay.style.transition = "opacity .22s ease";
+      overlay.style.opacity = "0";
+    }, 1760);
+
     setTimeout(() => overlay.remove(), 2000);
   }
 
-  function l2mBindCommon(year) {
+  function l2mBindCommon(year, afterToggle = () => window.renderVocabularyModule()) {
     document.querySelectorAll("[data-l2m-speak]").forEach(button => {
       button.onclick = () => l2mSpeak(button.dataset.l2mSpeak);
     });
 
     document.querySelectorAll("[data-l2m-master]").forEach(button => {
       button.onclick = () => {
-        const item = l2mWords(year).find(x => String(x.id) === String(button.dataset.l2mMaster));
+        const item = l2mWords(year).find(
+          x => String(x.id) === String(button.dataset.l2mMaster)
+        );
         if (!item) return;
 
         const e = l2mEngine();
         let saved = l2mSaved(item);
+        const wasMastered = Boolean(saved?.mastered);
+
+        // IMPORTANT: show the SMART animation first.
+        // This makes the visual reward independent from LocalStorage / event dispatch.
+        l2mShowMasterReward(!wasMastered);
+
+        button.disabled = true;
 
         if (!saved) {
           const result = e?.addWord?.({
@@ -10398,30 +10531,27 @@ window.KaranganAI = {
             meaning: item.meaningBm || "",
             example: item.example || "",
             category: item.category || item.taxonomy || "Kosa Kata",
-            source: "curriculum-master-v12.2",
+            source: "curriculum-master-v12.2.4",
             emoji: "🧠"
           });
+
           saved = result?.word || l2mSaved(item);
         }
 
         if (saved) {
-          const wasMastered = Boolean(saved.mastered);
           e?.markMastered?.(saved.id, !wasMastered);
 
           if (typeof vocabularyRewardState !== "undefined") {
             if (!wasMastered) {
               vocabularyRewardState.combo += 1;
-              l2mShowMasterReward(true);
             } else {
               vocabularyRewardState.combo = 0;
-              l2mShowMasterReward(false);
             }
-          } else {
-            l2mShowMasterReward(!wasMastered);
           }
         }
 
-        setTimeout(() => window.renderVocabularyModule(), 650);
+        // Do not redraw the module until the 2-second animation has completed.
+        setTimeout(() => afterToggle(), 2050);
       };
     });
   }
@@ -10444,7 +10574,7 @@ window.KaranganAI = {
       </button>
     `, 28);
 
-    l2mBindCommon(year);
+    l2mBindCommon(year, () => l2mRenderAllWords(year));
     byId("l2mBackToday")?.addEventListener("click", window.renderVocabularyModule);
   }
 
@@ -10562,6 +10692,7 @@ window.KaranganAI = {
     renderVocabularyModule = l2mRender;
   } catch (_) {}
 
+
   window.KaranganLangkah2Master = {
     version: L2_VERSION,
     render: l2mRender,
@@ -10570,5 +10701,5 @@ window.KaranganAI = {
     source: "CurriculumDB"
   };
 
-  console.log("✅ MASTER CURRICULUM v12.2.2 + FIXED 2S SMART ANIMATION loaded");
+  console.log("✅ MASTER CURRICULUM v12.4 + SMART FX loaded");
 })();
