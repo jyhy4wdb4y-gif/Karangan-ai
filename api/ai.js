@@ -1,7 +1,7 @@
 /* =========================================================
    KARANGAN AI
    API / AI CONTROLLER
-   Version 4.0
+   Version 4.1
 
    Supports:
    - translate
@@ -522,9 +522,56 @@ satu perkataan.
   );
 
 
+  /*
+    Attempt 3
+    Plain Responses API rescue.
+    If strict structured output ever fails, do NOT give up on the word.
+  */
+
+  const rescue =
+    await requestPlainTranslation({
+      instructions: `
+Anda ialah kamus Bahasa Melayu Malaysia untuk murid sekolah rendah.
+
+Terjemahkan SATU perkataan Bahasa Melayu.
+
+WAJIB pulangkan tepat satu baris:
+ZH=<terjemahan Cina ringkas>|||EN=<terjemahan Inggeris ringkas>|||BM=<maksud BM ringkas>
+
+Jangan gunakan Bahasa Indonesia.
+Jangan biarkan mana-mana bahagian kosong.
+      `.trim(),
+
+      input: `
+Perkataan: ${word}
+Konteks: ${context || "Tiada konteks diberikan."}
+      `.trim()
+    });
+
+
+  if (rescue) {
+    const match =
+      String(rescue).match(
+        /ZH\s*=\s*(.*?)\s*\|\|\|\s*EN\s*=\s*(.*?)\s*\|\|\|\s*BM\s*=\s*(.*)/is
+      );
+
+    if (match) {
+      const repaired = {
+        zh: String(match[1] || "").trim(),
+        en: String(match[2] || "").trim(),
+        meaning: String(match[3] || "").trim()
+      };
+
+      if (isTranslationComplete(repaired)) {
+        return cleanTranslation(repaired);
+      }
+    }
+  }
+
+
   const error =
     new Error(
-      "Translation incomplete after retry."
+      "Translation incomplete after three attempts."
     );
 
 
@@ -732,6 +779,69 @@ async function requestStructuredTranslation({
     );
 
   }
+
+}
+
+
+/* =========================================================
+   PLAIN TRANSLATION RESCUE
+   ========================================================= */
+
+async function requestPlainTranslation({
+  instructions,
+  input
+}) {
+
+  const response =
+    await fetch(
+      OPENAI_URL,
+      {
+        method:
+          "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+
+          Authorization:
+            `Bearer ${process.env.OPENAI_API_KEY}`
+        },
+
+        body:
+          JSON.stringify({
+            model:
+              DEFAULT_MODEL,
+
+            reasoning: {
+              effort:
+                "none"
+            },
+
+            instructions,
+            input
+          })
+      }
+    );
+
+
+  const data =
+    await response.json();
+
+
+  if (!response.ok) {
+
+    console.error(
+      "[OpenAI Translation Rescue Error]",
+      data
+    );
+
+    return "";
+  }
+
+
+  return extractResponseText(
+    data
+  );
 
 }
 
@@ -994,5 +1104,5 @@ function extractResponseText(
 
 
 /* =========================================================
-   END KARANGAN AI API v4.0
+   END KARANGAN AI API v4.1
    ========================================================= */
