@@ -135,7 +135,7 @@ function showVocabularyReward(type, message, xp=0) {
       updateAllUI();
     }
   }
-  document.getElementById("vocab-reward-overlay")?.remove();
+  document.getElementById("l2m-smart-overlay-v124")?.remove();
   const good = type === "good";
   let rewardImage = "smart-bagus.png";
 
@@ -150,7 +150,8 @@ function showVocabularyReward(type, message, xp=0) {
   }
 
   const overlay = document.createElement("div");
-  overlay.id = "vocab-reward-overlay";
+  overlay.id = "l2m-smart-overlay-v124";
+    overlay.style.opacity = "1";
   const particles = good
     ? ["✦","★","⚡","✧","★","✦","⚡","✧"]
     : ["✦","💪","✧","⚡","✦","★"];
@@ -165,8 +166,8 @@ function showVocabularyReward(type, message, xp=0) {
   </div>`;
   document.body.appendChild(overlay);
   setTimeout(()=>overlay.classList.add("show"),20);
-  setTimeout(()=>overlay.classList.add("hide"),2700);
-  setTimeout(()=>overlay.remove(),3000);
+  setTimeout(()=>overlay.classList.add("hide"),1700);
+  setTimeout(()=>overlay.remove(),2000);
 }
 
 (function injectVocabularyRewardStyles(){
@@ -174,8 +175,8 @@ function showVocabularyReward(type, message, xp=0) {
   const s=document.createElement("style");
   s.id="vocab-reward-styles";
   s.textContent=`
-  #vocab-reward-overlay{position:fixed;inset:0;z-index:99999;pointer-events:none;display:flex;align-items:center;justify-content:center;background:rgba(255,248,235,.18)}
-  #vocab-reward-overlay.hide{opacity:0;transition:opacity .28s ease}
+  #l2m-smart-overlay-v124{position:fixed;inset:0;z-index:99999;pointer-events:none;display:flex;align-items:center;justify-content:center;background:rgba(255,248,235,.18)}
+  #l2m-smart-overlay-v124.hide{opacity:0;transition:opacity .28s ease}
   .vocab-reward-pop{
     min-width:min(82vw,440px);max-width:88vw;text-align:center;padding:22px 20px;border-radius:28px;
     background:linear-gradient(180deg,#11152d 0%,#171c3a 100%);
@@ -10044,8 +10045,88 @@ window.KaranganAI = {
 (() => {
   "use strict";
 
-  const L2_VERSION = "12.1";
-  const L2_DAILY_KEY = "karangan_ai_l2_master_v12_1_daily";
+  const L2_VERSION = "12.3";
+  const L2_DAILY_KEY = "karangan_ai_l2_master_v12_2_daily";
+
+
+  function l2mInjectAnimationStyles() {
+    if (document.getElementById("l2-master-v12-animation-styles")) return;
+
+    const style = document.createElement("style");
+    style.id = "l2-master-v12-animation-styles";
+    style.textContent = `
+      .l2m-card {
+        opacity: 0;
+        transform: translateY(18px) scale(.985);
+        animation: l2mCardIn .52s cubic-bezier(.2,.8,.25,1) forwards;
+        animation-delay: calc(var(--l2m-i, 0) * 55ms);
+        will-change: transform, opacity;
+      }
+
+      .l2m-ayat-card {
+        opacity: 0;
+        transform: translateY(16px) scale(.99);
+        animation: l2mAyatIn .48s cubic-bezier(.2,.8,.25,1) forwards;
+        animation-delay: calc(var(--l2m-i, 0) * 65ms);
+      }
+
+      .l2m-master-badge {
+        animation: l2mBadgePulse 1.8s ease-in-out infinite;
+      }
+
+      .l2m-year-button {
+        transition: transform .16s ease, box-shadow .16s ease;
+      }
+      .l2m-year-button:active {
+        transform: scale(.96);
+      }
+
+      .l2m-action {
+        transition: transform .14s ease, box-shadow .14s ease;
+      }
+      .l2m-action:active {
+        transform: scale(.95);
+      }
+
+      .l2m-card.is-mastered {
+        box-shadow: 0 0 0 2px rgba(45,170,105,.12), 0 12px 28px rgba(45,170,105,.10);
+      }
+
+      .l2m-card.l2m-pop {
+        animation: l2mMasterPop .55s cubic-bezier(.2,1.35,.35,1);
+      }
+
+      @keyframes l2mCardIn {
+        from { opacity:0; transform:translateY(18px) scale(.985); }
+        to { opacity:1; transform:translateY(0) scale(1); }
+      }
+
+      @keyframes l2mAyatIn {
+        from { opacity:0; transform:translateY(16px) scale(.99); }
+        to { opacity:1; transform:translateY(0) scale(1); }
+      }
+
+      @keyframes l2mBadgePulse {
+        0%,100% { transform:scale(1); }
+        50% { transform:scale(1.045); }
+      }
+
+      @keyframes l2mMasterPop {
+        0% { transform:scale(1); }
+        40% { transform:scale(1.035); }
+        100% { transform:scale(1); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .l2m-card,.l2m-ayat-card,.l2m-master-badge {
+          animation:none !important;
+          opacity:1 !important;
+          transform:none !important;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
 
   function l2mDB() {
     return window.CurriculumDB || null;
@@ -10183,12 +10264,12 @@ window.KaranganAI = {
     }
   }
 
-  function l2mWordCard(item) {
+  function l2mWordCard(item, index = 0) {
     const saved = l2mSaved(item);
     const mastered = Boolean(saved?.mastered);
 
     return `
-      <div style="padding:17px;border:1px solid #ece8e1;border-radius:20px;background:white;margin-bottom:12px">
+      <div class="l2m-card ${mastered ? "is-mastered" : ""}" style="--l2m-i:${index};padding:17px;border:1px solid #ece8e1;border-radius:20px;background:white;margin-bottom:12px">
         <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
           <div>
             <div style="font-size:12px;font-weight:900;color:#6b55d9">
@@ -10198,7 +10279,7 @@ window.KaranganAI = {
               ${l2mEsc(item.bm)}
             </div>
           </div>
-          <span style="font-size:11px;font-weight:900;padding:5px 9px;border-radius:999px;background:${mastered ? "#e8f8ef" : "#f6f2ff"}">
+          <span class="l2m-master-badge" style="font-size:11px;font-weight:900;padding:5px 9px;border-radius:999px;background:${mastered ? "#e8f8ef" : "#f6f2ff"}">
             ${mastered ? "DIKUASAI" : "MASTER"}
           </span>
         </div>
@@ -10230,10 +10311,10 @@ window.KaranganAI = {
         ` : ""}
 
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-          <button type="button" class="secondary-button" data-l2m-speak="${l2mEsc(item.bm)}">
+          <button type="button" class="secondary-button l2m-action" data-l2m-speak="${l2mEsc(item.bm)}">
             🔊 Dengar
           </button>
-          <button type="button" class="secondary-button" data-l2m-master="${l2mEsc(item.id)}">
+          <button type="button" class="secondary-button l2m-action" data-l2m-master="${l2mEsc(item.id)}">
             ${mastered ? "✓ Sudah Kuasai" : "✓ Kuasai"}
           </button>
         </div>
@@ -10241,9 +10322,9 @@ window.KaranganAI = {
     `;
   }
 
-  function l2mAyatCard(item) {
+  function l2mAyatCard(item, index = 0) {
     return `
-      <div style="padding:17px;border:1px solid #f0dfbd;border-radius:20px;background:#fff8ea;margin-bottom:12px">
+      <div class="l2m-ayat-card" style="--l2m-i:${index};padding:17px;border:1px solid #f0dfbd;border-radius:20px;background:#fff8ea;margin-bottom:12px">
         <div style="font-size:12px;font-weight:900;color:#8c6a2e">
           ${l2mEsc(item.id)} · ${l2mEsc(item.function || "Ayat Cantik")}
         </div>
@@ -10262,18 +10343,109 @@ window.KaranganAI = {
     `;
   }
 
-  function l2mBindCommon(year) {
+  function l2mShowMasterReward(masteredOn) {
+    // v12.3 — fully self-contained reward overlay.
+    // No dependency on legacy overlay IDs or stylesheet selectors.
+    const overlayId = "l2m-smart-overlay-v123";
+    document.getElementById(overlayId)?.remove();
+
+    const overlay = document.createElement("div");
+    overlay.id = overlayId;
+    overlay.setAttribute("style", [
+      "position:fixed",
+      "inset:0",
+      "z-index:2147483647",
+      "display:flex",
+      "align-items:center",
+      "justify-content:center",
+      "background:rgba(10,14,32,.34)",
+      "pointer-events:none",
+      "opacity:1"
+    ].join(";"));
+
+    const pop = document.createElement("div");
+    pop.setAttribute("style", [
+      "width:min(86vw,430px)",
+      "padding:20px 18px",
+      "border-radius:28px",
+      "text-align:center",
+      "color:#fff",
+      "background:linear-gradient(180deg,#11152d,#171c3a)",
+      "border:1px solid rgba(80,220,255,.28)",
+      "box-shadow:0 18px 60px rgba(10,14,32,.42)",
+      "transform:scale(1)",
+      "opacity:1"
+    ].join(";"));
+
+    pop.innerHTML = `
+      <img
+        src="${masteredOn ? "/smart-hebat.png" : "/smart-encourage.png"}"
+        alt="SMART reward"
+        style="
+          width:min(72vw,330px);
+          max-height:38vh;
+          object-fit:contain;
+          display:block;
+          margin:0 auto 4px;
+          filter:drop-shadow(0 0 16px rgba(75,215,255,.32));
+        "
+        onerror="this.style.display='none'"
+      />
+      <div style="font-size:23px;font-weight:950;line-height:1.25;margin-top:6px">
+        ${masteredOn ? "🌟 Syabas! Sudah Kuasai!" : "💪 Mari cuba lagi!"}
+      </div>
+      ${masteredOn
+        ? '<div style="display:inline-block;margin-top:10px;padding:7px 14px;border-radius:999px;background:linear-gradient(90deg,#26d4ff,#8a5cff);font-weight:900">+3 XP · Hebat!</div>'
+        : ''
+      }
+    `;
+
+    overlay.appendChild(pop);
+    document.body.appendChild(overlay);
+
+    // Use Web Animations when available; the reward remains visible even if animation is unsupported.
+    try {
+      pop.animate(
+        [
+          { transform:"translateY(48px) scale(.55) rotate(-4deg)", opacity:0 },
+          { transform:"translateY(-8px) scale(1.08) rotate(2deg)", opacity:1, offset:.18 },
+          { transform:"translateY(0) scale(.98) rotate(-1deg)", opacity:1, offset:.34 },
+          { transform:"translateY(-7px) scale(1.03)", opacity:1, offset:.62 },
+          { transform:"translateY(0) scale(1)", opacity:1 }
+        ],
+        { duration:1650, easing:"cubic-bezier(.2,1.15,.3,1)", fill:"both" }
+      );
+    } catch (_) {}
+
+    setTimeout(() => {
+      overlay.style.transition = "opacity .25s ease";
+      overlay.style.opacity = "0";
+    }, 1700);
+
+    setTimeout(() => overlay.remove(), 2000);
+  }
+
+  function l2mBindCommon(year, afterToggle = () => window.renderVocabularyModule()) {
     document.querySelectorAll("[data-l2m-speak]").forEach(button => {
       button.onclick = () => l2mSpeak(button.dataset.l2mSpeak);
     });
 
     document.querySelectorAll("[data-l2m-master]").forEach(button => {
       button.onclick = () => {
-        const item = l2mWords(year).find(x => String(x.id) === String(button.dataset.l2mMaster));
+        const item = l2mWords(year).find(
+          x => String(x.id) === String(button.dataset.l2mMaster)
+        );
         if (!item) return;
 
         const e = l2mEngine();
         let saved = l2mSaved(item);
+        const wasMastered = Boolean(saved?.mastered);
+
+        // IMPORTANT: show the SMART animation first.
+        // This makes the visual reward independent from LocalStorage / event dispatch.
+        l2mShowMasterReward(!wasMastered);
+
+        button.disabled = true;
 
         if (!saved) {
           const result = e?.addWord?.({
@@ -10282,17 +10454,27 @@ window.KaranganAI = {
             meaning: item.meaningBm || "",
             example: item.example || "",
             category: item.category || item.taxonomy || "Kosa Kata",
-            source: "curriculum-master-v12.1",
+            source: "curriculum-master-v12.2.4",
             emoji: "🧠"
           });
+
           saved = result?.word || l2mSaved(item);
         }
 
         if (saved) {
-          e?.markMastered?.(saved.id, !saved.mastered);
+          e?.markMastered?.(saved.id, !wasMastered);
+
+          if (typeof vocabularyRewardState !== "undefined") {
+            if (!wasMastered) {
+              vocabularyRewardState.combo += 1;
+            } else {
+              vocabularyRewardState.combo = 0;
+            }
+          }
         }
 
-        window.renderVocabularyModule();
+        // Do not redraw the module until the 2-second animation has completed.
+        setTimeout(() => afterToggle(), 2050);
       };
     });
   }
@@ -10315,11 +10497,12 @@ window.KaranganAI = {
       </button>
     `, 28);
 
-    l2mBindCommon(year);
+    l2mBindCommon(year, () => l2mRenderAllWords(year));
     byId("l2mBackToday")?.addEventListener("click", window.renderVocabularyModule);
   }
 
   function l2mRender() {
+    l2mInjectAnimationStyles();
     const db = l2mDB();
 
     if (!db?.ready) {
@@ -10347,7 +10530,7 @@ window.KaranganAI = {
             <button
               type="button"
               data-l2m-year="${y}"
-              class="${y === year ? "primary-button" : "secondary-button"}"
+              class="${y === year ? "primary-button" : "secondary-button"} l2m-year-button"
             >
               Tahun ${y}
             </button>
@@ -10399,7 +10582,7 @@ window.KaranganAI = {
             meaning: item.meaningBm || "",
             example: item.example || "",
             category: item.category || item.taxonomy || "Kosa Kata",
-            source: "curriculum-master-v12.1",
+            source: "curriculum-master-v12.2",
             emoji: "🧠"
           });
           saved = result?.word || l2mSaved(item);
@@ -10432,6 +10615,7 @@ window.KaranganAI = {
     renderVocabularyModule = l2mRender;
   } catch (_) {}
 
+
   window.KaranganLangkah2Master = {
     version: L2_VERSION,
     render: l2mRender,
@@ -10440,5 +10624,5 @@ window.KaranganAI = {
     source: "CurriculumDB"
   };
 
-  console.log("✅ MASTER CURRICULUM v12.1 loaded");
+  console.log("✅ MASTER CURRICULUM v12.3 + SMART REWARD + STAY-IN-LIST FIX loaded");
 })();
