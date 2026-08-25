@@ -1,7 +1,7 @@
 /* =========================================================
    KARANGAN AI
    API / AI CONTROLLER
-   Version 4.1
+   Version 4.2
 
    Supports:
    - translate
@@ -24,6 +24,13 @@ const OPENAI_URL =
 
 const DEFAULT_MODEL =
   "gpt-5.6-luna";
+
+
+const GROQ_URL =
+  "https://api.groq.com/openai/v1/chat/completions";
+
+const GROQ_TRANSLATION_MODEL =
+  "llama-3.3-70b-versatile";
 
 
 /* =========================================================
@@ -52,14 +59,15 @@ export default async function handler(
   try {
 
     if (
-      !process.env.OPENAI_API_KEY
+      !process.env.OPENAI_API_KEY &&
+      !process.env.GROQ_API_KEY
     ) {
 
       return res
         .status(500)
         .json({
           error:
-            "OPENAI_API_KEY 尚未设置。",
+            "AI API key 尚未设置。",
         });
 
     }
@@ -369,116 +377,151 @@ ${instruction || ""}
 async function generateTranslation({
 
   word,
-
   context,
-
   knownChinese
 
 }) {
 
-  const baseInstructions = `
+  const cleanWord =
+    String(word || "").trim();
+
+  const cleanContext =
+    String(context || "").trim();
+
+  const cleanKnownChinese =
+    String(knownChinese || "").trim();
+
+
+  /*
+    PRIMARY:
+    Groq free-tier translation.
+  */
+
+  if (
+    process.env.GROQ_API_KEY
+  ) {
+
+    try {
+
+      const groqResult =
+        await requestGroqTranslation({
+
+          word:
+            cleanWord,
+
+          context:
+            cleanContext,
+
+          knownChinese:
+            cleanKnownChinese
+
+        });
+
+
+      if (
+        isTranslationComplete(
+          groqResult
+        )
+      ) {
+
+        return cleanTranslation(
+          groqResult
+        );
+
+      }
+
+
+      console.warn(
+        "[Groq Translation] Incomplete:",
+        cleanWord,
+        groqResult
+      );
+
+    } catch (error) {
+
+      console.error(
+        "[Groq Translation Error]",
+        error?.message || error
+      );
+
+    }
+
+  }
+
+
+  /*
+    FALLBACK:
+    Existing OpenAI structured translation.
+  */
+
+  if (
+    process.env.OPENAI_API_KEY
+  ) {
+
+    const baseInstructions = `
 Anda ialah kamus pintar Bahasa Melayu Malaysia
-untuk murid sekolah rendah Tahun 3 hingga Tahun 5.
+untuk murid sekolah rendah Tahun 1 hingga Tahun 6.
 
 Anda mesti menerangkan SATU perkataan Bahasa Melayu.
 
 WAJIB:
 - "zh" mesti mempunyai terjemahan Simplified Chinese.
 - "en" mesti mempunyai terjemahan English.
-- "meaning" mesti mempunyai penerangan ringkas
-  dalam Bahasa Melayu Malaysia.
+- "meaning" mesti mempunyai penerangan ringkas dalam Bahasa Melayu Malaysia.
 - Ketiga-tiga medan TIDAK BOLEH kosong.
 - Gunakan konteks ayat untuk menentukan maksud tepat.
 - Jangan gunakan Bahasa Indonesia.
-- English mesti sesuai dengan maksud perkataan
-  dalam ayat, bukan terjemahan rawak.
-- Jika perkataan mempunyai beberapa maksud,
-  pilih maksud yang paling sesuai dengan konteks.
+- English mesti sesuai dengan maksud perkataan dalam ayat.
+- Jika perkataan mempunyai beberapa maksud, pilih maksud paling sesuai dengan konteks.
 - Maksud BM mesti mudah difahami murid sekolah rendah.
+    `.trim();
 
-Contoh:
 
+    const userInput = `
 Perkataan:
-pertandingan
-
-Output:
-{
-  "zh": "比赛 / 竞赛",
-  "en": "competition / contest",
-  "meaning": "Aktiviti untuk menentukan peserta atau pasukan yang terbaik."
-}
-
-Perkataan:
-mengadakan
-
-Output:
-{
-  "zh": "举办 / 举行",
-  "en": "organize / hold",
-  "meaning": "Menjalankan atau menganjurkan sesuatu aktiviti."
-}
-  `.trim();
-
-
-  const userInput = `
-Perkataan:
-${word}
+${cleanWord}
 
 Konteks ayat:
-${context || "Tiada konteks diberikan."}
+${cleanContext || "Tiada konteks diberikan."}
 
 Terjemahan Cina sedia ada:
-${knownChinese || "Tiada."}
+${cleanKnownChinese || "Tiada."}
 
 Berikan terjemahan yang lengkap.
-  `.trim();
+    `.trim();
 
 
-  /*
-    Attempt 1
-  */
+    try {
 
-  let result =
-    await requestStructuredTranslation({
+      let result =
+        await requestStructuredTranslation({
 
-      instructions:
-        baseInstructions,
+          instructions:
+            baseInstructions,
 
-      input:
-        userInput
+          input:
+            userInput
 
-    });
+        });
 
 
-  if (
-    isTranslationComplete(
-      result
-    )
-  ) {
+      if (
+        isTranslationComplete(
+          result
+        )
+      ) {
 
-    return cleanTranslation(
-      result
-    );
+        return cleanTranslation(
+          result
+        );
 
-  }
-
-
-  console.warn(
-    "[Translation] First response incomplete:",
-    word,
-    result
-  );
+      }
 
 
-  /*
-    Attempt 2
-    Stronger repair request.
-  */
+      result =
+        await requestStructuredTranslation({
 
-  result =
-    await requestStructuredTranslation({
-
-      instructions: `
+          instructions: `
 ${baseInstructions}
 
 PENTING:
@@ -489,89 +532,42 @@ Jangan tinggalkan:
 - en
 - meaning
 
-Walaupun terjemahan Chinese sudah diketahui,
-anda MASIH WAJIB memberikan English.
+Setiap nilai mesti mempunyai sekurang-kurangnya satu perkataan.
+          `.trim(),
 
-Setiap nilai mesti mempunyai sekurang-kurangnya
-satu perkataan.
-      `.trim(),
+          input:
+            userInput
 
-      input:
-        userInput
-
-    });
+        });
 
 
-  if (
-    isTranslationComplete(
-      result
-    )
-  ) {
+      if (
+        isTranslationComplete(
+          result
+        )
+      ) {
 
-    return cleanTranslation(
-      result
-    );
+        return cleanTranslation(
+          result
+        );
 
-  }
+      }
 
+    } catch (error) {
 
-  console.error(
-    "[Translation] Second response incomplete:",
-    word,
-    result
-  );
-
-
-  /*
-    Attempt 3
-    Plain Responses API rescue.
-    If strict structured output ever fails, do NOT give up on the word.
-  */
-
-  const rescue =
-    await requestPlainTranslation({
-      instructions: `
-Anda ialah kamus Bahasa Melayu Malaysia untuk murid sekolah rendah.
-
-Terjemahkan SATU perkataan Bahasa Melayu.
-
-WAJIB pulangkan tepat satu baris:
-ZH=<terjemahan Cina ringkas>|||EN=<terjemahan Inggeris ringkas>|||BM=<maksud BM ringkas>
-
-Jangan gunakan Bahasa Indonesia.
-Jangan biarkan mana-mana bahagian kosong.
-      `.trim(),
-
-      input: `
-Perkataan: ${word}
-Konteks: ${context || "Tiada konteks diberikan."}
-      `.trim()
-    });
-
-
-  if (rescue) {
-    const match =
-      String(rescue).match(
-        /ZH\s*=\s*(.*?)\s*\|\|\|\s*EN\s*=\s*(.*?)\s*\|\|\|\s*BM\s*=\s*(.*)/is
+      console.error(
+        "[OpenAI Translation Fallback Error]",
+        error?.message || error
       );
 
-    if (match) {
-      const repaired = {
-        zh: String(match[1] || "").trim(),
-        en: String(match[2] || "").trim(),
-        meaning: String(match[3] || "").trim()
-      };
-
-      if (isTranslationComplete(repaired)) {
-        return cleanTranslation(repaired);
-      }
     }
+
   }
 
 
   const error =
     new Error(
-      "Translation incomplete after three attempts."
+      "All translation providers failed."
     );
 
 
@@ -580,10 +576,188 @@ Konteks: ${context || "Tiada konteks diberikan."}
 
 
   error.publicMessage =
-    "Terjemahan lengkap tidak dapat dijana. Sila cuba lagi.";
+    "Terjemahan buat sementara waktu tidak tersedia.";
 
 
   throw error;
+
+}
+
+
+async function requestGroqTranslation({
+
+  word,
+  context,
+  knownChinese
+
+}) {
+
+  const response =
+    await fetch(
+      GROQ_URL,
+      {
+
+        method:
+          "POST",
+
+        headers: {
+
+          "Content-Type":
+            "application/json",
+
+          Authorization:
+            `Bearer ${process.env.GROQ_API_KEY}`
+
+        },
+
+        body:
+          JSON.stringify({
+
+            model:
+              GROQ_TRANSLATION_MODEL,
+
+            temperature:
+              0,
+
+            messages: [
+
+              {
+                role:
+                  "system",
+
+                content: `
+Anda ialah kamus Bahasa Melayu Malaysia untuk murid sekolah rendah Tahun 1 hingga Tahun 6.
+
+Terjemahkan SATU perkataan Bahasa Melayu.
+
+Gunakan konteks ayat untuk menentukan maksud yang betul.
+
+WAJIB:
+- Simplified Chinese
+- English
+- Maksud ringkas Bahasa Melayu Malaysia
+- Jangan gunakan Bahasa Indonesia
+- Jangan tinggalkan mana-mana bahagian kosong
+
+Balas tepat SATU baris dalam format:
+ZH=<Chinese>|||EN=<English>|||BM=<Maksud BM>
+                `.trim()
+              },
+
+              {
+                role:
+                  "user",
+
+                content: `
+Perkataan: ${word}
+Konteks: ${context || "Tiada konteks."}
+Terjemahan Cina sedia ada: ${knownChinese || "Tiada."}
+                `.trim()
+              }
+
+            ]
+
+          })
+
+      }
+    );
+
+
+  const data =
+    await response.json();
+
+
+  if (
+    !response.ok
+  ) {
+
+    console.error(
+      "[Groq API Error]",
+      data
+    );
+
+
+    const error =
+      new Error(
+        data?.error?.message ||
+        "Groq translation request failed."
+      );
+
+
+    error.status =
+      response.status;
+
+
+    throw error;
+
+  }
+
+
+  const output =
+    String(
+      data?.choices?.[0]?.message?.content || ""
+    ).trim();
+
+
+  if (
+    !output
+  ) {
+
+    throw new Error(
+      "Empty Groq translation output."
+    );
+
+  }
+
+
+  const match =
+    output.match(
+      /ZH\s*=\s*(.*?)\s*\|\|\|\s*EN\s*=\s*(.*?)\s*\|\|\|\s*BM\s*=\s*(.*)/is
+    );
+
+
+  if (
+    !match
+  ) {
+
+    console.warn(
+      "[Groq Translation Parse]",
+      output
+    );
+
+
+    return {
+      zh:
+        knownChinese || "",
+
+      en:
+        "",
+
+      meaning:
+        ""
+    };
+
+  }
+
+
+  return {
+
+    zh:
+      String(
+        match[1] || ""
+      ).trim(),
+
+    en:
+      String(
+        match[2] || ""
+      ).trim(),
+
+    meaning:
+      String(
+        match[3] || ""
+      ).trim()
+
+  };
 
 }
 
@@ -779,69 +953,6 @@ async function requestStructuredTranslation({
     );
 
   }
-
-}
-
-
-/* =========================================================
-   PLAIN TRANSLATION RESCUE
-   ========================================================= */
-
-async function requestPlainTranslation({
-  instructions,
-  input
-}) {
-
-  const response =
-    await fetch(
-      OPENAI_URL,
-      {
-        method:
-          "POST",
-
-        headers: {
-          "Content-Type":
-            "application/json",
-
-          Authorization:
-            `Bearer ${process.env.OPENAI_API_KEY}`
-        },
-
-        body:
-          JSON.stringify({
-            model:
-              DEFAULT_MODEL,
-
-            reasoning: {
-              effort:
-                "none"
-            },
-
-            instructions,
-            input
-          })
-      }
-    );
-
-
-  const data =
-    await response.json();
-
-
-  if (!response.ok) {
-
-    console.error(
-      "[OpenAI Translation Rescue Error]",
-      data
-    );
-
-    return "";
-  }
-
-
-  return extractResponseText(
-    data
-  );
 
 }
 
@@ -1104,5 +1215,5 @@ function extractResponseText(
 
 
 /* =========================================================
-   END KARANGAN AI API v4.1
+   END KARANGAN AI API v4.2
    ========================================================= */
