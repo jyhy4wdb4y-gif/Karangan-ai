@@ -2824,7 +2824,7 @@
 
 
 /* =========================================================
-   LANGKAH 2 YEAR-AWARE REVIEW v9.3
+   LANGKAH 2 YEAR-AWARE REVIEW v9.9.1
    1,650 Kosa Kata & Frasa + 500 Ayat Cantik
    Offline-first. No paid AI required.
    ========================================================= */
@@ -2945,8 +2945,10 @@
         const saved=engine?.findWord?.(item.word);
         return saved ? {...saved,...item,id:saved.id,bankId:item.id,year:y} : {...item,bankId:item.id,year:y};
       })
-      .filter(item=>!item.mastered && !dailyState.removedWordKeys.includes(normalizeKey(item.word)));
+      .filter(item=>!dailyState.removedWordKeys.includes(normalizeKey(item.word)));
     list.sort((a,b)=>{
+      const am=a.mastered?1:0, bm=b.mastered?1:0;
+      if(am!==bm) return am-bm;
       const ar=Number(a.reviewCount||0), br=Number(b.reviewCount||0);
       if(ar!==br) return ar-br;
       const at=a.lastReviewedAt?new Date(a.lastReviewedAt).getTime():0;
@@ -2965,6 +2967,6 @@
   const engine=window.KaranganVocabulary || {};
   Object.assign(engine,{setLearningYear,getLearningYear,ensureDailyContent:ensureToday,getDailyNewWords,getDailyAyat,getUnlockedAyat,getReviewWordsForYear,markAyatMastered,isAyatMastered,removeAyat,removeDailyWord,curriculumStats,getMasterWordBank,getMasterAyatBank,DAILY_WORD_TARGET:WORD_TARGET,DAILY_AYAT_TARGET:AYAT_TARGET});
   window.KaranganVocabulary=engine;
-  console.log("✅ Langkah 2 Year-Aware Review v9.3 loaded",{words:MASTER_WORD_BANK.length,ayat:MASTER_AYAT_BANK.length});
+  console.log("✅ Langkah 2 Year-Aware Review v9.9.1 loaded",{words:MASTER_WORD_BANK.length,ayat:MASTER_AYAT_BANK.length});
 })();
 

@@ -2375,6 +2375,7 @@ function renderVocabularyModule() {
 }
 
 
+/* Langkah 2 v9.9.1 — Tahun 1–6 Ulang Kaji Data Fix */
 function startVocabularyReview() {
   const engine =
     getVocabularyEngine();
@@ -2382,16 +2383,33 @@ function startVocabularyReview() {
   const year =
     Number(engine?.getLearningYear?.() || 3);
 
-  let words =
-    engine?.getReviewWordsForYear?.(5, year) ||
-    engine?.getDailyNewWords?.(5, year) ||
-    engine?.getReviewWords?.(5) ||
-    getVocabularyWords().slice(
-      0,
-      5
-    );
+  engine?.ensureDailyContent?.(year);
 
-  if (!words.length) {
+  let words =
+    engine?.getReviewWordsForYear?.(5, year) || [];
+
+  if (!Array.isArray(words) || !words.length) {
+    words =
+      engine?.getDailyNewWords?.(5, year) || [];
+  }
+
+  if (!Array.isArray(words) || !words.length) {
+    const bank =
+      engine?.getMasterWordBank?.() || [];
+
+    words = bank
+      .filter(
+        item =>
+          Number(
+            item.year ||
+            item.minYear ||
+            3
+          ) === year
+      )
+      .slice(0, 5);
+  }
+
+  if (!Array.isArray(words) || !words.length) {
     showToast(
       `Belum ada kosa kata Tahun ${year} untuk diuji.`
     );
