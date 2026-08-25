@@ -2451,13 +2451,18 @@ function startVocabularyReview() {
     Number(engine?.getLearningYear?.() || 3);
 
   let words =
-    engine?.getReviewWordsForYear?.(5, year) ||
-    engine?.getDailyNewWords?.(5, year) ||
-    engine?.getReviewWords?.(5) ||
-    getVocabularyWords().slice(
-      0,
-      5
-    );
+    (
+      Array.isArray(l2CurrentDisplayWords) &&
+      l2CurrentDisplayYear === year &&
+      l2CurrentDisplayWords.length
+    )
+      ? l2CurrentDisplayWords.slice(0,5)
+      : (
+          engine?.getReviewWordsForYear?.(5, year) ||
+          engine?.getDailyNewWords?.(5, year) ||
+          engine?.getReviewWords?.(5) ||
+          getVocabularyWords().slice(0,5)
+        );
 
   if (!words.length) {
     showToast(
@@ -9749,6 +9754,138 @@ window.KaranganAI = {
     if(!("speechSynthesis" in window)) return showToast("🔇 Suara tidak tersedia.");
     speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(String(text||"")); u.lang="ms-MY"; u.rate=.88; speechSynthesis.speak(u);
   }
+
+  // ===== LANGKAH 2 v10.6 SAFE KOSA KATA VARIETY =====
+  // Presentation-layer only: never changes yearState, ensureToday or Master Bank.
+  let l2CurrentDisplayWords = [];
+  let l2CurrentDisplayYear = 3;
+
+  function l2NormalizePhrase(text){
+    return String(text||"").toLowerCase().trim().replace(/\s+/g," ");
+  }
+
+  function l2PhraseFamily(item){
+    let w=l2NormalizePhrase(item?.word||"");
+    w=w
+      .replace(/\b(dengan penuh semangat|dengan bersungguh-sungguh|dengan tekun|dengan ikhlas|dengan tertib|dengan gembira|dengan berhati-hati|dengan baik)\b/g,"")
+      .replace(/\b(di sekolah|di rumah|di kelas|di taman|di perpustakaan|di kantin|di padang|di kawasan sekolah|dalam kehidupan seharian)\b/g,"")
+      .replace(/\s+/g," ")
+      .trim();
+    return w || l2NormalizePhrase(item?.word||"");
+  }
+
+  function l2WordQualityScore(item){
+    const cat=String(item?.category||"");
+    const w=l2NormalizePhrase(item?.word||"");
+    const wc=w.split(/\s+/).filter(Boolean).length;
+    let score=0;
+    if(/Kata Adjektif|Kata Kerja|Kata Nama|Perasaan|Nilai|Penanda Wacana|Frasa Nilai|Frasa Deskriptif|Frasa Keterangan|Frasa Tema/i.test(cat)) score+=8;
+    if(/Frasa Situasi|Frasa Contoh/i.test(cat)) score-=7;
+    if(wc<=4) score+=5;
+    else if(wc<=6) score+=2;
+    else if(wc>=9) score-=4;
+    if(/\bdi (sekolah|rumah|kelas|taman|perpustakaan|kantin|padang)\b.*\bdengan\b/.test(w)) score-=6;
+    return score;
+  }
+
+  function l2DaySeed(year){
+    const d=new Date();
+    return Number(`${year}${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}`);
+  }
+
+  function l2StableRank(item,seed){
+    const s=`${item?.id||item?.word||""}|${seed}`;
+    let h=2166136261;
+    for(let i=0;i<s.length;i++){
+      h^=s.charCodeAt(i);
+      h=Math.imul(h,16777619);
+    }
+    return h>>>0;
+  }
+
+  function l2EnsureDisplayWordSaved(engine,item){
+    if(!item?.word) return item;
+    const existing=engine?.findWord?.(item.word);
+    if(existing) return {...existing,...item,id:existing.id,bankId:item.bankId||item.id};
+
+    const beforeXp=(typeof appState!=="undefined") ? Number(appState.xp||0) : null;
+    const result=engine?.addWord?.({
+      word:item.word,
+      translation:item.translation,
+      meaning:item.meaning,
+      example:item.example,
+      category:item.category,
+      emoji:item.emoji||"🧠",
+      source:"daily-variety",
+      storyId:null
+    });
+
+    // System-selected replacement is not a student achievement:
+    // cancel only addWord's automatic +2 XP.
+    if(result?.success && beforeXp!==null && typeof appState!=="undefined"){
+      const afterXp=Number(appState.xp||0);
+      if(afterXp===beforeXp+2){
+        appState.xp=beforeXp;
+        saveState();
+        updateAllUI();
+      }
+    }
+
+    const saved=result?.word || engine?.findWord?.(item.word);
+    return saved ? {...saved,...item,id:saved.id,bankId:item.bankId||item.id} : item;
+  }
+
+  function l2SafeVarietyWords(todayWords,engine,year,count=10){
+    const today=Array.isArray(todayWords)?todayWords.filter(Boolean):[];
+
+    // Core safety rule: if stable data engine returns zero, do nothing.
+    if(!today.length) return today;
+
+    const selected=[];
+    const selectedWords=new Set();
+    const families=new Set();
+    const categories=new Map();
+
+    const addCandidate=(item,strict=true)=>{
+      if(!item?.word || selected.length>=count) return false;
+      const wordKey=l2NormalizePhrase(item.word);
+      if(selectedWords.has(wordKey)) return false;
+      const family=l2PhraseFamily(item);
+      const cat=String(item.category||"Umum");
+      if(strict && families.has(family)) return false;
+      if(strict && (categories.get(cat)||0)>=2) return false;
+      selected.push(item);
+      selectedWords.add(wordKey);
+      families.add(family);
+      categories.set(cat,(categories.get(cat)||0)+1);
+      return true;
+    };
+
+    // Keep useful/diverse members of the stable engine's real daily list.
+    [...today]
+      .sort((a,b)=>l2WordQualityScore(b)-l2WordQualityScore(a))
+      .forEach(x=>addCandidate(x,true));
+
+    // Supplement only from the SAME YEAR bank if real daily list is repetitive.
+    if(selected.length<count){
+      const seed=l2DaySeed(year);
+      const bank=(engine?.getMasterWordBank?.()||[])
+        .filter(x=>Number(x.year||x.minYear||3)===Number(year))
+        .sort((a,b)=>{
+          const q=l2WordQualityScore(b)-l2WordQualityScore(a);
+          return q || (l2StableRank(a,seed)-l2StableRank(b,seed));
+        });
+
+      bank.forEach(x=>addCandidate(x,true));
+      if(selected.length<count) bank.forEach(x=>addCandidate(x,false));
+    }
+
+    // Final fallback keeps original data, never empties the page.
+    if(selected.length<count) today.forEach(x=>addCandidate(x,false));
+
+    return selected.slice(0,count).map(x=>l2EnsureDisplayWordSaved(engine,x));
+  }
+
   function l2WordCard(item){
     return `<div style="padding:16px;border:1px solid #ece8e1;border-radius:18px;background:#fff;margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><div><small>${escapeHtml(item.category||"Kosa Kata")}</small><strong style="display:block;font-size:20px">${escapeHtml(item.word||"")}</strong></div><button type="button" data-l2-speak="${escapeAttribute(item.word||"")}" class="secondary-button">🔊</button></div>
@@ -9879,8 +10016,12 @@ window.KaranganAI = {
 
   renderVocabularyModule=function(){
     const e=l2Engine(); const year=l2Year(); e?.ensureDailyContent?.(year);
-    const daily=e?.getDailyNewWords?.(10,year)||[]; const ayat=e?.getDailyAyat?.(5,year)||[]; const all=getVocabularyWords(); const stats=e?.curriculumStats?.(year)||{};
-    openModuleScreen(`<span class="section-kicker">LANGKAH 2 · TAHUN ${year}</span><h1>🧠 Kosa Kata Hari Ini</h1>${l2YearSelector(year)}<p>Setiap hari kamu membuka Langkah 2, sistem memberikan sehingga <strong>10 kosa kata/frasa baharu</strong> dan <strong>5 Ayat Cantik baharu</strong>. Kandungan lama kekal dalam koleksi kamu.</p>
+    const rawDaily=e?.getDailyNewWords?.(10,year)||[];
+    const daily=l2SafeVarietyWords(rawDaily,e,year,10);
+    l2CurrentDisplayWords=daily;
+    l2CurrentDisplayYear=year;
+    const ayat=e?.getDailyAyat?.(5,year)||[]; const all=getVocabularyWords(); const stats=e?.curriculumStats?.(year)||{};
+    openModuleScreen(`<span class="section-kicker">LANGKAH 2 · TAHUN ${year}</span><h1>🧠 Kosa Kata Hari Ini</h1>${l2YearSelector(year)}<p>Setiap hari kamu membuka Langkah 2, sistem memilih sehingga <strong>10 kosa kata/frasa yang pelbagai</strong> dan <strong>5 Ayat Cantik</strong>. Frasa yang terlalu serupa akan dipisahkan atau diganti dengan pilihan setara daripada Tahun yang sama.</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0"><span class="section-kicker">Hari Ini ${daily.length}/10</span><span class="section-kicker">Dipelajari ${stats.unlockedWords||0}</span><span class="section-kicker">Dikuasai ${all.filter(w=>w.mastered).length}</span></div>
       ${daily.map(l2WordCard).join('')||'<div style="padding:18px;background:#eef9f3;border-radius:16px">🎉 Semua kandungan yang tersedia untuk tahap ini telah dibuka.</div>'}
       <h2 style="margin-top:28px">✨ 5 Ayat Cantik Hari Ini</h2><p>Ayat serba guna untuk membantu karangan menjadi lebih hidup dan matang.</p>${ayat.map(x=>l2AyatCard(x,e,true)).join('')||'<p>Tiada ayat baharu hari ini.</p>'}
