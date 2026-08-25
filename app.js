@@ -137,10 +137,22 @@ function showVocabularyReward(type, message, xp=0) {
   }
   document.getElementById("vocab-reward-overlay")?.remove();
   const good = type === "good";
+  let rewardImage = "aira-bagus.png";
+
+  if (!good) {
+    rewardImage = "aira-encourage.png";
+  } else if (message.includes("Ulang Kaji Selesai")) {
+    rewardImage = "aira-review-complete.png";
+  } else if (message.includes("Super Memory") || vocabularyRewardState.combo >= 5) {
+    rewardImage = "aira-super-memory.png";
+  } else if (xp >= 5) {
+    rewardImage = "aira-hebat.png";
+  }
+
   const overlay = document.createElement("div");
   overlay.id = "vocab-reward-overlay";
   overlay.innerHTML = `<div class="vocab-reward-pop ${good?"is-good":"is-encourage"}">
-    <div class="vocab-reward-icon">${good?"🌟":"💪"}</div>
+    <img class="vocab-reward-cartoon" src="${rewardImage}" alt="Cikgu Aira reward" />
     <div class="vocab-reward-title">${message}</div>
     ${xp?`<div class="vocab-reward-xp">+${xp} XP</div>`:""}
     ${good && vocabularyRewardState.combo>=2?`<div class="vocab-reward-combo">🔥 Combo x${vocabularyRewardState.combo}</div>`:""}
@@ -160,7 +172,15 @@ function showVocabularyReward(type, message, xp=0) {
   #vocab-reward-overlay.hide{opacity:0;transition:opacity .28s ease}
   .vocab-reward-pop{min-width:min(78vw,420px);max-width:86vw;text-align:center;padding:24px 22px;border-radius:28px;background:#fff;box-shadow:0 18px 55px rgba(41,45,50,.18);transform:scale(.65);opacity:0;transition:transform .34s cubic-bezier(.2,1.35,.35,1),opacity .2s}
   .show .vocab-reward-pop{transform:scale(1);opacity:1}
-  .vocab-reward-icon{font-size:54px;animation:vocabRewardBounce .55s ease}
+  .vocab-reward-cartoon{
+    display:block;
+    width:min(72vw,330px);
+    max-height:42vh;
+    object-fit:contain;
+    margin:0 auto 4px;
+    animation:vocabRewardBounce .62s cubic-bezier(.2,1.35,.35,1);
+    filter:drop-shadow(0 12px 18px rgba(43,51,66,.16));
+  }
   .vocab-reward-title{font-size:22px;font-weight:900;line-height:1.25;margin-top:8px}
   .vocab-reward-xp{display:inline-block;margin-top:12px;padding:7px 14px;border-radius:999px;background:#fff3cf;font-weight:900}
   .vocab-reward-combo{margin-top:9px;font-size:18px;font-weight:900}
