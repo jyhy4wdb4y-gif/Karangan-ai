@@ -10045,7 +10045,7 @@ window.KaranganAI = {
 (() => {
   "use strict";
 
-  const L2_VERSION = "12.5.1";
+  const L2_VERSION = "12.7";
   const L2_DAILY_KEY = "karangan_ai_l2_master_v12_2_daily";
 
 
@@ -10087,6 +10087,22 @@ window.KaranganAI = {
       .l2m-action:active {
         transform: scale(.95);
       }
+
+      .l2m-translate-word {
+        cursor: pointer;
+        border-radius: 10px;
+        padding: 2px 5px;
+        margin-left: -5px;
+        transition: background .15s ease, transform .15s ease;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .l2m-translate-word:active {
+        background: #f1edff;
+        transform: scale(.985);
+      }
+      .l2m-token-word{cursor:pointer;border-radius:5px;padding:0 1px;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+      .l2m-token-word:active{background:#fff0a8}
+
 
       .l2m-card.is-mastered {
         box-shadow: 0 0 0 2px rgba(45,170,105,.12), 0 12px 28px rgba(45,170,105,.10);
@@ -10275,8 +10291,16 @@ window.KaranganAI = {
             <div style="font-size:12px;font-weight:900;color:#6b55d9">
               ${l2mEsc(item.id)} · ${l2mEsc(item.category || item.taxonomy || "Kosa Kata")}
             </div>
-            <div style="font-size:22px;font-weight:950;margin-top:4px">
+            <div
+              class="l2m-translate-word"
+              data-l2m-translate="${l2mEsc(item.id)}"
+              title="Tekan untuk terjemahan"
+              role="button"
+              tabindex="0"
+              style="font-size:22px;font-weight:950;margin-top:4px;position:relative;z-index:8;touch-action:manipulation;-webkit-user-select:none;user-select:none"
+            >
               ${l2mEsc(item.bm)}
+              <span style="font-size:13px;font-weight:800;color:#8b82a8;margin-left:5px">🌐</span>
             </div>
           </div>
           <span class="l2m-master-badge" style="font-size:11px;font-weight:900;padding:5px 9px;border-radius:999px;background:${mastered ? "#e8f8ef" : "#f6f2ff"}">
@@ -10294,13 +10318,13 @@ window.KaranganAI = {
 
         ${item.meaningBm ? `
           <div style="margin-top:10px;padding:10px 12px;border-radius:12px;background:#faf9f7">
-            <strong>Makna BM:</strong> ${l2mEsc(item.meaningBm)}
+            <strong>Makna BM:</strong> <span class="l2m-word-zone">${l2mTokenizeClickable(item.meaningBm)}</span>
           </div>
         ` : ""}
 
         ${item.example ? `
           <div style="margin-top:9px;line-height:1.55">
-            <strong>Ayat Contoh:</strong> ${l2mEsc(item.example)}
+            <strong>Ayat Contoh:</strong> <span class="l2m-word-zone">${l2mTokenizeClickable(item.example)}</span>
           </div>
         ` : ""}
 
@@ -10311,6 +10335,9 @@ window.KaranganAI = {
         ` : ""}
 
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+          <button type="button" class="secondary-button l2m-action" data-l2m-translate="${l2mEsc(item.id)}">
+            🌐 翻译 / Translate
+          </button>
           <button type="button" class="secondary-button l2m-action" data-l2m-speak="${l2mEsc(item.bm)}">
             🔊 Dengar
           </button>
@@ -10396,7 +10423,7 @@ window.KaranganAI = {
           100% { transform:translate(calc(-50% + var(--px2)),calc(-50% + var(--py2))) scale(.55) rotate(400deg); opacity:0; }
         }
         #${overlayId} {
-          animation:l2mV125OverlayFlash 1.75s ease-out both;
+          background:rgba(10,14,32,.34);
         }
         #${overlayId} .l2m-v125-pop {
           animation:l2mV125Pop 1.72s cubic-bezier(.2,1.25,.3,1) both;
@@ -10533,11 +10560,161 @@ window.KaranganAI = {
     void overlay.offsetWidth;
 
     setTimeout(() => {
-      overlay.style.transition = "opacity .22s ease";
+      overlay.style.transition = "opacity .18s linear";
       overlay.style.opacity = "0";
-    }, 1760);
+    }, 1780);
 
-    setTimeout(() => overlay.remove(), 2000);
+    setTimeout(() => {
+      if (overlay.isConnected) overlay.remove();
+    }, 2020);
+  }
+
+  const L2M_WORD_TRANSLATIONS = {
+    kami:["我们","we"], kita:["我们","we / us"], saya:["我","I / me"],
+    mereka:["他们","they"], belajar:["学习","learn / study"],
+    menyemak:["检查；核对","check / verify"], kesahihan:["真实性；有效性","validity / authenticity"],
+    maklumat:["资料；信息","information"], sebelum:["之前","before"], selepas:["之后","after"],
+    berkongsi:["分享","share"], membantu:["帮助","help"], bantuan:["帮助；援助","help / assistance"],
+    masalah:["问题","problem"], aktiviti:["活动","activity"], sekolah:["学校","school"],
+    rumah:["家；房子","home / house"], masyarakat:["社会；社区","society / community"],
+    orang:["人","person / people"], nilai:["价值；品德","value"], murni:["高尚的","noble"],
+    kerjasama:["合作","cooperation"], keberanian:["勇气","courage"], semangat:["精神；热忱","spirit / enthusiasm"],
+    usaha:["努力","effort"], gigih:["坚持不懈的","persistent / diligent"], penting:["重要","important"],
+    kepentingan:["重要性","importance"], memahami:["理解","understand"], baik:["好；良好","good"],
+    bersih:["干净","clean"], kemas:["整齐","tidy / neat"], membaca:["阅读","read"],
+    suara:["声音","voice"], jelas:["清楚的","clear"], peralatan:["设备；用具","equipment / tools"],
+    selesai:["完成","finished"], hujan:["雨","rain"], berhenti:["停止","stop"],
+    meneruskan:["继续","continue"], sendiri:["自己","self"], tanpa:["没有；不带","without"],
+    sikap:["态度","attitude"], diri:["自己","self"], pada:["在；于","at / on"], masa:["时间","time"],
+    yang:["……的；关系词","that / which"], sesuai:["适合的","suitable / appropriate"],
+    dapat:["能够；可以","can / able to"], dengan:["和；以","with / by"], untuk:["为了；给","for / to"],
+    dalam:["在……里面","in / inside"], ini:["这个","this"], itu:["那个","that"], dan:["和","and"],
+    atau:["或者","or"], oleh:["由；被","by"], setiap:["每一个","every / each"], lebih:["更；更多","more"],
+    terus:["继续；一直","continue / continuously"]
+  };
+
+  function l2mTokenizeClickable(value) {
+    return String(value || "").split(/(\s+|[,.!?;:()"'“”‘’/]+)/).map(part => {
+      if (!part || /^\s+$/.test(part) || /^[,.!?;:()"'“”‘’/]+$/.test(part)) return l2mEsc(part);
+      const key = part.toLocaleLowerCase("ms-MY");
+      return `<span class="l2m-token-word" data-l2m-word="${l2mEsc(key)}">${l2mEsc(part)}</span>`;
+    }).join("");
+  }
+
+  function l2mLookupWord(word) {
+    const key=String(word||"").trim().toLocaleLowerCase("ms-MY");
+    if(L2M_WORD_TRANSLATIONS[key]) return {word:key,zh:L2M_WORD_TRANSLATIONS[key][0],en:L2M_WORD_TRANSLATIONS[key][1]};
+    for(let year=1;year<=6;year++){
+      const found=l2mWords(year).find(x=>String(x.bm||"").trim().toLocaleLowerCase("ms-MY")===key);
+      if(found) return {word:key,zh:found.zh||"—",en:found.en||"—"};
+    }
+    return {word:key,zh:"词库暂时没有这个单词的独立翻译",en:"No standalone translation in the current vocabulary bank"};
+  }
+
+  function l2mShowWordTranslation(word){
+    const info=l2mLookupWord(word);
+    document.getElementById("l2m-word-popup")?.remove();
+    const p=document.createElement("div");
+    p.id="l2m-word-popup";
+    p.style.cssText="position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:2147483646;width:min(calc(100vw - 32px),420px);background:#fff;border:1px solid #e9e3f5;border-radius:20px;padding:16px 17px;box-shadow:0 18px 55px rgba(20,22,45,.24);box-sizing:border-box";
+    p.innerHTML=`<div style="display:flex;justify-content:space-between;gap:12px"><div><div style="font-size:11px;font-weight:900;color:#7866c8">TERJEMAHAN PERKATAAN</div><div style="font-size:25px;font-weight:950;margin-top:3px">${l2mEsc(info.word)}</div></div><button type="button" data-l2m-word-close style="border:0;background:#f4f1fb;width:34px;height:34px;border-radius:50%">✕</button></div><div style="margin-top:12px;padding:11px 13px;background:#f7f4ff;border-radius:13px">🇨🇳 <strong>${l2mEsc(info.zh)}</strong></div><div style="margin-top:8px;padding:11px 13px;background:#f6f9fb;border-radius:13px">🇬🇧 <strong>${l2mEsc(info.en)}</strong></div><button type="button" data-l2m-word-speak class="secondary-button" style="width:100%;margin-top:11px">🔊 Dengar</button>`;
+    document.body.appendChild(p);
+    p.querySelector("[data-l2m-word-close]")?.addEventListener("click",()=>p.remove());
+    p.querySelector("[data-l2m-word-speak]")?.addEventListener("click",()=>l2mSpeak(info.word));
+  }
+
+  function l2mShowTranslation(item) {
+    const overlayId = "l2m-translation-popup";
+    document.getElementById(overlayId)?.remove();
+
+    const overlay = document.createElement("div");
+    overlay.id = overlayId;
+    overlay.setAttribute("style", [
+      "position:fixed",
+      "inset:0",
+      "z-index:2147483600",
+      "display:flex",
+      "align-items:flex-end",
+      "justify-content:center",
+      "padding:18px",
+      "background:rgba(18,20,35,.22)",
+      "box-sizing:border-box"
+    ].join(";"));
+
+    const card = document.createElement("div");
+    card.setAttribute("style", [
+      "width:min(100%,520px)",
+      "max-height:72vh",
+      "overflow:auto",
+      "background:#fff",
+      "border-radius:24px",
+      "padding:20px",
+      "box-shadow:0 18px 55px rgba(20,22,45,.22)",
+      "border:1px solid rgba(115,95,210,.12)",
+      "transform:translateY(0)",
+      "box-sizing:border-box"
+    ].join(";"));
+
+    card.innerHTML = `
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
+        <div>
+          <div style="font-size:11px;font-weight:900;color:#7566c8;letter-spacing:.04em">
+            ${l2mEsc(item.id)} · TERJEMAHAN
+          </div>
+          <div style="font-size:25px;font-weight:950;margin-top:5px">
+            ${l2mEsc(item.bm)}
+          </div>
+        </div>
+        <button
+          type="button"
+          data-l2m-translation-close
+          aria-label="Tutup"
+          style="border:0;background:#f4f1fb;width:36px;height:36px;border-radius:50%;font-size:18px"
+        >✕</button>
+      </div>
+
+      <div style="margin-top:16px;padding:13px 14px;border-radius:15px;background:#f7f4ff">
+        <div style="font-size:12px;font-weight:900;color:#7866c8">中文</div>
+        <div style="font-size:19px;font-weight:900;margin-top:3px">${l2mEsc(item.zh || "—")}</div>
+      </div>
+
+      <div style="margin-top:10px;padding:13px 14px;border-radius:15px;background:#f6f9fb">
+        <div style="font-size:12px;font-weight:900;color:#62717a">ENGLISH</div>
+        <div style="font-size:17px;font-weight:800;margin-top:3px">${l2mEsc(item.en || "—")}</div>
+      </div>
+
+      ${item.meaningBm ? `
+        <div style="margin-top:13px;line-height:1.55">
+          <strong>Makna BM:</strong><br><span class="l2m-word-zone">${l2mTokenizeClickable(item.meaningBm)}</span>
+        </div>
+      ` : ""}
+
+      ${item.example ? `
+        <div style="margin-top:12px;line-height:1.55">
+          <strong>Ayat Contoh:</strong><br><span class="l2m-word-zone">${l2mTokenizeClickable(item.example)}</span>
+        </div>
+      ` : ""}
+
+      <div style="display:flex;gap:9px;margin-top:16px">
+        <button type="button" class="secondary-button" data-l2m-translation-speak style="flex:1">
+          🔊 Dengar
+        </button>
+        <button type="button" class="primary-button" data-l2m-translation-ok style="flex:1">
+          Faham ✓
+        </button>
+      </div>
+    `;
+
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+
+    const close = () => overlay.remove();
+    overlay.addEventListener("click", e => {
+      if (e.target === overlay) close();
+    });
+    card.querySelector("[data-l2m-translation-close]")?.addEventListener("click", close);
+    card.querySelector("[data-l2m-translation-ok]")?.addEventListener("click", close);
+    card.querySelector("[data-l2m-translation-speak]")?.addEventListener("click", () => l2mSpeak(item.bm));
   }
 
   function l2mBindCommon(year, afterToggle = () => window.renderVocabularyModule()) {
@@ -10588,27 +10765,24 @@ window.KaranganAI = {
           }
         }
 
-        // v12.5.1: update this card in-place instead of rebuilding the whole page.
-        // Rebuilding openModuleScreen after the overlay ends caused the visible page flash.
-        setTimeout(() => {
-          button.disabled = false;
+        // v12.5.2: update the card immediately, while SMART FX is covering the page.
+        // After the animation ends there is NO page/card render and NO delayed UI mutation.
+        const latest = l2mSaved(item);
+        const masteredNow = Boolean(latest?.mastered);
 
-          const latest = l2mSaved(item);
-          const masteredNow = Boolean(latest?.mastered);
+        button.textContent = masteredNow ? "✓ Sudah Kuasai" : "✓ Kuasai";
+        button.disabled = false;
 
-          button.textContent = masteredNow ? "✓ Sudah Kuasai" : "✓ Kuasai";
+        const card = button.closest(".l2m-card");
+        if (card) {
+          card.classList.toggle("is-mastered", masteredNow);
 
-          const card = button.closest(".l2m-card");
-          if (card) {
-            card.classList.toggle("is-mastered", masteredNow);
-
-            const badge = card.querySelector(".l2m-master-badge");
-            if (badge) {
-              badge.textContent = masteredNow ? "DIKUASAI" : "MASTER";
-              badge.style.background = masteredNow ? "#e8f8ef" : "#f6f2ff";
-            }
+          const badge = card.querySelector(".l2m-master-badge");
+          if (badge) {
+            badge.textContent = masteredNow ? "DIKUASAI" : "MASTER";
+            badge.style.background = masteredNow ? "#e8f8ef" : "#f6f2ff";
           }
-        }, 2000);
+        }
       };
     });
   }
@@ -10750,6 +10924,41 @@ window.KaranganAI = {
   } catch (_) {}
 
 
+
+  // v12.6.1 — robust iOS/iPad tap translation.
+  // Delegated capture handler survives renderer changes and dynamic cards.
+  if (!window.__KARANGAN_L2_TRANSLATE_V1261__) {
+    window.__KARANGAN_L2_TRANSLATE_V1261__ = true;
+
+    const openTranslationFromEvent = event => {
+      const target = event.target?.closest?.("[data-l2m-translate]");
+      if (!target) return;
+
+      const year = l2mYear();
+      const item = l2mWords(year).find(
+        x => String(x.id) === String(target.dataset.l2mTranslate)
+      );
+      if (!item) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      l2mShowTranslation(item);
+    };
+
+    document.addEventListener("click", openTranslationFromEvent, true);
+  }
+
+  if (!window.__KARANGAN_L2_WORD_TRANSLATE_V127__) {
+    window.__KARANGAN_L2_WORD_TRANSLATE_V127__ = true;
+    document.addEventListener("click", event => {
+      const token = event.target?.closest?.(".l2m-token-word[data-l2m-word]");
+      if (!token) return;
+      event.preventDefault();
+      event.stopPropagation();
+      l2mShowWordTranslation(token.dataset.l2mWord);
+    }, true);
+  }
+
   window.KaranganLangkah2Master = {
     version: L2_VERSION,
     render: l2mRender,
@@ -10758,5 +10967,5 @@ window.KaranganAI = {
     source: "CurriculumDB"
   };
 
-  console.log("✅ MASTER CURRICULUM v12.5.1 + CSS SMART FX + NO PAGE FLASH loaded");
+  console.log("✅ MASTER CURRICULUM v12.7 + WORD-BY-WORD TRANSLATION loaded");
 })();
