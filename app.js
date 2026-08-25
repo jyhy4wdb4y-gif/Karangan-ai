@@ -137,22 +137,22 @@ function showVocabularyReward(type, message, xp=0) {
   }
   document.getElementById("vocab-reward-overlay")?.remove();
   const good = type === "good";
-  let rewardImage = "aira-bagus.png";
+  let rewardImage = "smart-bagus.png";
 
   if (!good) {
-    rewardImage = "aira-encourage.png";
+    rewardImage = "smart-encourage.png";
   } else if (message.includes("Ulang Kaji Selesai")) {
-    rewardImage = "aira-review-complete.png";
+    rewardImage = "smart-review-complete.png";
   } else if (message.includes("Super Memory") || vocabularyRewardState.combo >= 5) {
-    rewardImage = "aira-super-memory.png";
+    rewardImage = "smart-super-memory.png";
   } else if (xp >= 5) {
-    rewardImage = "aira-hebat.png";
+    rewardImage = "smart-hebat.png";
   }
 
   const overlay = document.createElement("div");
   overlay.id = "vocab-reward-overlay";
   overlay.innerHTML = `<div class="vocab-reward-pop ${good?"is-good":"is-encourage"}">
-    <img class="vocab-reward-cartoon" src="${rewardImage}" alt="Cikgu Aira reward" />
+    <img class="vocab-reward-cartoon" src="${rewardImage}" alt="SMART reward" />
     <div class="vocab-reward-title">${message}</div>
     ${xp?`<div class="vocab-reward-xp">+${xp} XP</div>`:""}
     ${good && vocabularyRewardState.combo>=2?`<div class="vocab-reward-combo">🔥 Combo x${vocabularyRewardState.combo}</div>`:""}
@@ -170,22 +170,37 @@ function showVocabularyReward(type, message, xp=0) {
   s.textContent=`
   #vocab-reward-overlay{position:fixed;inset:0;z-index:99999;pointer-events:none;display:flex;align-items:center;justify-content:center;background:rgba(255,248,235,.18)}
   #vocab-reward-overlay.hide{opacity:0;transition:opacity .28s ease}
-  .vocab-reward-pop{min-width:min(78vw,420px);max-width:86vw;text-align:center;padding:24px 22px;border-radius:28px;background:#fff;box-shadow:0 18px 55px rgba(41,45,50,.18);transform:scale(.65);opacity:0;transition:transform .34s cubic-bezier(.2,1.35,.35,1),opacity .2s}
+  .vocab-reward-pop{
+    min-width:min(82vw,440px);max-width:88vw;text-align:center;padding:22px 20px;border-radius:28px;
+    background:linear-gradient(180deg,#11152d 0%,#171c3a 100%);
+    color:#fff;border:1px solid rgba(80,220,255,.28);
+    box-shadow:0 18px 60px rgba(10,14,32,.36), inset 0 0 28px rgba(85,91,255,.10);
+    transform:scale(.65);opacity:0;
+    transition:transform .34s cubic-bezier(.2,1.35,.35,1),opacity .2s
+  }
   .show .vocab-reward-pop{transform:scale(1);opacity:1}
   .vocab-reward-cartoon{
     display:block;
-    width:min(72vw,330px);
-    max-height:42vh;
+    width:min(78vw,360px);
+    max-height:44vh;
     object-fit:contain;
     margin:0 auto 4px;
-    animation:vocabRewardBounce .62s cubic-bezier(.2,1.35,.35,1);
-    filter:drop-shadow(0 12px 18px rgba(43,51,66,.16));
+    animation:smartRewardEnter .72s cubic-bezier(.15,1.35,.25,1), smartGlow 1.1s ease-in-out infinite alternate;
+    filter:drop-shadow(0 0 18px rgba(66,220,255,.34)) drop-shadow(0 16px 24px rgba(22,25,48,.22));
   }
   .vocab-reward-title{font-size:22px;font-weight:900;line-height:1.25;margin-top:8px}
-  .vocab-reward-xp{display:inline-block;margin-top:12px;padding:7px 14px;border-radius:999px;background:#fff3cf;font-weight:900}
+  .vocab-reward-xp{display:inline-block;margin-top:12px;padding:8px 16px;border-radius:999px;background:linear-gradient(90deg,#26d4ff,#8a5cff);color:#fff;font-weight:900;box-shadow:0 0 18px rgba(80,180,255,.35)}
   .vocab-reward-combo{margin-top:9px;font-size:18px;font-weight:900}
-  .is-encourage{background:#fffaf0}
-  @keyframes vocabRewardBounce{0%{transform:scale(.45) rotate(-10deg)}55%{transform:scale(1.22) rotate(6deg)}100%{transform:scale(1)}}
+  .is-encourage{background:linear-gradient(180deg,#26152d 0%,#341a35 100%)}
+  @keyframes smartRewardEnter{
+    0%{transform:scale(.35) translateY(38px) rotate(-7deg);opacity:0}
+    55%{transform:scale(1.12) translateY(-8px) rotate(3deg);opacity:1}
+    100%{transform:scale(1) translateY(0) rotate(0);opacity:1}
+  }
+  @keyframes smartGlow{
+    from{filter:drop-shadow(0 0 10px rgba(66,220,255,.22)) drop-shadow(0 16px 24px rgba(22,25,48,.18))}
+    to{filter:drop-shadow(0 0 26px rgba(122,92,255,.55)) drop-shadow(0 16px 28px rgba(22,25,48,.28))}
+  }
   `;
   document.head.appendChild(s);
 })();
@@ -9682,13 +9697,12 @@ window.KaranganAI = {
     speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(String(text||"")); u.lang="ms-MY"; u.rate=.88; speechSynthesis.speak(u);
   }
   function l2WordCard(item){
-    const mastered=Boolean(item.mastered);
-    return `<div style="padding:16px;border:1px solid #ece8e1;border-radius:18px;background:#fff;margin-bottom:10px;opacity:${mastered?.78:1}">
+    return `<div style="padding:16px;border:1px solid #ece8e1;border-radius:18px;background:#fff;margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><div><small>${escapeHtml(item.category||"Kosa Kata")}</small><strong style="display:block;font-size:20px">${escapeHtml(item.word||"")}</strong></div><button type="button" data-l2-speak="${escapeAttribute(item.word||"")}" class="secondary-button">🔊</button></div>
       <div style="color:#6b55d9;font-weight:800;margin-top:6px">${escapeHtml(item.translation||[item.zh,item.en].filter(Boolean).join(" · "))}</div>
       ${item.meaning?`<p style="color:#65727a;line-height:1.55">🇲🇾 ${escapeHtml(item.meaning)}</p>`:""}
       ${item.example?`<p style="background:#faf8ff;padding:10px;border-radius:12px">📝 ${escapeHtml(item.example)}</p>`:""}
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-l2-master="${escapeAttribute(item.id||"")}" data-l2-mastered="${mastered?'1':'0'}" class="secondary-button">${mastered?'↩ Belajar Semula':'✓ Sudah Kuasai'}</button><button type="button" data-l2-remove-word="${escapeAttribute(item.word||"")}" class="secondary-button">🗑 Buang</button></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-l2-master="${escapeAttribute(item.id||"")}" class="secondary-button">✓ Sudah Kuasai</button><button type="button" data-l2-remove-word="${escapeAttribute(item.word||"")}" class="secondary-button">🗑 Buang</button></div>
     </div>`;
   }
   function l2AyatCard(item,e){
@@ -9712,27 +9726,15 @@ window.KaranganAI = {
     $$('[data-l2-speak]').forEach(b=>b.onclick=()=>l2Speak(b.dataset.l2Speak));
     $$('[data-l2-master]').forEach(b=>b.onclick=()=>{
       if(!b.dataset.l2Master) return;
-      const wasMastered=b.dataset.l2Mastered==="1";
-      e?.markMastered?.(b.dataset.l2Master,!wasMastered);
-
-      if(!wasMastered){
-        vocabularyRewardState.combo += 1;
-        showVocabularyReward(
-          "good",
-          vocabularyRewardState.combo >= 5
-            ? "🔥 Hebat! Banyak perkataan sudah kamu kuasai!"
-            : "🌟 Syabas! Perkataan ini sudah kamu kuasai!",
-          3
-        );
-      }else{
-        vocabularyRewardState.combo = 0;
-        showVocabularyReward(
-          "encourage",
-          "💪 Bagus! Mari ulang kaji perkataan ini semula.",
-          0
-        );
-      }
-
+      e?.markMastered?.(b.dataset.l2Master,true);
+      vocabularyRewardState.combo += 1;
+      showVocabularyReward(
+        "good",
+        vocabularyRewardState.combo >= 5
+          ? "🔥 Hebat! Banyak perkataan sudah kamu kuasai!"
+          : "🌟 Syabas! Perkataan ini sudah kamu kuasai!",
+        3
+      );
       setTimeout(renderVocabularyModule, 950);
     });
     $$('[data-l2-remove-word]').forEach(b=>b.onclick=()=>{e?.removeDailyWord?.(b.dataset.l2RemoveWord);renderVocabularyModule();});
@@ -9797,7 +9799,7 @@ window.KaranganAI = {
     const daily=e?.getDailyNewWords?.(10,year)||[]; const ayat=e?.getDailyAyat?.(5,year)||[]; const all=getVocabularyWords(); const stats=e?.curriculumStats?.(year)||{};
     openModuleScreen(`<span class="section-kicker">LANGKAH 2 · TAHUN ${year}</span><h1>🧠 Kosa Kata Hari Ini</h1>${l2YearSelector(year)}<p>Setiap hari kamu membuka Langkah 2, sistem memberikan sehingga <strong>10 kosa kata/frasa baharu</strong> dan <strong>5 Ayat Cantik baharu</strong>. Kandungan lama kekal dalam koleksi kamu.</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0"><span class="section-kicker">Hari Ini ${daily.length}/10</span><span class="section-kicker">Dipelajari ${stats.unlockedWords||0}</span><span class="section-kicker">Dikuasai ${all.filter(w=>w.mastered).length}</span></div>
-      ${daily.map(l2WordCard).join('')||'<div style="padding:18px;background:#eef9f3;border-radius:16px">📚 Tiada kosa kata ditetapkan untuk hari ini.</div>'}
+      ${daily.map(l2WordCard).join('')||'<div style="padding:18px;background:#eef9f3;border-radius:16px">🎉 Semua kandungan yang tersedia untuk tahap ini telah dibuka.</div>'}
       <h2 style="margin-top:28px">✨ 5 Ayat Cantik Hari Ini</h2><p>Ayat serba guna untuk membantu karangan menjadi lebih hidup dan matang.</p>${ayat.map(x=>l2AyatCard(x,e)).join('')||'<p>Tiada ayat baharu hari ini.</p>'}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px"><button id="l2All" class="secondary-button" type="button">📚 Semua Kosa Kata</button><button id="l2AyatHistory" class="secondary-button" type="button">✨ Koleksi Ayat</button></div>
       <button id="l2Review" class="primary-button" type="button" style="width:100%;margin-top:10px">🎯 Mula Ulang Kaji</button>
@@ -9805,6 +9807,6 @@ window.KaranganAI = {
     bindL2();
   };
 
-  console.log("✅ Langkah 2 Daily Display Fix v9.9.2 loaded");
+  console.log("✅ Langkah 2 Year Selector UI v9.1 loaded");
 })();
 
