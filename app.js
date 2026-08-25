@@ -9474,7 +9474,18 @@ window.KaranganAI = {
     if (screenName === "module") setTimeout(ensureModuleHomeButton, 0);
   };
 
-  closeModule = function() { showScreen("home"); };
+  closeModule = function() {
+    if (
+      typeof vocabularyReviewState !== "undefined" &&
+      currentScreen === "module" &&
+      vocabularyReviewState?.active
+    ) {
+      vocabularyReviewState.active = false;
+      renderVocabularyModule();
+      return;
+    }
+    showScreen("home");
+  };
 
   // Daily vocabulary + useful writing phrases.
   const DAILY_PHRASES = [
