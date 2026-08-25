@@ -5475,9 +5475,7 @@ window.KaranganAI = {
   let storySpeech = {
     speaking: false,
     paused: false,
-    utterance: null,
-    audio: null,
-    audioUrl: null
+    utterance: null
   };
 
 
@@ -5538,81 +5536,108 @@ window.KaranganAI = {
     text,
     options = {}
   ) {
-    const target = String(text || "").trim();
-    if (!target) return null;
 
-    if (options.stopExisting !== false) {
-      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-      if (storySpeech.audio) {
-        try { storySpeech.audio.pause(); } catch (_) {}
-        if (storySpeech.audioUrl) URL.revokeObjectURL(storySpeech.audioUrl);
-        storySpeech.audio = null;
-        storySpeech.audioUrl = null;
-      }
+    if (
+      !("speechSynthesis" in window) ||
+      typeof SpeechSynthesisUtterance ===
+        "undefined"
+    ) {
+
+      showToast(
+        "🔇 Peranti ini tidak menyokong bacaan suara."
+      );
+
+      return null;
+
     }
 
-    const controller = { audio: null, audioUrl: null, cancelled: false };
 
-    const fallbackToSystemVoice = () => {
-      if (controller.cancelled) return;
-      if (!("speechSynthesis" in window) || typeof SpeechSynthesisUtterance === "undefined") {
-        showToast("🔇 Peranti ini tidak menyokong bacaan suara.");
-        if (typeof options.onend === "function") options.onend();
-        return;
-      }
-      const speech = window.speechSynthesis;
-      const utterance = new SpeechSynthesisUtterance(target);
-      utterance.lang = "ms-MY";
-      utterance.rate = options.rate || 0.88;
-      utterance.pitch = options.pitch || 1;
-      const voice = getMalayVoice();
-      if (voice) utterance.voice = voice;
-      if (typeof options.onstart === "function") utterance.onstart = options.onstart;
-      if (typeof options.onend === "function") utterance.onend = options.onend;
-      controller.utterance = utterance;
-      speech.speak(utterance);
-    };
+    const speech =
+      window.speechSynthesis;
 
-    fetch("/api/speech", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: target, kind: options.rate && options.rate <= 0.8 ? "word" : "story" })
-    })
-      .then(async response => {
-        if (!response.ok) throw new Error(`Speech API ${response.status}`);
-        return response.blob();
-      })
-      .then(blob => {
-        if (controller.cancelled) return;
-        const audioUrl = URL.createObjectURL(blob);
-        const audio = new Audio(audioUrl);
-        controller.audio = audio; controller.audioUrl = audioUrl;
-        storySpeech.audio = audio; storySpeech.audioUrl = audioUrl;
-        audio.onplay = () => { if (typeof options.onstart === "function") options.onstart(); };
-        audio.onended = () => {
-          URL.revokeObjectURL(audioUrl);
-          if (storySpeech.audio === audio) { storySpeech.audio = null; storySpeech.audioUrl = null; }
-          if (typeof options.onend === "function") options.onend();
-        };
-        audio.onerror = () => {
-          URL.revokeObjectURL(audioUrl);
-          if (storySpeech.audio === audio) { storySpeech.audio = null; storySpeech.audioUrl = null; }
-          fallbackToSystemVoice();
-        };
-        return audio.play();
-      })
-      .catch(error => {
-        console.warn("AI voice unavailable, using device voice:", error);
-        fallbackToSystemVoice();
-      });
 
-    controller.cancel = () => {
-      controller.cancelled = true;
-      if (controller.audio) { try { controller.audio.pause(); } catch (_) {} }
-      if (controller.audioUrl) URL.revokeObjectURL(controller.audioUrl);
-      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-    };
-    return controller;
+    if (
+      options.stopExisting !== false
+    ) {
+
+      speech.cancel();
+
+    }
+
+
+    const utterance =
+      new SpeechSynthesisUtterance(
+        String(text || "")
+      );
+
+
+    utterance.lang =
+      "ms-MY";
+
+
+    utterance.rate =
+      options.rate || 0.88;
+
+
+    utterance.pitch =
+      options.pitch || 1;
+
+
+    const voice =
+      getMalayVoice();
+
+
+    if (voice) {
+
+      utterance.voice =
+        voice;
+
+    }
+
+
+    if (
+      typeof options.onstart ===
+      "function"
+    ) {
+
+      utterance.onstart =
+        options.onstart;
+
+    }
+
+
+    if (
+      typeof options.onend ===
+      "function"
+    ) {
+
+      utterance.onend =
+        options.onend;
+
+    }
+
+
+    utterance.onerror =
+      () => {
+
+        storySpeech.speaking =
+          false;
+
+        storySpeech.paused =
+          false;
+
+        updateStoryVoiceButtons();
+
+      };
+
+
+    speech.speak(
+      utterance
+    );
+
+
+    return utterance;
+
   }
 
 
@@ -5734,17 +5759,54 @@ window.KaranganAI = {
      ======================================================= */
 
   function pauseResumeStoryVoice() {
-    if (!storySpeech.speaking) { startStoryVoice(); return; }
-    if (storySpeech.audio) {
-      if (storySpeech.paused) { storySpeech.audio.play().catch(() => {}); storySpeech.paused = false; }
-      else { storySpeech.audio.pause(); storySpeech.paused = true; }
-      updateStoryVoiceButtons(); return;
+
+    if (
+      !("speechSynthesis" in window)
+    ) {
+
+      return;
+
     }
-    if (!("speechSynthesis" in window)) return;
-    const speech = window.speechSynthesis;
-    if (storySpeech.paused) { speech.resume(); storySpeech.paused = false; }
-    else { speech.pause(); storySpeech.paused = true; }
+
+
+    const speech =
+      window.speechSynthesis;
+
+
+    if (
+      !storySpeech.speaking
+    ) {
+
+      startStoryVoice();
+
+      return;
+
+    }
+
+
+    if (
+      storySpeech.paused
+    ) {
+
+      speech.resume();
+
+      storySpeech.paused =
+        false;
+
+    }
+
+    else {
+
+      speech.pause();
+
+      storySpeech.paused =
+        true;
+
+    }
+
+
     updateStoryVoiceButtons();
+
   }
 
 
@@ -5755,16 +5817,41 @@ window.KaranganAI = {
   function stopStoryVoice(
     showMessage = true
   ) {
-    if (storySpeech.utterance && typeof storySpeech.utterance.cancel === "function") {
-      try { storySpeech.utterance.cancel(); } catch (_) {}
+
+    if (
+      "speechSynthesis" in window
+    ) {
+
+      window
+        .speechSynthesis
+        .cancel();
+
     }
-    if (storySpeech.audio) { try { storySpeech.audio.pause(); } catch (_) {} }
-    if (storySpeech.audioUrl) { try { URL.revokeObjectURL(storySpeech.audioUrl); } catch (_) {} }
-    storySpeech.audio = null; storySpeech.audioUrl = null;
-    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-    storySpeech.speaking = false; storySpeech.paused = false; storySpeech.utterance = null;
+
+
+    storySpeech.speaking =
+      false;
+
+
+    storySpeech.paused =
+      false;
+
+
+    storySpeech.utterance =
+      null;
+
+
     updateStoryVoiceButtons();
-    if (showMessage) showToast("⏹ Bacaan dihentikan.");
+
+
+    if (showMessage) {
+
+      showToast(
+        "⏹ Bacaan dihentikan."
+      );
+
+    }
+
   }
 
 
@@ -9171,43 +9258,41 @@ window.KaranganAI = {
     }
   }
 
-  async function speakTranslationWord(word) {
+  function speakTranslationWord(word) {
     const target = String(word || "").trim();
+
     if (!target) return;
-    const fallback = () => {
-      if (!("speechSynthesis" in window) || typeof SpeechSynthesisUtterance !== "function") {
-        if (typeof showToast === "function") showToast("🔇 Peranti ini tidak menyokong sebutan suara.");
-        return;
+
+    if (!("speechSynthesis" in window) || typeof SpeechSynthesisUtterance !== "function") {
+      if (typeof showToast === "function") {
+        showToast("🔇 Peranti ini tidak menyokong sebutan suara.");
       }
-      try {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(target);
-        utterance.lang = "ms-MY"; utterance.rate = 0.82; utterance.pitch = 1; utterance.volume = 1;
-        const voices = window.speechSynthesis.getVoices();
-        const malayVoice = voices.find(voice => /^ms(-|_)/i.test(voice.lang || ""));
-        if (malayVoice) utterance.voice = malayVoice;
-        window.speechSynthesis.speak(utterance);
-      } catch (error) { console.warn("Word pronunciation unavailable:", error); }
-    };
+      return;
+    }
+
     try {
-      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-      const response = await fetch("/api/speech", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: target, kind: "word" })
-      });
-      if (!response.ok) throw new Error(`Speech API ${response.status}`);
-      const blob = await response.blob();
-      const audioUrl = URL.createObjectURL(blob);
-      const audio = new Audio(audioUrl);
-      audio.onended = () => URL.revokeObjectURL(audioUrl);
-      audio.onerror = () => { URL.revokeObjectURL(audioUrl); fallback(); };
-      await audio.play();
+      window.speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(target);
+      utterance.lang = "ms-MY";
+      utterance.rate = 0.82;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+
+      const voices = window.speechSynthesis.getVoices();
+      const malayVoice = voices.find(voice =>
+        /^ms(-|_)/i.test(voice.lang || "")
+      );
+
+      if (malayVoice) {
+        utterance.voice = malayVoice;
+      }
+
+      window.speechSynthesis.speak(utterance);
     } catch (error) {
-      console.warn("AI pronunciation unavailable, using device voice:", error);
-      fallback();
+      console.warn("Word pronunciation unavailable:", error);
     }
   }
-
 
   function ensureTranslationVoiceButton(word) {
     const wordElement = byId("translationWord");
@@ -9441,3 +9526,85 @@ window.KaranganAI = {
 
   console.log("✅ Phase 1 Langkah 1+2 Stability Pack v5.0 loaded");
 })();
+
+/* =========================================================
+   LANGKAH 2 FINAL DAILY UI v6.0
+   10 Kosa Kata + 5 Ayat Cantik per active day
+   ========================================================= */
+(() => {
+  "use strict";
+
+  function l2Engine(){ return window.KaranganVocabulary || null; }
+  function l2Year(){
+    const e=l2Engine();
+    const y=Number(currentStory?.year || e?.getLearningYear?.() || 3);
+    e?.setLearningYear?.([3,4,5].includes(y)?y:3);
+    return e?.getLearningYear?.() || 3;
+  }
+  function l2Speak(text){
+    if(window.KaranganVoiceV5?.speak) return window.KaranganVoiceV5.speak(text);
+    if(!("speechSynthesis" in window)) return showToast("🔇 Suara tidak tersedia.");
+    speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(String(text||"")); u.lang="ms-MY"; u.rate=.88; speechSynthesis.speak(u);
+  }
+  function l2WordCard(item){
+    return `<div style="padding:16px;border:1px solid #ece8e1;border-radius:18px;background:#fff;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><div><small>${escapeHtml(item.category||"Kosa Kata")}</small><strong style="display:block;font-size:20px">${escapeHtml(item.word||"")}</strong></div><button type="button" data-l2-speak="${escapeAttribute(item.word||"")}" class="secondary-button">🔊</button></div>
+      <div style="color:#6b55d9;font-weight:800;margin-top:6px">${escapeHtml(item.translation||[item.zh,item.en].filter(Boolean).join(" · "))}</div>
+      ${item.meaning?`<p style="color:#65727a;line-height:1.55">🇲🇾 ${escapeHtml(item.meaning)}</p>`:""}
+      ${item.example?`<p style="background:#faf8ff;padding:10px;border-radius:12px">📝 ${escapeHtml(item.example)}</p>`:""}
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-l2-master="${escapeAttribute(item.id||"")}" class="secondary-button">✓ Sudah Kuasai</button><button type="button" data-l2-remove-word="${escapeAttribute(item.word||"")}" class="secondary-button">🗑 Buang</button></div>
+    </div>`;
+  }
+  function l2AyatCard(item,e){
+    const mastered=e?.isAyatMastered?.(item.id);
+    return `<div style="padding:16px;border-radius:18px;background:#fff7e7;margin-bottom:10px;opacity:${mastered?.78:1}">
+      <small>${escapeHtml(item.theme||"Ayat Cantik")}</small><strong style="display:block;font-size:18px;line-height:1.5;margin:5px 0">✨ ${escapeHtml(item.text)}</strong>
+      <div>🇨🇳 ${escapeHtml(item.zh||"")}</div><div style="margin-top:4px">🇬🇧 ${escapeHtml(item.en||"")}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" data-l2-speak="${escapeAttribute(item.text)}" class="secondary-button">🔊 Dengar</button><button type="button" data-l2-master-ayat="${escapeAttribute(item.id)}" class="secondary-button">${mastered?'↩ Belajar Semula':'✓ Sudah Kuasai'}</button><button type="button" data-l2-remove-ayat="${escapeAttribute(item.id)}" class="secondary-button">🗑 Buang</button></div>
+    </div>`;
+  }
+  function bindL2(){
+    const e=l2Engine();
+    $$('[data-l2-speak]').forEach(b=>b.onclick=()=>l2Speak(b.dataset.l2Speak));
+    $$('[data-l2-master]').forEach(b=>b.onclick=()=>{if(b.dataset.l2Master)e?.markMastered?.(b.dataset.l2Master,true);renderVocabularyModule();});
+    $$('[data-l2-remove-word]').forEach(b=>b.onclick=()=>{e?.removeDailyWord?.(b.dataset.l2RemoveWord);renderVocabularyModule();});
+    $$('[data-l2-master-ayat]').forEach(b=>b.onclick=()=>{const id=b.dataset.l2MasterAyat;e?.markAyatMastered?.(id,!e?.isAyatMastered?.(id));renderVocabularyModule();});
+    $$('[data-l2-remove-ayat]').forEach(b=>b.onclick=()=>{e?.removeAyat?.(b.dataset.l2RemoveAyat);renderVocabularyModule();});
+    byId('l2Review')?.addEventListener('click',startVocabularyReview);
+    byId('l2All')?.addEventListener('click',renderL2AllWords);
+    byId('l2AyatHistory')?.addEventListener('click',renderL2AyatHistory);
+  }
+
+  function renderL2AllWords(){
+    const words=[...getVocabularyWords()];
+    const mastered=words.filter(w=>w.mastered).sort((a,b)=>String(a.word).localeCompare(String(b.word),'ms'));
+    const learning=words.filter(w=>!w.mastered).sort((a,b)=>String(a.word).localeCompare(String(b.word),'ms'));
+    const block=(title,list)=>`<h2>${title} (${list.length})</h2>${list.map(w=>`<div style="padding:12px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;gap:10px"><div><strong>${escapeHtml(w.word)}</strong><div style="color:#6b55d9">${escapeHtml(w.translation||"")}</div></div>${w.mastered?'✅':''}</div>`).join('')||'<p>Tiada.</p>'}`;
+    openModuleScreen(`<span class="section-kicker">LANGKAH 2</span><h1>📚 Semua Kosa Kata</h1><p>Disusun A–Z. Perkataan yang dikuasai disimpan berasingan supaya rekod pembelajaran tidak hilang.</p>${block('Sedang Belajar',learning)}${block('Dikuasai',mastered)}<button id="l2BackToday" class="primary-button" type="button" style="width:100%;margin-top:18px">← Kembali ke Hari Ini</button>`,28);
+    byId('l2BackToday')?.addEventListener('click',renderVocabularyModule);
+  }
+  function renderL2AyatHistory(){
+    const e=l2Engine(); const list=e?.getUnlockedAyat?.(l2Year())||[];
+    openModuleScreen(`<span class="section-kicker">LANGKAH 2</span><h1>✨ Koleksi Ayat Cantik</h1><p>Semua ayat yang telah dibuka setakat ini.</p>${list.map(x=>l2AyatCard(x,e)).join('')||'<p>Belum ada ayat.</p>'}<button id="l2BackToday" class="primary-button" type="button" style="width:100%;margin-top:18px">← Kembali ke Hari Ini</button>`,28);
+    $$('[data-l2-speak]').forEach(b=>b.onclick=()=>l2Speak(b.dataset.l2Speak));
+    $$('[data-l2-master-ayat]').forEach(b=>b.onclick=()=>{const id=b.dataset.l2MasterAyat;e?.markAyatMastered?.(id,!e?.isAyatMastered?.(id));renderL2AyatHistory();});
+    $$('[data-l2-remove-ayat]').forEach(b=>b.onclick=()=>{e?.removeAyat?.(b.dataset.l2RemoveAyat);renderL2AyatHistory();});
+    byId('l2BackToday')?.addEventListener('click',renderVocabularyModule);
+  }
+
+  renderVocabularyModule=function(){
+    const e=l2Engine(); const year=l2Year(); e?.ensureDailyContent?.(year);
+    const daily=e?.getDailyNewWords?.(10,year)||[]; const ayat=e?.getDailyAyat?.(5,year)||[]; const all=getVocabularyWords(); const stats=e?.curriculumStats?.(year)||{};
+    openModuleScreen(`<span class="section-kicker">LANGKAH 2 · TAHUN ${year}</span><h1>🧠 Kosa Kata Hari Ini</h1><p>Setiap hari kamu membuka Langkah 2, sistem memberikan sehingga <strong>10 kosa kata/frasa baharu</strong> dan <strong>5 Ayat Cantik baharu</strong>. Kandungan lama kekal dalam koleksi kamu.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0"><span class="section-kicker">Hari Ini ${daily.length}/10</span><span class="section-kicker">Dipelajari ${stats.unlockedWords||0}</span><span class="section-kicker">Dikuasai ${all.filter(w=>w.mastered).length}</span></div>
+      ${daily.map(l2WordCard).join('')||'<div style="padding:18px;background:#eef9f3;border-radius:16px">🎉 Semua kandungan yang tersedia untuk tahap ini telah dibuka.</div>'}
+      <h2 style="margin-top:28px">✨ 5 Ayat Cantik Hari Ini</h2><p>Ayat serba guna untuk membantu karangan menjadi lebih hidup dan matang.</p>${ayat.map(x=>l2AyatCard(x,e)).join('')||'<p>Tiada ayat baharu hari ini.</p>'}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px"><button id="l2All" class="secondary-button" type="button">📚 Semua Kosa Kata</button><button id="l2AyatHistory" class="secondary-button" type="button">✨ Koleksi Ayat</button></div>
+      <button id="l2Review" class="primary-button" type="button" style="width:100%;margin-top:10px">🎯 Mula Ulang Kaji</button>
+      <div style="margin-top:18px;padding:14px;background:#f7f5ff;border-radius:14px;color:#65727a">Master Bank: ${stats.totalEligibleWords||0} kosa kata/frasa tersedia untuk Tahun ${year} · ${stats.totalEligibleAyat||0} Ayat Cantik.</div>`,28);
+    bindL2();
+  };
+
+  console.log("✅ Langkah 2 Final Daily UI v6 loaded");
+})();
+
