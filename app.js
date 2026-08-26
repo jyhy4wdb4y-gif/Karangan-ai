@@ -118,7 +118,9 @@ let vocabularyReviewState = {
   index: 0,
   answered: false,
   year: 3,
-  active: false
+  active: false,
+  seenIds: [],
+  batch: 1
 };
 
 let vocabularyRewardState = {
@@ -2618,44 +2620,68 @@ function renderVocabularyModule() {
 }
 
 
+function getVocabularyReviewKey(word) {
+  return String(word?.word || word?.bm || word?.id || "").trim().toLocaleLowerCase("ms-MY");
+}
+
+function isVocabularyReviewMastered(word) {
+  try {
+    const e=getVocabularyEngine();
+    const saved=e?.findWord?.(word?.word || word?.bm || getVocabularyReviewKey(word));
+    return Boolean(saved?.mastered);
+  } catch (_) { return false; }
+}
+
+function getVocabularyReviewPool(year) {
+  const e=getVocabularyEngine();
+  const curriculum=window.KaranganLangkah2Master?.getWords?.(year) || [];
+  const source=curriculum.length ? curriculum : getVocabularyWords();
+
+  return source.map(item=>{
+    if(item?.bm && !item?.word){
+      let saved=e?.findWord?.(item.bm) || null;
+      if(!saved){
+        const r=e?.addWord?.({
+          word:item.bm,
+          translation:[item.zh,item.en].filter(Boolean).join(" · "),
+          meaning:item.meaningBm || "",
+          example:item.example || "",
+          category:item.category || item.taxonomy || "Kosa Kata",
+          source:"ulang-kaji-mastery-v12.7.9",
+          emoji:"🧠"
+        });
+        saved=r?.word || e?.findWord?.(item.bm) || null;
+      }
+      return saved || {id:item.id,word:item.bm,translation:[item.zh,item.en].filter(Boolean).join(" · "),meaning:item.meaningBm||"",example:item.example||""};
+    }
+    return item;
+  }).filter(Boolean);
+}
+
+function getNextVocabularyReviewBatch(year,seenIds=[],count=5){
+  const seen=new Set(seenIds.map(String));
+  return shuffleArray(getVocabularyReviewPool(year).filter(word=>{
+    const key=getVocabularyReviewKey(word);
+    return key && !seen.has(key) && !isVocabularyReviewMastered(word);
+  })).slice(0,count);
+}
+
 function startVocabularyReview() {
-  const engine =
-    getVocabularyEngine();
+  const engine=getVocabularyEngine();
+  const year=Number(engine?.getLearningYear?.() || 3);
+  const words=getNextVocabularyReviewBatch(year,[],5);
 
-  const year =
-    Number(engine?.getLearningYear?.() || 3);
-
-  let words =
-    (
-      Array.isArray(l2CurrentDisplayWords) &&
-      l2CurrentDisplayYear === year &&
-      l2CurrentDisplayWords.length
-    )
-      ? l2CurrentDisplayWords.slice(0,5)
-      : (
-          engine?.getReviewWordsForYear?.(5, year) ||
-          engine?.getDailyNewWords?.(5, year) ||
-          engine?.getReviewWords?.(5) ||
-          getVocabularyWords().slice(0,5)
-        );
-
-  if (!words.length) {
-    showToast(
-      `Belum ada kosa kata Tahun ${year} untuk diuji.`
-    );
-
+  if(!words.length){
+    showToast(`Semua kosa kata Tahun ${year} sudah dikuasai. 🌟`);
     return;
   }
 
-  vocabularyRewardState.combo = 0;
-  vocabularyReviewState = {
-    words,
-    index: 0,
-    answered: false,
-    year,
-    active: true
+  vocabularyRewardState.combo=0;
+  vocabularyReviewState={
+    words,index:0,answered:false,year,active:true,
+    seenIds:words.map(getVocabularyReviewKey),
+    batch:1
   };
-
   renderVocabularyReviewCard();
 }
 
@@ -2668,14 +2694,39 @@ function renderVocabularyReviewCard() {
 
 
   if (!word) {
-    completeMission(
-      "vocabulary"
-    );
+    const year=Number(vocabularyReviewState.year || 3);
+    const next=getNextVocabularyReviewBatch(year,vocabularyReviewState.seenIds || [],5);
 
-    showVocabularyReward("good", "🎉 Ulang Kaji Selesai! Hebat!", 10);
-    vocabularyReviewState.active = false;
-    setTimeout(renderVocabularyModule, 3000);
+    completeMission("vocabulary");
+    showVocabularyReward("good","🎉 Ulang Kaji Selesai! Hebat!",10);
 
+    openModuleScreen(`
+      <span class="section-kicker">ULANG KAJI · TAHUN ${year}</span>
+      <h1>🎉 5 Soalan Selesai!</h1>
+      <div style="padding:20px;border-radius:20px;background:#f5f0ff;text-align:center;margin-top:14px">
+        <div style="font-size:42px">🌟</div>
+        <p style="line-height:1.6"><strong>Dikuasai</strong> tidak akan muncul lagi dalam cabaran seterusnya.</p>
+      </div>
+      ${next.length ? `<button id="continueVocabularyReviewButton" class="primary-button" type="button" style="width:100%;margin-top:18px">➕ Cabar ${next.length} Lagi</button>` : `<div style="margin-top:16px;text-align:center;font-weight:900;color:#2b9364">🌟 Semua kosa kata yang tersedia sudah dikuasai.</div>`}
+      <button id="finishVocabularyReviewButton" class="secondary-button" type="button" style="width:100%;margin-top:10px">✓ Tamat Ulang Kaji</button>
+    `,28);
+
+    byId("continueVocabularyReviewButton")?.addEventListener("click",()=>{
+      const fresh=getNextVocabularyReviewBatch(year,vocabularyReviewState.seenIds || [],5);
+      if(!fresh.length){ renderVocabularyModule(); return; }
+      vocabularyReviewState.words=fresh;
+      vocabularyReviewState.index=0;
+      vocabularyReviewState.answered=false;
+      vocabularyReviewState.active=true;
+      vocabularyReviewState.batch=Number(vocabularyReviewState.batch||1)+1;
+      vocabularyReviewState.seenIds=[...(vocabularyReviewState.seenIds||[]),...fresh.map(getVocabularyReviewKey)];
+      renderVocabularyReviewCard();
+    });
+
+    byId("finishVocabularyReviewButton")?.addEventListener("click",()=>{
+      vocabularyReviewState.active=false;
+      renderVocabularyModule();
+    });
     return;
   }
 
@@ -2769,7 +2820,7 @@ function renderVocabularyReviewCard() {
           class="primary-button"
           type="button"
         >
-          😊 Saya Ingat
+          ✓ Dikuasai
         </button>
 
       </div>
@@ -2851,6 +2902,12 @@ function submitVocabularyReview(
     );
 
   if (correct) {
+    // Persist mastery in the shared vocabulary engine.
+    // Semua Kosa Kata reads the same mastered flag.
+    try {
+      getVocabularyEngine()?.markMastered?.(word.id, true);
+    } catch (_) {}
+
     vocabularyRewardState.combo += 1;
     const messages = [
       "Hebat! Kamu semakin mahir!",
@@ -11309,41 +11366,7 @@ window.KaranganAI = {
     });
 
     byId("l2mReview")?.addEventListener("click", () => {
-      const review = today.words.slice(0,5).map(item => {
-        const e = l2mEngine();
-        let saved = l2mSaved(item);
-
-        if (!saved) {
-          const result = e?.addWord?.({
-            word: item.bm,
-            translation: [item.zh,item.en].filter(Boolean).join(" · "),
-            meaning: item.meaningBm || "",
-            example: item.example || "",
-            category: item.category || item.taxonomy || "Kosa Kata",
-            source: "curriculum-master-v12.2",
-            emoji: "🧠"
-          });
-          saved = result?.word || l2mSaved(item);
-        }
-
-        return saved || {
-          id: item.id,
-          word: item.bm,
-          translation: [item.zh,item.en].filter(Boolean).join(" · "),
-          meaning: item.meaningBm || "",
-          example: item.example || ""
-        };
-      });
-
-      vocabularyRewardState.combo = 0;
-      vocabularyReviewState = {
-        words: review,
-        index: 0,
-        answered: false,
-        year,
-        active: true
-      };
-      renderVocabularyReviewCard();
+      startVocabularyReview();
     });
   }
 
