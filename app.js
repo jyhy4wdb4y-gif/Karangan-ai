@@ -10892,8 +10892,55 @@ window.KaranganAI = {
     const render=(zh,en,status="")=>{
       p.innerHTML=`<div style="display:flex;justify-content:space-between;gap:12px"><div><div style="font-size:11px;font-weight:900;color:#7866c8">TERJEMAHAN PERKATAAN</div><div style="font-size:25px;font-weight:950;margin-top:3px">${l2mEsc(key)}</div></div><button type="button" data-l2m-word-close style="border:0;background:#f4f1fb;width:34px;height:34px;border-radius:50%">✕</button></div><div style="margin-top:12px;padding:11px 13px;background:#f7f4ff;border-radius:13px">🇨🇳 <strong>${l2mEsc(zh||"…")}</strong></div><div style="margin-top:8px;padding:11px 13px;background:#f6f9fb;border-radius:13px">🇬🇧 <strong>${l2mEsc(en||"…")}</strong></div>${status?`<div style="margin-top:8px;font-size:12px;color:#7c858b">${l2mEsc(status)}</div>`:""}<button type="button" data-l2m-word-speak class="secondary-button" style="width:100%;margin-top:11px">🔊 Dengar</button>`;
 
-      p.querySelector("[data-l2m-word-close]")?.addEventListener("click",()=>p.remove());
-      p.querySelector("[data-l2m-word-speak]")?.addEventListener("click",()=>l2mSpeak(key));
+      const closeBtn = p.querySelector("[data-l2m-word-close]");
+      const speakBtn = p.querySelector("[data-l2m-word-speak]");
+
+      // iPad/iPhone: use pointerdown for popup controls too.
+      // This matches the instant word-tap interaction and avoids unreliable delayed click.
+      const closePopup = event => {
+        event?.preventDefault?.();
+        event?.stopPropagation?.();
+        p.remove();
+      };
+
+      const speakWordNow = event => {
+        event?.preventDefault?.();
+        event?.stopPropagation?.();
+
+        // Prefer the app voice engine, but fall back immediately to native Malay TTS
+        // if the custom engine is unavailable or throws.
+        try {
+          if (window.KaranganVoiceV5?.speak) {
+            const result = window.KaranganVoiceV5.speak(key);
+            if (result !== false) return;
+          }
+        } catch (error) {
+          console.warn("KaranganVoiceV5 popup speak failed:", error);
+        }
+
+        try {
+          if ("speechSynthesis" in window) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(String(key || ""));
+            utterance.lang = "ms-MY";
+            utterance.rate = .88;
+            window.speechSynthesis.speak(utterance);
+          }
+        } catch (error) {
+          console.warn("Native popup speak failed:", error);
+        }
+      };
+
+      closeBtn?.addEventListener("pointerdown", closePopup, {passive:false});
+      speakBtn?.addEventListener("pointerdown", speakWordNow, {passive:false});
+
+      // Keyboard / non-Pointer-Event fallback.
+      closeBtn?.addEventListener("click", event => {
+        if (event.detail === 0) closePopup(event);
+      });
+      speakBtn?.addEventListener("click", event => {
+        if (event.detail === 0) speakWordNow(event);
+      });
     };
 
     // IMPORTANT: render and paint the popup BEFORE any cache/local/AI lookup.
