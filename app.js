@@ -2786,6 +2786,18 @@ function renderVocabularyReviewCard() {
       </div>
 
       <button
+        id="reviewSpeakButton"
+        class="secondary-button"
+        type="button"
+        style="
+          width:100%;
+          margin-top:14px;
+        "
+      >
+        🔊 Dengar
+      </button>
+
+      <button
         id="revealReviewButton"
         class="primary-button"
         type="button"
@@ -2837,6 +2849,44 @@ function renderVocabularyReviewCard() {
     `,
     28
   );
+
+
+  {
+    const reviewSpeakButton = byId("reviewSpeakButton");
+    let reviewSpeakPointerAt = 0;
+
+    const speakReviewWord = event => {
+      event?.preventDefault?.();
+      event?.stopPropagation?.();
+      reviewSpeakPointerAt = Date.now();
+
+      // Read the current Ulang Kaji item using the same reliable
+      // Malay TTS path already used by Langkah 2 / Semua Kosa Kata.
+      l2mSpeak(
+        word.example ||
+        word.word ||
+        ""
+      );
+    };
+
+    reviewSpeakButton?.addEventListener(
+      "pointerup",
+      speakReviewWord,
+      { passive:false }
+    );
+
+    reviewSpeakButton?.addEventListener(
+      "click",
+      event => {
+        if (Date.now() - reviewSpeakPointerAt < 1200) {
+          event.preventDefault();
+          event.stopPropagation();
+          return;
+        }
+        speakReviewWord(event);
+      }
+    );
+  }
 
 
   byId(
@@ -11542,81 +11592,99 @@ window.KaranganAI = {
     }, true);
   }
 
-  if (!window.__KARANGAN_L2_WORD_TRANSLATE_V12716__) {
-    window.__KARANGAN_L2_WORD_TRANSLATE_V12716__ = true;
+  if (!window.__KARANGAN_L2_WORD_TRANSLATE_V12719__) {
+    window.__KARANGAN_L2_WORD_TRANSLATE_V12719__ = true;
 
-    const HOLD_MS = 550;
+    // v12.7.19 — reliable intentional tap translation.
+    // A normal completed tap opens the translation card.
+    // Dragging / scrolling does not.
     const MOVE_TOLERANCE = 12;
-
-    let timer = null;
-    let target = null;
+    let pressedTarget = null;
     let startX = 0;
     let startY = 0;
+    let moved = false;
     let openedAt = 0;
 
-    const cancelHold = () => {
-      if (timer) clearTimeout(timer);
-      timer = null;
-      target = null;
-    };
+    const getTranslateTarget = event =>
+      event.target?.closest?.(
+        "[data-l2m-translate], .l2m-token-word[data-l2m-word]"
+      );
 
-    const openHeldTarget = held => {
-      if (!held?.isConnected) return;
+    const openTranslationTarget = target => {
+      if (!target?.isConnected) return;
 
-      // Main Kosa Kata word.
-      if (held.matches?.("[data-l2m-translate]")) {
+      // Main Langkah 2 Kosa Kata card.
+      if (target.matches?.("[data-l2m-translate]")) {
         const year = l2mYear();
         const item = l2mWords(year).find(
-          x => String(x.id) === String(held.dataset.l2mTranslate)
+          x => String(x.id) === String(target.dataset.l2mTranslate)
         );
         if (item) l2mShowTranslation(item);
         return;
       }
 
-      // Individual word inside Makna BM / Ayat Contoh / Kegunaan / Ayat Cantik.
-      if (held.matches?.(".l2m-token-word[data-l2m-word]")) {
-        void l2mShowWordTranslation(held.dataset.l2mWord);
+      // Selectable word inside revealed text / Ayat Contoh.
+      if (target.matches?.(".l2m-token-word[data-l2m-word]")) {
+        void l2mShowWordTranslation(target.dataset.l2mWord);
       }
     };
 
     document.addEventListener("pointerdown", event => {
-      const held = event.target?.closest?.(
-        "[data-l2m-translate], .l2m-token-word[data-l2m-word]"
-      );
-      if (!held) return;
+      const target = getTranslateTarget(event);
+      if (!target) return;
 
-      cancelHold();
-      target = held;
+      pressedTarget = target;
       startX = Number(event.clientX || 0);
       startY = Number(event.clientY || 0);
-
-      timer = setTimeout(() => {
-        const heldNow = target;
-        cancelHold();
-        openedAt = Date.now();
-        openHeldTarget(heldNow);
-      }, HOLD_MS);
+      moved = false;
     }, true);
 
     document.addEventListener("pointermove", event => {
-      if (!target) return;
+      if (!pressedTarget) return;
+
       const dx = Math.abs(Number(event.clientX || 0) - startX);
       const dy = Math.abs(Number(event.clientY || 0) - startY);
+
       if (dx > MOVE_TOLERANCE || dy > MOVE_TOLERANCE) {
-        cancelHold();
+        moved = true;
       }
     }, true);
 
-    document.addEventListener("pointerup", cancelHold, true);
-    document.addEventListener("pointercancel", cancelHold, true);
-    document.addEventListener("scroll", cancelHold, true);
+    document.addEventListener("pointerup", event => {
+      const target = getTranslateTarget(event);
+      const sameTarget =
+        target &&
+        pressedTarget &&
+        (
+          target === pressedTarget ||
+          pressedTarget.contains?.(target) ||
+          target.contains?.(pressedTarget)
+        );
 
-    // Suppress the synthetic click after a successful deliberate hold.
+      if (sameTarget && !moved) {
+        event.preventDefault();
+        event.stopPropagation();
+        openedAt = Date.now();
+        openTranslationTarget(pressedTarget);
+      }
+
+      pressedTarget = null;
+      moved = false;
+    }, true);
+
+    document.addEventListener("pointercancel", () => {
+      pressedTarget = null;
+      moved = false;
+    }, true);
+
+    document.addEventListener("scroll", () => {
+      moved = true;
+    }, true);
+
+    // Suppress only the synthetic click after the successful pointerup.
     document.addEventListener("click", event => {
-      const held = event.target?.closest?.(
-        "[data-l2m-translate], .l2m-token-word[data-l2m-word]"
-      );
-      if (!held) return;
+      const target = getTranslateTarget(event);
+      if (!target) return;
 
       if (Date.now() - openedAt < 1200) {
         event.preventDefault();
