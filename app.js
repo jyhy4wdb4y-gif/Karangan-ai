@@ -2860,16 +2860,61 @@ function renderVocabularyReviewCard() {
       event?.stopPropagation?.();
       reviewSpeakPointerAt = Date.now();
 
-      // Read the current Ulang Kaji item using the same reliable
-      // Malay TTS path already used by Langkah 2 / Semua Kosa Kata.
-      l2mSpeak(
+      const value = String(
         word.word ||
         word.bm ||
         word.example ||
         ""
-      );
-    };
+      ).trim();
 
+      if (!value) return;
+
+      // v12.7.21 — Ulang Kaji iOS/iPadOS Dengar fix.
+      // Start native speech synchronously from this physical tap and retain
+      // the utterance so Safari cannot garbage-collect it before playback.
+      try {
+        if (
+          "speechSynthesis" in window &&
+          "SpeechSynthesisUtterance" in window
+        ) {
+          const synth = window.speechSynthesis;
+          const utterance = new SpeechSynthesisUtterance(value);
+
+          window.__KARANGAN_ACTIVE_UTTERANCE__ = utterance;
+
+          utterance.lang = "ms-MY";
+          utterance.rate = 0.88;
+          utterance.pitch = 1;
+          utterance.volume = 1;
+
+          try {
+            const voices = synth.getVoices?.() || [];
+            const voice =
+              voices.find(v => /^ms[-_]/i.test(v.lang || "")) ||
+              voices.find(v => /Malay|Malaysia/i.test(v.name || ""));
+            if (voice) utterance.voice = voice;
+          } catch (_) {}
+
+          try { synth.resume(); } catch (_) {}
+
+          utterance.onend = () => {
+            if (window.__KARANGAN_ACTIVE_UTTERANCE__ === utterance) {
+              window.__KARANGAN_ACTIVE_UTTERANCE__ = null;
+            }
+          };
+
+          synth.speak(utterance);
+          return;
+        }
+      } catch (error) {
+        console.warn("Ulang Kaji native speech failed:", error);
+      }
+
+      // Fallback only if native speech is unavailable.
+      try {
+        window.KaranganVoiceV5?.speak?.(value);
+      } catch (_) {}
+    };
     reviewSpeakButton?.addEventListener(
       "pointerup",
       speakReviewWord,
