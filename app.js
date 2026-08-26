@@ -10494,51 +10494,65 @@ window.KaranganAI = {
   function l2mSpeak(text) {
     const value = String(text || "").trim();
     if (!value) return false;
+    if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
+      try {
+        return window.KaranganVoiceV5?.speak?.(value) ?? false;
+      } catch (_) {
+        return false;
+      }
+    }
 
-    // v12.7.11 — iPad/iPhone reliable Dengar:
-    // Native SpeechSynthesis must start synchronously inside the user's tap.
-    // Do NOT let a silent custom voice engine block the native Malay voice.
     try {
-      if ("speechSynthesis" in window && "SpeechSynthesisUtterance" in window) {
-        const synth = window.speechSynthesis;
+      const synth = window.speechSynthesis;
 
-        // iOS Safari can remain paused after previous audio/navigation.
-        try { synth.resume(); } catch (_) {}
-        try { synth.cancel(); } catch (_) {}
+      // Keep a strong reference. iOS Safari can garbage-collect a local utterance
+      // before speech begins.
+      window.__KARANGAN_ACTIVE_UTTERANCE__ = null;
 
-        const u = new SpeechSynthesisUtterance(value);
-        u.lang = "ms-MY";
-        u.rate = 0.88;
-        u.pitch = 1;
-        u.volume = 1;
+      const utterance = new SpeechSynthesisUtterance(value);
+      window.__KARANGAN_ACTIVE_UTTERANCE__ = utterance;
 
-        // Prefer an installed Malay voice when available.
+      utterance.lang = "ms-MY";
+      utterance.rate = 0.88;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+
+      const chooseMalayVoice = () => {
         try {
           const voices = synth.getVoices?.() || [];
-          const msVoice = voices.find(v =>
-            /^ms(?:-|_)/i.test(v.lang || "") ||
-            /Malay|Malaysia/i.test(v.name || "")
-          );
-          if (msVoice) u.voice = msVoice;
+          const voice =
+            voices.find(v => /^ms[-_]/i.test(v.lang || "")) ||
+            voices.find(v => /Malay|Malaysia/i.test(v.name || ""));
+          if (voice) utterance.voice = voice;
         } catch (_) {}
+      };
 
-        synth.speak(u);
-        return true;
-      }
+      chooseMalayVoice();
+
+      // Important for iOS/iPadOS:
+      // do not cancel() and speak() in the same tap. That sequence can leave
+      // Web Speech silent. Resume and speak the retained utterance directly.
+      try { synth.resume(); } catch (_) {}
+
+      utterance.onend = () => {
+        if (window.__KARANGAN_ACTIVE_UTTERANCE__ === utterance) {
+          window.__KARANGAN_ACTIVE_UTTERANCE__ = null;
+        }
+      };
+      utterance.onerror = event => {
+        console.warn("Malay speech error:", event?.error || event);
+      };
+
+      synth.speak(utterance);
+      return true;
     } catch (error) {
       console.warn("Native Malay speech failed:", error);
-    }
-
-    // Only use the custom engine when native browser TTS is unavailable.
-    try {
-      if (window.KaranganVoiceV5?.speak) {
-        return window.KaranganVoiceV5.speak(value);
+      try {
+        return window.KaranganVoiceV5?.speak?.(value) ?? false;
+      } catch (_) {
+        return false;
       }
-    } catch (error) {
-      console.warn("KaranganVoiceV5 fallback failed:", error);
     }
-
-    return false;
   }
 
   function l2mSaved(item) {
@@ -11005,7 +11019,7 @@ window.KaranganAI = {
       };
 
       closeBtn?.addEventListener("pointerdown", closePopup, {passive:false});
-      speakBtn?.addEventListener("pointerdown", speakWordNow, {passive:false});
+      speakBtn?.addEventListener("pointerup", speakWordNow, {passive:false});
 
       // Keyboard / non-Pointer-Event fallback.
       closeBtn?.addEventListener("click", event => {
@@ -11233,9 +11247,9 @@ window.KaranganAI = {
         l2mSpeak(button.dataset.l2mSpeak);
       };
 
-      button.addEventListener("pointerdown", speakNow, { passive:false });
+      button.addEventListener("pointerup", speakNow, { passive:false });
       button.addEventListener("click", event => {
-        // Suppress the synthetic click produced after pointerdown.
+        // Suppress the synthetic click produced after pointerup.
         if (Date.now() - lastPointerAt < 1200) {
           event.preventDefault();
           event.stopPropagation();
