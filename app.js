@@ -1721,6 +1721,108 @@ const BASIC_DICTIONARY = {
    Vocabulary v2 + AI Fallback
    ========================================================= */
 
+
+/* =========================================================
+   TRANSLATION CACHE
+   Local dictionary -> persistent cache -> AI fallback
+   ========================================================= */
+
+const TRANSLATION_CACHE_CONFIG = {
+  key: "karanganAI_translation_cache_v1",
+  version: 1,
+  maxEntries: 3000
+};
+
+function normalizeTranslationCacheKey(word) {
+  return String(word || "")
+    .toLowerCase()
+    .trim()
+    .replace(/^[^a-zA-ZÀ-ÿ]+|[^a-zA-ZÀ-ÿ'-]+$/g, "");
+}
+
+function loadTranslationCache() {
+  try {
+    const raw = localStorage.getItem(TRANSLATION_CACHE_CONFIG.key);
+    if (!raw) return {};
+
+    const parsed = JSON.parse(raw);
+    if (
+      !parsed ||
+      parsed.version !== TRANSLATION_CACHE_CONFIG.version ||
+      typeof parsed.entries !== "object" ||
+      !parsed.entries
+    ) {
+      return {};
+    }
+
+    return parsed.entries;
+  } catch (error) {
+    console.warn("Translation cache load failed:", error);
+    return {};
+  }
+}
+
+function saveTranslationCache(entries) {
+  try {
+    const pairs = Object.entries(entries || {})
+      .sort((a, b) => Number(b[1]?.savedAt || 0) - Number(a[1]?.savedAt || 0))
+      .slice(0, TRANSLATION_CACHE_CONFIG.maxEntries);
+
+    localStorage.setItem(
+      TRANSLATION_CACHE_CONFIG.key,
+      JSON.stringify({
+        version: TRANSLATION_CACHE_CONFIG.version,
+        entries: Object.fromEntries(pairs)
+      })
+    );
+  } catch (error) {
+    console.warn("Translation cache save failed:", error);
+  }
+}
+
+function getCachedTranslation(word) {
+  const key = normalizeTranslationCacheKey(word);
+  if (!key) return null;
+
+  const entries = loadTranslationCache();
+  const item = entries[key];
+
+  if (
+    !item ||
+    typeof item.translation !== "string" ||
+    !item.translation.trim()
+  ) {
+    return null;
+  }
+
+  return item;
+}
+
+function cacheTranslation(word, data) {
+  const key = normalizeTranslationCacheKey(word);
+  const translation = String(data?.translation || "").trim();
+
+  if (
+    !key ||
+    !translation ||
+    translation === "Maksud belum tersedia" ||
+    translation === "Maksud belum tersedia."
+  ) {
+    return;
+  }
+
+  const entries = loadTranslationCache();
+
+  entries[key] = {
+    translation,
+    meaning: String(data?.meaning || translation).trim(),
+    definition: String(data?.definition || "").trim(),
+    savedAt: Date.now()
+  };
+
+  saveTranslationCache(entries);
+}
+
 async function translateWord(rawWord) {
 
   const word =
@@ -1957,6 +2059,48 @@ async function translateWord(rawWord) {
 
   /* ---------------------------------------------------------
      STEP 3
+     Persistent Translation Cache
+
+     Only words not found in the Master Vocabulary or
+     BASIC_DICTIONARY reach this layer.
+     --------------------------------------------------------- */
+
+  const cachedTranslation =
+    getCachedTranslation(word);
+
+  if (cachedTranslation) {
+
+    currentTranslationData.translation =
+      cachedTranslation.translation;
+
+    currentTranslationData.meaning =
+      cachedTranslation.meaning ||
+      cachedTranslation.translation;
+
+    safeText(
+      meaningEl,
+      cachedTranslation.translation
+    );
+
+    safeText(
+      byId("translationDefinition"),
+      cachedTranslation.definition || ""
+    );
+
+    safeText(
+      exampleEl,
+      storySentence ||
+      `Perkataan: ${word}`
+    );
+
+    updateSaveVocabularyButton();
+
+    return;
+  }
+
+
+  /* ---------------------------------------------------------
+     STEP 4
      AI fallback
 
      Words not inside Vocabulary v2 will be sent
@@ -2025,6 +2169,15 @@ async function translateWord(rawWord) {
 
       currentTranslationData.meaning =
         answer;
+
+      cacheTranslation(
+        word,
+        {
+          translation: answer,
+          meaning: answer,
+          definition: ""
+        }
+      );
 
 
       safeText(
@@ -11133,3 +11286,20 @@ window.KaranganAI = {
 
   console.log("✅ MASTER CURRICULUM v12.8 + ONLINE AI FIRST WORD TRANSLATION loaded");
 })();
+
+
+/* Translation cache maintenance */
+window.KaranganTranslationCache = {
+  clear() {
+    try {
+      localStorage.removeItem(TRANSLATION_CACHE_CONFIG.key);
+      return true;
+    } catch (error) {
+      console.warn("Translation cache clear failed:", error);
+      return false;
+    }
+  },
+  size() {
+    return Object.keys(loadTranslationCache()).length;
+  }
+};
