@@ -120,7 +120,8 @@ let vocabularyReviewState = {
   year: 3,
   active: false,
   seenIds: [],
-  batch: 1
+  batch: 1,
+  masteredIds: []
 };
 
 let vocabularyRewardState = {
@@ -2680,7 +2681,8 @@ function startVocabularyReview() {
   vocabularyReviewState={
     words,index:0,answered:false,year,active:true,
     seenIds:words.map(getVocabularyReviewKey),
-    batch:1
+    batch:1,
+    masteredIds:[]
   };
   renderVocabularyReviewCard();
 }
@@ -2720,6 +2722,7 @@ function renderVocabularyReviewCard() {
       vocabularyReviewState.active=true;
       vocabularyReviewState.batch=Number(vocabularyReviewState.batch||1)+1;
       vocabularyReviewState.seenIds=[...(vocabularyReviewState.seenIds||[]),...fresh.map(getVocabularyReviewKey)];
+      vocabularyReviewState.masteredIds=[];
       renderVocabularyReviewCard();
     });
 
@@ -3017,6 +3020,12 @@ function submitVocabularyReview(
       getVocabularyEngine()?.markMastered?.(word.id, true);
     } catch (_) {}
 
+    const masteredKey = getVocabularyReviewKey(word);
+    vocabularyReviewState.masteredIds = Array.from(new Set([
+      ...(vocabularyReviewState.masteredIds || []),
+      masteredKey
+    ]));
+
     vocabularyRewardState.combo += 1;
     const messages = [
       "Hebat! Kamu semakin mahir!",
@@ -3052,6 +3061,20 @@ function submitVocabularyReview(
 
   vocabularyReviewState.index += 1;
 
+  // At the end of the current batch, keep only words that are still
+  // not Dikuasai. New +5 is NOT offered until this list is empty.
+  if (vocabularyReviewState.index >= vocabularyReviewState.words.length) {
+    const mastered = new Set(vocabularyReviewState.masteredIds || []);
+    const pending = vocabularyReviewState.words.filter(
+      item => !mastered.has(getVocabularyReviewKey(item))
+    );
+
+    if (pending.length) {
+      vocabularyReviewState.words = pending;
+      vocabularyReviewState.index = 0;
+    }
+  }
+
   setTimeout(
     renderVocabularyReviewCard,
     1050
@@ -3059,9 +3082,24 @@ function submitVocabularyReview(
 }
 
 function skipVocabularyReview(word) {
-  // Skip never marks mastery; this word remains eligible in future review.
+  // Skip = postpone, NOT complete.
+  // Move to the next item; at the end of the batch all skipped/unmastered
+  // words are kept and cycled again until they become Dikuasai.
   vocabularyRewardState.combo = 0;
   vocabularyReviewState.index += 1;
+
+  if (vocabularyReviewState.index >= vocabularyReviewState.words.length) {
+    const mastered = new Set(vocabularyReviewState.masteredIds || []);
+    const pending = vocabularyReviewState.words.filter(
+      item => !mastered.has(getVocabularyReviewKey(item))
+    );
+
+    if (pending.length) {
+      vocabularyReviewState.words = pending;
+      vocabularyReviewState.index = 0;
+    }
+  }
+
   renderVocabularyReviewCard();
 }
 
