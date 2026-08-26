@@ -10492,15 +10492,53 @@ window.KaranganAI = {
   }
 
   function l2mSpeak(text) {
-    if (window.KaranganVoiceV5?.speak) {
-      return window.KaranganVoiceV5.speak(text);
+    const value = String(text || "").trim();
+    if (!value) return false;
+
+    // v12.7.11 — iPad/iPhone reliable Dengar:
+    // Native SpeechSynthesis must start synchronously inside the user's tap.
+    // Do NOT let a silent custom voice engine block the native Malay voice.
+    try {
+      if ("speechSynthesis" in window && "SpeechSynthesisUtterance" in window) {
+        const synth = window.speechSynthesis;
+
+        // iOS Safari can remain paused after previous audio/navigation.
+        try { synth.resume(); } catch (_) {}
+        try { synth.cancel(); } catch (_) {}
+
+        const u = new SpeechSynthesisUtterance(value);
+        u.lang = "ms-MY";
+        u.rate = 0.88;
+        u.pitch = 1;
+        u.volume = 1;
+
+        // Prefer an installed Malay voice when available.
+        try {
+          const voices = synth.getVoices?.() || [];
+          const msVoice = voices.find(v =>
+            /^ms(?:-|_)/i.test(v.lang || "") ||
+            /Malay|Malaysia/i.test(v.name || "")
+          );
+          if (msVoice) u.voice = msVoice;
+        } catch (_) {}
+
+        synth.speak(u);
+        return true;
+      }
+    } catch (error) {
+      console.warn("Native Malay speech failed:", error);
     }
-    if (!("speechSynthesis" in window)) return;
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(String(text || ""));
-    u.lang = "ms-MY";
-    u.rate = .88;
-    speechSynthesis.speak(u);
+
+    // Only use the custom engine when native browser TTS is unavailable.
+    try {
+      if (window.KaranganVoiceV5?.speak) {
+        return window.KaranganVoiceV5.speak(value);
+      }
+    } catch (error) {
+      console.warn("KaranganVoiceV5 fallback failed:", error);
+    }
+
+    return false;
   }
 
   function l2mSaved(item) {
@@ -10963,29 +11001,7 @@ window.KaranganAI = {
       const speakWordNow = event => {
         event?.preventDefault?.();
         event?.stopPropagation?.();
-
-        // Prefer the app voice engine, but fall back immediately to native Malay TTS
-        // if the custom engine is unavailable or throws.
-        try {
-          if (window.KaranganVoiceV5?.speak) {
-            const result = window.KaranganVoiceV5.speak(key);
-            if (result !== false) return;
-          }
-        } catch (error) {
-          console.warn("KaranganVoiceV5 popup speak failed:", error);
-        }
-
-        try {
-          if ("speechSynthesis" in window) {
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(String(key || ""));
-            utterance.lang = "ms-MY";
-            utterance.rate = .88;
-            window.speechSynthesis.speak(utterance);
-          }
-        } catch (error) {
-          console.warn("Native popup speak failed:", error);
-        }
+        l2mSpeak(key);
       };
 
       closeBtn?.addEventListener("pointerdown", closePopup, {passive:false});
