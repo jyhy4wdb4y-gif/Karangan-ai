@@ -1919,6 +1919,17 @@ async function translateWord(rawWord) {
       "translationExample"
     );
 
+  // Instant-response UX: show the translation card before lookup/AI work.
+  safeText(meaningEl, "Mencari maksud...");
+  safeText(
+    byId("translationDefinition"),
+    "Cikgu Aira sedang mencari maksud perkataan ini..."
+  );
+  safeText(exampleEl, storySentence || `Perkataan: ${word}`);
+
+  // Give the browser one frame to paint the popup immediately.
+  await new Promise(resolve => requestAnimationFrame(() => resolve()));
+
 
   /* ---------------------------------------------------------
      STEP 1
@@ -2182,6 +2193,11 @@ async function translateWord(rawWord) {
       );
 
 
+    // Ignore an older AI result if another word was tapped meanwhile.
+    if (currentTranslationWord !== word) {
+      return;
+    }
+
     if (answer) {
 
       currentTranslationData.translation =
@@ -2230,6 +2246,9 @@ async function translateWord(rawWord) {
       error
     );
 
+    if (currentTranslationWord !== word) {
+      return;
+    }
 
     currentTranslationData.translation =
       "Maksud belum tersedia";
