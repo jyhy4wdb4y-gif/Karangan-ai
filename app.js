@@ -11205,23 +11205,56 @@ window.KaranganAI = {
   }
 
   function l2mBindCommon(year, afterToggle = () => window.renderVocabularyModule()) {
+    // v12.7.10 — instant iPad/iPhone controls for Dengar + Kuasai.
+    // Use pointerdown so the controls work immediately after the page appears.
     document.querySelectorAll("[data-l2m-speak]").forEach(button => {
-      button.onclick = () => l2mSpeak(button.dataset.l2mSpeak);
+      let lastPointerAt = 0;
+
+      const speakNow = event => {
+        event?.preventDefault?.();
+        event?.stopPropagation?.();
+        lastPointerAt = Date.now();
+        l2mSpeak(button.dataset.l2mSpeak);
+      };
+
+      button.addEventListener("pointerdown", speakNow, { passive:false });
+      button.addEventListener("click", event => {
+        // Suppress the synthetic click produced after pointerdown.
+        if (Date.now() - lastPointerAt < 1200) {
+          event.preventDefault();
+          event.stopPropagation();
+          return;
+        }
+        // Keyboard / non-pointer fallback.
+        speakNow(event);
+      });
     });
 
     document.querySelectorAll("[data-l2m-master]").forEach(button => {
-      button.onclick = () => {
+      let lastPointerAt = 0;
+
+      const toggleMasteryNow = event => {
+        event?.preventDefault?.();
+        event?.stopPropagation?.();
+
+        // Avoid a second trigger from the same physical tap.
+        if (button.dataset.l2mBusy === "1") return;
+        button.dataset.l2mBusy = "1";
+        lastPointerAt = Date.now();
+
         const item = l2mWords(year).find(
           x => String(x.id) === String(button.dataset.l2mMaster)
         );
-        if (!item) return;
+        if (!item) {
+          button.dataset.l2mBusy = "0";
+          return;
+        }
 
         const e = l2mEngine();
         let saved = l2mSaved(item);
         const wasMastered = Boolean(saved?.mastered);
 
-        // IMPORTANT: show the SMART animation first.
-        // This makes the visual reward independent from LocalStorage / event dispatch.
+        // Preserve the existing SMART animation.
         l2mShowMasterReward(!wasMastered);
 
         button.disabled = true;
@@ -11252,13 +11285,12 @@ window.KaranganAI = {
           }
         }
 
-        // v12.5.2: update the card immediately, while SMART FX is covering the page.
-        // After the animation ends there is NO page/card render and NO delayed UI mutation.
         const latest = l2mSaved(item);
         const masteredNow = Boolean(latest?.mastered);
 
         button.textContent = masteredNow ? "✓ Sudah Kuasai" : "✓ Kuasai";
         button.disabled = false;
+        button.dataset.l2mBusy = "0";
 
         const card = button.closest(".l2m-card");
         if (card) {
@@ -11271,6 +11303,18 @@ window.KaranganAI = {
           }
         }
       };
+
+      button.addEventListener("pointerdown", toggleMasteryNow, { passive:false });
+      button.addEventListener("click", event => {
+        // Suppress synthetic click after pointerdown.
+        if (Date.now() - lastPointerAt < 1200) {
+          event.preventDefault();
+          event.stopPropagation();
+          return;
+        }
+        // Keyboard / non-pointer fallback.
+        toggleMasteryNow(event);
+      });
     });
   }
 
