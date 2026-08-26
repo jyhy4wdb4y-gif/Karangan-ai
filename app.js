@@ -10905,6 +10905,21 @@ window.KaranganAI = {
       return;
     }
 
+    // v12.7.3 — LOCAL-FIRST instant translation.
+    // Master Curriculum/local dictionary must answer immediately; only unknown words use online AI.
+    const instantLocal=l2mLookupWord(key);
+    if(!instantLocal.missing && (instantLocal.zh || instantLocal.en)){
+      render(instantLocal.zh||"—",instantLocal.en||"—","即时翻译 / Instant");
+      cache[key]={
+        zh:instantLocal.zh||"—",
+        en:instantLocal.en||"—",
+        savedAt:Date.now(),
+        source:"master-local-instant"
+      };
+      l2mSaveTranslationCache(cache);
+      return;
+    }
+
     render("正在查询线上 AI…","Searching online AI…","Online AI");
 
     try{
@@ -11342,3 +11357,33 @@ window.KaranganTranslationCache = {
     return Object.keys(loadTranslationCache()).length;
   }
 };
+
+
+/* =========================================================
+   LANGKAH 2 NAVIGATION HOTFIX v12.7.3
+   - Header Back on Semua Kosa Kata -> Kosa Kata Hari Ini
+   - X/Home behavior remains unchanged
+   ========================================================= */
+(() => {
+  "use strict";
+  if (window.__KARANGAN_L2_BACK_V1273__) return;
+  window.__KARANGAN_L2_BACK_V1273__ = true;
+
+  document.addEventListener("click", event => {
+    const back = event.target?.closest?.("#moduleBackButton");
+    if (!back) return;
+
+    const content = document.getElementById("moduleContent");
+    const onAllWords = Boolean(document.getElementById("l2mBackToday")) ||
+      /Semua\s+Kosa\s+Kata/i.test(content?.textContent || "");
+
+    if (!onAllWords) return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    if (typeof window.renderVocabularyModule === "function") {
+      window.renderVocabularyModule();
+    }
+  }, true);
+})();
