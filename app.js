@@ -11333,12 +11333,47 @@ window.KaranganAI = {
 
   if (!window.__KARANGAN_L2_WORD_TRANSLATE_V127__) {
     window.__KARANGAN_L2_WORD_TRANSLATE_V127__ = true;
+
+    // iOS/iPad instant-touch fix: start on pointerdown instead of waiting for click.
+    // The popup is created synchronously on touch-down; translation continues async.
+    let l2mLastPointerWord = "";
+    let l2mLastPointerAt = 0;
+
+    const openWordFromEvent = event => {
+      const token = event.target?.closest?.(".l2m-token-word[data-l2m-word]");
+      if (!token) return false;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      const word = token.dataset.l2mWord;
+      l2mLastPointerWord = word;
+      l2mLastPointerAt = Date.now();
+
+      // Calling the async function without awaiting executes its synchronous
+      // popup creation immediately, before the first await/network request.
+      void l2mShowWordTranslation(word);
+      return true;
+    };
+
+    document.addEventListener("pointerdown", event => {
+      openWordFromEvent(event);
+    }, true);
+
+    // Keyboard/accessibility + browsers without Pointer Events. Also suppress
+    // the synthetic click that follows a handled pointerdown.
     document.addEventListener("click", event => {
       const token = event.target?.closest?.(".l2m-token-word[data-l2m-word]");
       if (!token) return;
-      event.preventDefault();
-      event.stopPropagation();
-      l2mShowWordTranslation(token.dataset.l2mWord);
+
+      const word = token.dataset.l2mWord;
+      if (word === l2mLastPointerWord && Date.now() - l2mLastPointerAt < 1200) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+
+      openWordFromEvent(event);
     }, true);
   }
 
