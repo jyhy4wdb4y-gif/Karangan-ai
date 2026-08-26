@@ -11525,10 +11525,14 @@ window.KaranganAI = {
 
   // v12.6.1 — robust iOS/iPad tap translation.
   // Delegated capture handler survives renderer changes and dynamic cards.
-  if (!window.__KARANGAN_L2_TRANSLATE_V1261__) {
-    window.__KARANGAN_L2_TRANSLATE_V1261__ = true;
+  if (!window.__KARANGAN_L2_TRANSLATE_V12716__) {
+    window.__KARANGAN_L2_TRANSLATE_V12716__ = true;
 
-    const openTranslationFromEvent = event => {
+    // v12.7.16: main Kosa Kata translation is handled by the same
+    // deliberate-touch controller as selectable words below.
+    // Keep keyboard accessibility only.
+    document.addEventListener("keydown", event => {
+      if (event.key !== "Enter" && event.key !== " ") return;
       const target = event.target?.closest?.("[data-l2m-translate]");
       if (!target) return;
 
@@ -11539,28 +11543,91 @@ window.KaranganAI = {
       if (!item) return;
 
       event.preventDefault();
-      event.stopPropagation();
       l2mShowTranslation(item);
-    };
-
-    document.addEventListener("click", openTranslationFromEvent, true);
+    }, true);
   }
 
-  if (!window.__KARANGAN_L2_WORD_TRANSLATE_V12713__) {
-    window.__KARANGAN_L2_WORD_TRANSLATE_V12713__ = true;
-    const HOLD_MS=550, MOVE_TOLERANCE=12;
-    let timer=null, token=null, sx=0, sy=0, openedAt=0;
-    const cancel=()=>{if(timer)clearTimeout(timer);timer=null;token=null;};
-    document.addEventListener("pointerdown",e=>{
-      const el=e.target?.closest?.(".l2m-token-word[data-l2m-word]"); if(!el)return;
-      cancel(); token=el; sx=Number(e.clientX||0); sy=Number(e.clientY||0);
-      timer=setTimeout(()=>{if(!token?.isConnected)return;const w=token.dataset.l2mWord;cancel();openedAt=Date.now();void l2mShowWordTranslation(w);},HOLD_MS);
-    },true);
-    document.addEventListener("pointermove",e=>{if(token&&(Math.abs(Number(e.clientX||0)-sx)>MOVE_TOLERANCE||Math.abs(Number(e.clientY||0)-sy)>MOVE_TOLERANCE))cancel();},true);
-    document.addEventListener("pointerup",cancel,true);
-    document.addEventListener("pointercancel",cancel,true);
-    document.addEventListener("scroll",cancel,true);
-    document.addEventListener("click",e=>{const el=e.target?.closest?.(".l2m-token-word[data-l2m-word]");if(el&&Date.now()-openedAt<1200){e.preventDefault();e.stopPropagation();}},true);
+  if (!window.__KARANGAN_L2_WORD_TRANSLATE_V12716__) {
+    window.__KARANGAN_L2_WORD_TRANSLATE_V12716__ = true;
+
+    const HOLD_MS = 550;
+    const MOVE_TOLERANCE = 12;
+
+    let timer = null;
+    let target = null;
+    let startX = 0;
+    let startY = 0;
+    let openedAt = 0;
+
+    const cancelHold = () => {
+      if (timer) clearTimeout(timer);
+      timer = null;
+      target = null;
+    };
+
+    const openHeldTarget = held => {
+      if (!held?.isConnected) return;
+
+      // Main Kosa Kata word.
+      if (held.matches?.("[data-l2m-translate]")) {
+        const year = l2mYear();
+        const item = l2mWords(year).find(
+          x => String(x.id) === String(held.dataset.l2mTranslate)
+        );
+        if (item) l2mShowTranslation(item);
+        return;
+      }
+
+      // Individual word inside Makna BM / Ayat Contoh / Kegunaan / Ayat Cantik.
+      if (held.matches?.(".l2m-token-word[data-l2m-word]")) {
+        void l2mShowWordTranslation(held.dataset.l2mWord);
+      }
+    };
+
+    document.addEventListener("pointerdown", event => {
+      const held = event.target?.closest?.(
+        "[data-l2m-translate], .l2m-token-word[data-l2m-word]"
+      );
+      if (!held) return;
+
+      cancelHold();
+      target = held;
+      startX = Number(event.clientX || 0);
+      startY = Number(event.clientY || 0);
+
+      timer = setTimeout(() => {
+        const heldNow = target;
+        cancelHold();
+        openedAt = Date.now();
+        openHeldTarget(heldNow);
+      }, HOLD_MS);
+    }, true);
+
+    document.addEventListener("pointermove", event => {
+      if (!target) return;
+      const dx = Math.abs(Number(event.clientX || 0) - startX);
+      const dy = Math.abs(Number(event.clientY || 0) - startY);
+      if (dx > MOVE_TOLERANCE || dy > MOVE_TOLERANCE) {
+        cancelHold();
+      }
+    }, true);
+
+    document.addEventListener("pointerup", cancelHold, true);
+    document.addEventListener("pointercancel", cancelHold, true);
+    document.addEventListener("scroll", cancelHold, true);
+
+    // Suppress the synthetic click after a successful deliberate hold.
+    document.addEventListener("click", event => {
+      const held = event.target?.closest?.(
+        "[data-l2m-translate], .l2m-token-word[data-l2m-word]"
+      );
+      if (!held) return;
+
+      if (Date.now() - openedAt < 1200) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    }, true);
   }
 
   window.KaranganLangkah2Master = {
