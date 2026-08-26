@@ -1919,17 +1919,6 @@ async function translateWord(rawWord) {
       "translationExample"
     );
 
-  // Instant-response UX: show the translation card before lookup/AI work.
-  safeText(meaningEl, "Mencari maksud...");
-  safeText(
-    byId("translationDefinition"),
-    "Cikgu Aira sedang mencari maksud perkataan ini..."
-  );
-  safeText(exampleEl, storySentence || `Perkataan: ${word}`);
-
-  // Give the browser one frame to paint the popup immediately.
-  await new Promise(resolve => requestAnimationFrame(() => resolve()));
-
 
   /* ---------------------------------------------------------
      STEP 1
@@ -2193,11 +2182,6 @@ async function translateWord(rawWord) {
       );
 
 
-    // Ignore an older AI result if another word was tapped meanwhile.
-    if (currentTranslationWord !== word) {
-      return;
-    }
-
     if (answer) {
 
       currentTranslationData.translation =
@@ -2246,9 +2230,6 @@ async function translateWord(rawWord) {
       error
     );
 
-    if (currentTranslationWord !== word) {
-      return;
-    }
 
     currentTranslationData.translation =
       "Maksud belum tersedia";
@@ -10915,7 +10896,13 @@ window.KaranganAI = {
       p.querySelector("[data-l2m-word-speak]")?.addEventListener("click",()=>l2mSpeak(key));
     };
 
+    // IMPORTANT: render and paint the popup BEFORE any cache/local/AI lookup.
+    // First-time online words can take 15-30s, but the card itself must appear instantly.
+    render("正在准备翻译…","Preparing translation…","请稍候 / Please wait");
     document.body.appendChild(p);
+
+    // Force one browser paint frame before continuing with translation work.
+    await new Promise(resolve => requestAnimationFrame(() => resolve()));
 
     const cache=l2mLoadTranslationCache();
     const cached=cache[key];
@@ -10975,6 +10962,12 @@ window.KaranganAI = {
           zh=zh||fallback.zh||"";
           en=en||fallback.en||"";
         }
+      }
+
+      // If this popup has already been replaced by another tapped word,
+      // do not let the older AI response alter the new popup.
+      if(!p.isConnected || document.getElementById("l2m-word-popup") !== p){
+        return;
       }
 
       if(zh||en){
