@@ -10482,7 +10482,7 @@ window.KaranganAI = {
 
         ${item.writingUse ? `
           <div style="margin-top:7px;color:#65727a">
-            <strong>Kegunaan Karangan:</strong> ${l2mEsc(item.writingUse)}
+            <strong>Kegunaan Karangan:</strong> <span class="l2m-word-zone">${l2mTokenizeClickable(item.writingUse)}</span>
           </div>
         ` : ""}
 
@@ -10741,6 +10741,24 @@ window.KaranganAI = {
     atau:["或者","or"], oleh:["由；被","by"], setiap:["每一个","every / each"], lebih:["更；更多","more"],
     terus:["继续；一直","continue / continuously"]
   };
+
+  (function l2mInjectSelectableWordStyles(){
+    if (document.getElementById("l2m-selectable-word-styles")) return;
+    const s = document.createElement("style");
+    s.id = "l2m-selectable-word-styles";
+    s.textContent = `
+      .l2m-word-zone .l2m-token-word{
+        cursor:pointer;
+        touch-action:manipulation;
+        -webkit-tap-highlight-color:rgba(107,85,217,.12);
+        border-radius:4px;
+      }
+      .l2m-word-zone .l2m-token-word:active{
+        background:rgba(107,85,217,.10);
+      }
+    `;
+    document.head.appendChild(s);
+  })();
 
   function l2mTokenizeClickable(value) {
     return String(value || "").split(/(\s+|[,.!?;:()"'“”‘’/]+)/).map(part => {
@@ -11284,7 +11302,7 @@ window.KaranganAI = {
     source: "CurriculumDB"
   };
 
-  console.log("✅ MASTER CURRICULUM v12.8 + ONLINE AI FIRST WORD TRANSLATION loaded");
+  console.log("✅ MASTER CURRICULUM v12.8.1 + SEMUA KOSA KATA SELECTIVE WORD TRANSLATION loaded");
 })();
 
 
