@@ -2812,7 +2812,7 @@ function renderVocabularyReviewCard() {
           class="secondary-button"
           type="button"
         >
-          🤔 Belum Ingat
+          🤔 Belum Dikuasai
         </button>
 
         <button
@@ -2821,6 +2821,15 @@ function renderVocabularyReviewCard() {
           type="button"
         >
           ✓ Dikuasai
+        </button>
+
+        <button
+          id="reviewSkipButton"
+          class="secondary-button"
+          type="button"
+          style="grid-column:1 / -1"
+        >
+          ⏭ Skip · Seterusnya
         </button>
 
       </div>
@@ -2888,6 +2897,15 @@ function renderVocabularyReviewCard() {
       );
     }
   );
+
+  byId(
+    "reviewSkipButton"
+  )?.addEventListener(
+    "click",
+    () => {
+      skipVocabularyReview(word);
+    }
+  );
 }
 
 
@@ -2924,17 +2942,21 @@ function submitVocabularyReview(
     );
   } else {
     vocabularyRewardState.combo = 0;
-    const messages = [
-      "Tak apa, cuba lagi!",
-      "Jangan berputus asa — kamu hampir berjaya!",
-      "Kita ulang sekali lagi. Kamu boleh!",
-      "Usaha lagi sedikit. Teruskan!"
-    ];
     showVocabularyReward(
       "encourage",
-      messages[Math.floor(Math.random() * messages.length)],
+      "Tak apa — baca semula maksudnya. Tekan Dikuasai apabila sudah yakin, atau Skip untuk soalan seterusnya.",
       0
     );
+
+    // Belum Dikuasai: stay on the same question for learning.
+    const meaning = byId("reviewMeaning");
+    const answers = byId("reviewAnswerButtons");
+    if (meaning) meaning.hidden = false;
+    if (answers) {
+      answers.hidden = false;
+      answers.style.display = "grid";
+    }
+    return;
   }
 
   vocabularyReviewState.index += 1;
@@ -2943,6 +2965,13 @@ function submitVocabularyReview(
     renderVocabularyReviewCard,
     1050
   );
+}
+
+function skipVocabularyReview(word) {
+  // Skip never marks mastery; this word remains eligible in future review.
+  vocabularyRewardState.combo = 0;
+  vocabularyReviewState.index += 1;
+  renderVocabularyReviewCard();
 }
 
 
@@ -10470,16 +10499,27 @@ window.KaranganAI = {
     const wm = new Map(allW.map(x => [String(x.id), x]));
     const am = new Map(allA.map(x => [String(x.id), x]));
 
-    const valid = rec &&
+    let valid = rec &&
       Array.isArray(rec.w) &&
       Array.isArray(rec.a) &&
       rec.w.every(id => wm.has(String(id))) &&
       rec.a.every(id => am.has(String(id)));
 
+    // v12.7.14 daily load: exactly 5 Kosa Kata + 1 Ayat Cantik.
+    // Trim an existing same-day 10+5 cache so the change is visible immediately.
+    if (valid && (rec.w.length > 5 || rec.a.length > 1)) {
+      rec = {
+        w: rec.w.slice(0, 5),
+        a: rec.a.slice(0, 1)
+      };
+      state[year][date] = rec;
+      try { localStorage.setItem(L2_DAILY_KEY, JSON.stringify(state)); } catch (_) {}
+    }
+
     if (!valid) {
       rec = {
-        w: l2mPick(allW,10,`${date}|${year}|v12.1|words`).map(x=>x.id),
-        a: l2mPick(allA,5,`${date}|${year}|v12.1|ayat`).map(x=>x.id)
+        w: l2mPick(allW,5,`${date}|${year}|v12.1|words`).map(x=>x.id),
+        a: l2mPick(allA,1,`${date}|${year}|v12.1|ayat`).map(x=>x.id)
       };
       state[year][date] = rec;
       try { localStorage.setItem(L2_DAILY_KEY, JSON.stringify(state)); } catch (_) {}
@@ -10590,31 +10630,43 @@ window.KaranganAI = {
           </span>
         </div>
 
-        <div style="margin-top:8px;color:#6b55d9;font-weight:800">
-          🇨🇳 ${l2mEsc(item.zh || "")}
+        <button
+          type="button"
+          class="secondary-button"
+          data-l2m-reveal="${l2mEsc(item.id)}"
+          aria-expanded="false"
+          style="width:100%;margin-top:12px"
+        >
+          👀 Lihat Maksud & Ayat Contoh
+        </button>
+
+        <div data-l2m-details="${l2mEsc(item.id)}" hidden>
+          <div style="margin-top:12px;color:#6b55d9;font-weight:800">
+            🇨🇳 ${l2mEsc(item.zh || "")}
+          </div>
+
+          <div style="margin-top:4px;color:#5f6a70">
+            🇬🇧 ${l2mEsc(item.en || "")}
+          </div>
+
+          ${item.meaningBm ? `
+            <div style="margin-top:10px;padding:10px 12px;border-radius:12px;background:#faf9f7">
+              <strong>Makna BM:</strong> <span class="l2m-word-zone">${l2mTokenizeClickable(item.meaningBm)}</span>
+            </div>
+          ` : ""}
+
+          ${item.example ? `
+            <div style="margin-top:9px;line-height:1.55">
+              <strong>Ayat Contoh:</strong> <span class="l2m-word-zone">${l2mTokenizeClickable(item.example)}</span>
+            </div>
+          ` : ""}
+
+          ${item.writingUse ? `
+            <div style="margin-top:7px;color:#65727a">
+              <strong>Kegunaan Karangan:</strong> <span class="l2m-word-zone">${l2mTokenizeClickable(item.writingUse)}</span>
+            </div>
+          ` : ""}
         </div>
-
-        <div style="margin-top:4px;color:#5f6a70">
-          🇬🇧 ${l2mEsc(item.en || "")}
-        </div>
-
-        ${item.meaningBm ? `
-          <div style="margin-top:10px;padding:10px 12px;border-radius:12px;background:#faf9f7">
-            <strong>Makna BM:</strong> <span class="l2m-word-zone">${l2mTokenizeClickable(item.meaningBm)}</span>
-          </div>
-        ` : ""}
-
-        ${item.example ? `
-          <div style="margin-top:9px;line-height:1.55">
-            <strong>Ayat Contoh:</strong> <span class="l2m-word-zone">${l2mTokenizeClickable(item.example)}</span>
-          </div>
-        ` : ""}
-
-        ${item.writingUse ? `
-          <div style="margin-top:7px;color:#65727a">
-            <strong>Kegunaan Karangan:</strong> <span class="l2m-word-zone">${l2mTokenizeClickable(item.writingUse)}</span>
-          </div>
-        ` : ""}
 
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
           <button type="button" class="secondary-button l2m-action" data-l2m-speak="${l2mEsc(item.bm)}">
@@ -11235,6 +11287,25 @@ window.KaranganAI = {
   }
 
   function l2mBindCommon(year, afterToggle = () => window.renderVocabularyModule()) {
+    // v12.7.15 — daily card Reveal / Hide learning mode.
+    document.querySelectorAll("[data-l2m-reveal]").forEach(button => {
+      button.addEventListener("click", event => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const id = button.dataset.l2mReveal;
+        const details = document.querySelector(`[data-l2m-details="${CSS.escape(String(id || ""))}"]`);
+        if (!details) return;
+
+        const opening = details.hidden;
+        details.hidden = !opening;
+        button.setAttribute("aria-expanded", opening ? "true" : "false");
+        button.textContent = opening
+          ? "🙈 Sembunyikan Maksud & Ayat Contoh"
+          : "👀 Lihat Maksud & Ayat Contoh";
+      });
+    });
+
     // v12.7.10 — instant iPad/iPhone controls for Dengar + Kuasai.
     // Use pointerdown so the controls work immediately after the page appears.
     document.querySelectorAll("[data-l2m-speak]").forEach(button => {
@@ -11413,7 +11484,7 @@ window.KaranganAI = {
 
       ${today.words.map(l2mWordCard).join("") || "<p>Tiada kosa kata.</p>"}
 
-      <h2 style="margin-top:28px">✨ 5 Ayat Cantik Hari Ini</h2>
+      <h2 style="margin-top:28px">✨ 1 Ayat Cantik Hari Ini</h2>
       ${today.ayat.map(l2mAyatCard).join("") || "<p>Tiada Ayat Cantik.</p>"}
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px">
@@ -11475,50 +11546,21 @@ window.KaranganAI = {
     document.addEventListener("click", openTranslationFromEvent, true);
   }
 
-  if (!window.__KARANGAN_L2_WORD_TRANSLATE_V127__) {
-    window.__KARANGAN_L2_WORD_TRANSLATE_V127__ = true;
-
-    // iOS/iPad instant-touch fix: start on pointerdown instead of waiting for click.
-    // The popup is created synchronously on touch-down; translation continues async.
-    let l2mLastPointerWord = "";
-    let l2mLastPointerAt = 0;
-
-    const openWordFromEvent = event => {
-      const token = event.target?.closest?.(".l2m-token-word[data-l2m-word]");
-      if (!token) return false;
-
-      event.preventDefault();
-      event.stopPropagation();
-
-      const word = token.dataset.l2mWord;
-      l2mLastPointerWord = word;
-      l2mLastPointerAt = Date.now();
-
-      // Calling the async function without awaiting executes its synchronous
-      // popup creation immediately, before the first await/network request.
-      void l2mShowWordTranslation(word);
-      return true;
-    };
-
-    document.addEventListener("pointerdown", event => {
-      openWordFromEvent(event);
-    }, true);
-
-    // Keyboard/accessibility + browsers without Pointer Events. Also suppress
-    // the synthetic click that follows a handled pointerdown.
-    document.addEventListener("click", event => {
-      const token = event.target?.closest?.(".l2m-token-word[data-l2m-word]");
-      if (!token) return;
-
-      const word = token.dataset.l2mWord;
-      if (word === l2mLastPointerWord && Date.now() - l2mLastPointerAt < 1200) {
-        event.preventDefault();
-        event.stopPropagation();
-        return;
-      }
-
-      openWordFromEvent(event);
-    }, true);
+  if (!window.__KARANGAN_L2_WORD_TRANSLATE_V12713__) {
+    window.__KARANGAN_L2_WORD_TRANSLATE_V12713__ = true;
+    const HOLD_MS=550, MOVE_TOLERANCE=12;
+    let timer=null, token=null, sx=0, sy=0, openedAt=0;
+    const cancel=()=>{if(timer)clearTimeout(timer);timer=null;token=null;};
+    document.addEventListener("pointerdown",e=>{
+      const el=e.target?.closest?.(".l2m-token-word[data-l2m-word]"); if(!el)return;
+      cancel(); token=el; sx=Number(e.clientX||0); sy=Number(e.clientY||0);
+      timer=setTimeout(()=>{if(!token?.isConnected)return;const w=token.dataset.l2mWord;cancel();openedAt=Date.now();void l2mShowWordTranslation(w);},HOLD_MS);
+    },true);
+    document.addEventListener("pointermove",e=>{if(token&&(Math.abs(Number(e.clientX||0)-sx)>MOVE_TOLERANCE||Math.abs(Number(e.clientY||0)-sy)>MOVE_TOLERANCE))cancel();},true);
+    document.addEventListener("pointerup",cancel,true);
+    document.addEventListener("pointercancel",cancel,true);
+    document.addEventListener("scroll",cancel,true);
+    document.addEventListener("click",e=>{const el=e.target?.closest?.(".l2m-token-word[data-l2m-word]");if(el&&Date.now()-openedAt<1200){e.preventDefault();e.stopPropagation();}},true);
   }
 
   window.KaranganLangkah2Master = {
