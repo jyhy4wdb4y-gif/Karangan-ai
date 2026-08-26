@@ -11454,30 +11454,59 @@ window.KaranganTranslationCache = {
 
 
 /* =========================================================
-   LANGKAH 2 NAVIGATION HOTFIX v12.7.3
-   - Header Back on Semua Kosa Kata -> Kosa Kata Hari Ini
+   LANGKAH 2 NAVIGATION HOTFIX v12.7.8
+   - One-tap Header Back on Semua Kosa Kata -> Kosa Kata Hari Ini
+   - iPad/iPhone: handle on pointerdown
+   - Suppress synthetic click after pointerdown
    - X/Home behavior remains unchanged
    ========================================================= */
 (() => {
   "use strict";
-  if (window.__KARANGAN_L2_BACK_V1273__) return;
-  window.__KARANGAN_L2_BACK_V1273__ = true;
+  if (window.__KARANGAN_L2_BACK_V1278__) return;
+  window.__KARANGAN_L2_BACK_V1278__ = true;
+
+  let lastBackPointerAt = 0;
+
+  const isAllWordsPage = () => {
+    const content = document.getElementById("moduleContent");
+    return Boolean(document.getElementById("l2mBackToday")) ||
+      /Semua\s+Kosa\s+Kata/i.test(content?.textContent || "");
+  };
+
+  const goBackToLangkah2 = event => {
+    const back = event.target?.closest?.("#moduleBackButton");
+    if (!back || !isAllWordsPage()) return false;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    document.getElementById("l2m-word-popup")?.remove();
+
+    if (typeof window.renderVocabularyModule === "function") {
+      window.renderVocabularyModule();
+    } else if (typeof renderVocabularyModule === "function") {
+      renderVocabularyModule();
+    }
+
+    return true;
+  };
+
+  document.addEventListener("pointerdown", event => {
+    if (goBackToLangkah2(event)) {
+      lastBackPointerAt = Date.now();
+    }
+  }, true);
 
   document.addEventListener("click", event => {
     const back = event.target?.closest?.("#moduleBackButton");
     if (!back) return;
 
-    const content = document.getElementById("moduleContent");
-    const onAllWords = Boolean(document.getElementById("l2mBackToday")) ||
-      /Semua\s+Kosa\s+Kata/i.test(content?.textContent || "");
-
-    if (!onAllWords) return;
-
-    event.preventDefault();
-    event.stopImmediatePropagation();
-
-    if (typeof window.renderVocabularyModule === "function") {
-      window.renderVocabularyModule();
+    if (Date.now() - lastBackPointerAt < 1200) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      return;
     }
+
+    goBackToLangkah2(event);
   }, true);
 })();
