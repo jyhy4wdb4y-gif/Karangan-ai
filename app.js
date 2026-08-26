@@ -10351,12 +10351,12 @@ window.KaranganAI = {
         <div style="font-size:12px;font-weight:900;color:#8c6a2e">
           ${l2mEsc(item.id)} · ${l2mEsc(item.function || "Ayat Cantik")}
         </div>
-        <div style="font-size:19px;font-weight:900;line-height:1.55;margin-top:6px">
-          ${l2mEsc(item.text || "")}
+        <div class="l2m-word-zone" style="font-size:19px;font-weight:900;line-height:1.55;margin-top:6px">
+          ${l2mTokenizeClickable(item.text || "")}
         </div>
         ${item.purpose ? `
           <div style="margin-top:8px;color:#6f6657">
-            <strong>Fungsi:</strong> ${l2mEsc(item.purpose)}
+            <strong>Fungsi:</strong> <span class="l2m-word-zone">${l2mTokenizeClickable(item.purpose)}</span>
           </div>
         ` : ""}
         <button type="button" class="secondary-button" data-l2m-speak="${l2mEsc(item.text || "")}" style="margin-top:10px">
