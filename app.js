@@ -1251,6 +1251,16 @@ function bindModuleHeader() {
 
 
 function closeModule() {
+  // Fix: header Back inside Semua Kosa Kata returns to Langkah 2.
+  if (
+    currentScreen === "module" &&
+    window.__l2mAllWordsOpen
+  ) {
+    window.__l2mAllWordsOpen = false;
+    window.renderVocabularyModule?.();
+    return;
+  }
+
   if (
     currentScreen === "module" &&
     vocabularyReviewState?.active
@@ -11124,6 +11134,7 @@ window.KaranganAI = {
 
   function l2mRenderAllWords(year) {
     const list = l2mWords(year);
+    window.__l2mAllWordsOpen = true;
 
     openModuleScreen(`
       <span class="section-kicker">MASTER CURRICULUM v${L2_VERSION}</span>
@@ -11141,10 +11152,14 @@ window.KaranganAI = {
     `, 28);
 
     l2mBindCommon(year, () => l2mRenderAllWords(year));
-    byId("l2mBackToday")?.addEventListener("click", window.renderVocabularyModule);
+    byId("l2mBackToday")?.addEventListener("click", () => {
+      window.__l2mAllWordsOpen = false;
+      window.renderVocabularyModule();
+    });
   }
 
   function l2mRender() {
+    window.__l2mAllWordsOpen = false;
     l2mInjectAnimationStyles();
     const db = l2mDB();
 
