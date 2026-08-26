@@ -2789,6 +2789,7 @@ function renderVocabularyReviewCard() {
         id="revealReviewButton"
         class="primary-button"
         type="button"
+        aria-expanded="false"
         style="
           width:100%;
           margin-top:20px;
@@ -2843,32 +2844,26 @@ function renderVocabularyReviewCard() {
   )?.addEventListener(
     "click",
     () => {
-      const meaning =
-        byId(
-          "reviewMeaning"
-        );
+      const meaning = byId("reviewMeaning");
+      const answers = byId("reviewAnswerButtons");
+      const button = byId("revealReviewButton");
 
-      const answers =
-        byId(
-          "reviewAnswerButtons"
-        );
+      if (!meaning || !answers || !button) return;
 
+      const opening = meaning.hidden;
 
-      if (meaning) {
-        meaning.hidden = false;
-      }
+      meaning.hidden = !opening;
+      answers.hidden = !opening;
+      answers.style.display = opening ? "grid" : "none";
 
+      button.textContent = opening
+        ? "🙈 Sembunyikan Maksud"
+        : "👀 Lihat Maksud";
 
-      if (answers) {
-        answers.hidden = false;
-        answers.style.display =
-          "grid";
-      }
-
-
-      byId(
-        "revealReviewButton"
-      ).hidden = true;
+      button.setAttribute(
+        "aria-expanded",
+        opening ? "true" : "false"
+      );
     }
   );
 
