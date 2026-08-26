@@ -2863,8 +2863,9 @@ function renderVocabularyReviewCard() {
       // Read the current Ulang Kaji item using the same reliable
       // Malay TTS path already used by Langkah 2 / Semua Kosa Kata.
       l2mSpeak(
-        word.example ||
         word.word ||
+        word.bm ||
+        word.example ||
         ""
       );
     };
@@ -11334,12 +11335,20 @@ window.KaranganAI = {
   function l2mBindCommon(year, afterToggle = () => window.renderVocabularyModule()) {
     // v12.7.15 — daily card Reveal / Hide learning mode.
     document.querySelectorAll("[data-l2m-reveal]").forEach(button => {
-      button.addEventListener("click", event => {
-        event.preventDefault();
-        event.stopPropagation();
+      let lastRevealPointerAt = 0;
+
+      const toggleReveal = event => {
+        event?.preventDefault?.();
+        event?.stopPropagation?.();
+        lastRevealPointerAt = Date.now();
 
         const id = button.dataset.l2mReveal;
-        const details = document.querySelector(`[data-l2m-details="${CSS.escape(String(id || ""))}"]`);
+        const escapedId = window.CSS?.escape
+          ? CSS.escape(String(id || ""))
+          : String(id || "").replace(/["\\]/g, "\\$&");
+        const details = document.querySelector(
+          `[data-l2m-details="${escapedId}"]`
+        );
         if (!details) return;
 
         const opening = details.hidden;
@@ -11348,6 +11357,16 @@ window.KaranganAI = {
         button.textContent = opening
           ? "🙈 Sembunyikan Maksud & Ayat Contoh"
           : "👀 Lihat Maksud & Ayat Contoh";
+      };
+
+      button.addEventListener("pointerup", toggleReveal, { passive:false });
+      button.addEventListener("click", event => {
+        if (Date.now() - lastRevealPointerAt < 1200) {
+          event.preventDefault();
+          event.stopPropagation();
+          return;
+        }
+        toggleReveal(event);
       });
     });
 
