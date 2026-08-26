@@ -1250,13 +1250,24 @@ function bindModuleHeader() {
 }
 
 
-function closeModule() {
-  // Fix: header Back inside Semua Kosa Kata returns to Langkah 2.
+function closeModule(event) {
+  // Robust nested-page back navigation for Langkah 2.
+  // The header Back button should return from "Semua Kosa Kata"
+  // to "Kosa Kata Hari Ini". The X/Close button keeps its normal behavior.
+  const isHeaderBack =
+    event?.currentTarget?.id === "moduleBackButton" ||
+    event?.target?.closest?.("#moduleBackButton");
+
+  const moduleContent = byId("moduleContent");
+  const isSemuaKosaKata =
+    Boolean(byId("l2mBackToday")) ||
+    /Semua Kosa Kata/i.test(moduleContent?.textContent || "");
+
   if (
     currentScreen === "module" &&
-    window.__l2mAllWordsOpen
+    isHeaderBack &&
+    isSemuaKosaKata
   ) {
-    window.__l2mAllWordsOpen = false;
     window.renderVocabularyModule?.();
     return;
   }
@@ -11134,7 +11145,6 @@ window.KaranganAI = {
 
   function l2mRenderAllWords(year) {
     const list = l2mWords(year);
-    window.__l2mAllWordsOpen = true;
 
     openModuleScreen(`
       <span class="section-kicker">MASTER CURRICULUM v${L2_VERSION}</span>
@@ -11152,14 +11162,10 @@ window.KaranganAI = {
     `, 28);
 
     l2mBindCommon(year, () => l2mRenderAllWords(year));
-    byId("l2mBackToday")?.addEventListener("click", () => {
-      window.__l2mAllWordsOpen = false;
-      window.renderVocabularyModule();
-    });
+    byId("l2mBackToday")?.addEventListener("click", () => window.renderVocabularyModule?.());
   }
 
   function l2mRender() {
-    window.__l2mAllWordsOpen = false;
     l2mInjectAnimationStyles();
     const db = l2mDB();
 
