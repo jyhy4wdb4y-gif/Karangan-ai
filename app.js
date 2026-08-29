@@ -11886,14 +11886,14 @@ window.KaranganTranslationCache = {
 
 /* =========================================================
    LANGKAH 3 — BINA AYAT FOUNDATION
-   Karangan AI v12.8.2
+   Karangan AI v12.8.3
    Base: Golden v12.7.22 (Langkah 2 untouched)
    Content: Tahun 1 Month 1 v1.0 STABLE
    ========================================================= */
 (function(){
   "use strict";
 
-  const L3_VERSION="12.8.2";
+  const L3_VERSION="12.8.3";
   const L3_WORDS=[{"id":"T1-W-001","word":"keluarga","meaning":"Orang yang rapat dengan kita seperti ibu, ayah dan adik.","zh":"家庭","role":"ENTITY","examples":["Ini keluarga saya.","Saya sayang keluarga saya.","Saya gembira bersama keluarga saya."],"hints":["Siapakah yang ada dalam keluarga kamu?","Ibu, ayah atau adik?","Saya sayang keluarga saya."],"learningMode":"STANDARD"},{"id":"T1-W-002","word":"ibu","meaning":"Emak kita.","zh":"妈妈","role":"WHO","examples":["Ini ibu saya.","Ibu berada di dapur.","Saya membantu ibu di dapur."],"hints":["Siapakah emak kamu?","Fikir tentang orang dalam keluarga.","Ini ibu saya."],"learningMode":"STANDARD"},{"id":"T1-W-003","word":"ayah","meaning":"Bapa kita.","zh":"爸爸","role":"WHO","examples":["Ini ayah saya.","Ayah membaca buku.","Saya membantu ayah mencuci kereta."],"hints":["Siapakah bapa kamu?","Fikir tentang orang dalam keluarga.","Ini ayah saya."],"learningMode":"STANDARD"},{"id":"T1-W-004","word":"adik","meaning":"Saudara yang lebih muda daripada kita.","zh":"弟弟/妹妹","role":"WHO","examples":["Ini adik saya.","Adik bermain.","Saya bermain bersama adik."],"hints":["Siapakah yang lebih muda dalam keluarga?","Ibu, ayah atau adik?","Ini adik saya."],"learningMode":"STANDARD"},{"id":"T1-W-005","word":"bersama","meaning":"Melakukan sesuatu dengan orang lain.","zh":"一起","role":"RELATION","examples":["Saya bermain.","Saya bermain bersama adik.","Saya bermain bersama adik di taman."],"hints":["Kamu melakukan sesuatu dengan siapa?","Keluarga, adik atau kawan?","Saya bermain bersama adik."],"learningMode":"STANDARD"},{"id":"T1-W-006","word":"sayang","meaning":"Mempunyai perasaan kasih kepada seseorang.","zh":"爱/疼爱","role":"FEELING_RELATION","examples":["Saya sayang ibu.","Saya sayang keluarga saya.","Saya sayang keluarga kerana mereka menjaga saya."],"hints":["Siapakah yang kamu sayang?","Ibu, ayah, adik atau keluarga?","Saya sayang ibu."],"learningMode":"STANDARD"},{"id":"T1-W-007","word":"membantu","meaning":"Menolong seseorang.","zh":"帮助","role":"ACTION","examples":["Saya membantu ibu.","Saya membantu ibu di dapur.","Saya membantu kawan membawa buku."],"hints":["Siapa yang kamu boleh tolong?","Ibu, adik, guru atau kawan?","Saya membantu ibu."],"learningMode":"STANDARD"},{"id":"T1-W-008","word":"berkongsi","meaning":"Memberikan atau menggunakan sesuatu bersama orang lain.","zh":"分享","role":"ACTION","examples":["Saya berkongsi makanan.","Saya berkongsi makanan dengan adik.","Saya berkongsi alat tulis dengan kawan."],"hints":["Dengan siapa kamu boleh berkongsi?","Adik atau kawan?","Saya berkongsi dengan adik."],"learningMode":"STANDARD"},{"id":"T1-W-009","word":"menjaga","meaning":"Memastikan seseorang atau sesuatu berada dalam keadaan baik.","zh":"照顾/保持","role":"ACTION","examples":["Saya menjaga adik.","Saya menjaga kebersihan rumah.","Saya menjaga kebersihan kelas bersama kawan."],"hints":["Siapa atau apa yang kamu jaga?","Adik, rumah atau kelas?","Saya menjaga adik."],"learningMode":"STANDARD"},{"id":"T1-W-010","word":"gembira","meaning":"Berasa sangat senang.","zh":"开心","role":"FEELING","examples":["Saya gembira.","Saya gembira bersama keluarga.","Saya gembira kerana dapat membantu ibu."],"hints":["Bagaimanakah perasaan kamu?","Gembira atau sedih?","Saya gembira."],"learningMode":"STANDARD"},{"id":"T1-W-011","word":"sekolah","meaning":"Tempat murid belajar.","zh":"学校","role":"PLACE","examples":["Ini sekolah saya.","Saya belajar di sekolah.","Saya belajar bersama kawan di sekolah."],"hints":["Di manakah murid belajar?","Rumah atau sekolah?","Saya belajar di sekolah."],"learningMode":"STANDARD"},{"id":"T1-W-012","word":"guru","meaning":"Orang yang mengajar murid.","zh":"老师","role":"WHO","examples":["Ini guru saya.","Guru mengajar murid.","Saya membantu guru di kelas."],"hints":["Siapakah yang mengajar di sekolah?","Guru atau kawan?","Ini guru saya."],"learningMode":"STANDARD"},{"id":"T1-W-013","word":"kawan","meaning":"Orang yang belajar atau bermain bersama kita.","zh":"朋友","role":"WHO","examples":["Ini kawan saya.","Saya bermain dengan kawan.","Saya belajar bersama kawan di sekolah."],"hints":["Dengan siapa kamu belajar atau bermain?","Guru atau kawan?","Ini kawan saya."],"learningMode":"STANDARD"},{"id":"T1-W-014","word":"kelas","meaning":"Ruang tempat murid belajar di sekolah.","zh":"课室","role":"PLACE","examples":["Ini kelas saya.","Saya belajar di kelas.","Saya belajar bersama kawan di kelas."],"hints":["Di manakah kamu belajar di sekolah?","Kelas atau dapur?","Saya belajar di kelas."],"learningMode":"STANDARD"},{"id":"T1-W-015","word":"belajar","meaning":"Mendapatkan ilmu dan kemahiran.","zh":"学习","role":"ACTION","examples":["Saya belajar.","Saya belajar di sekolah.","Saya belajar bersama kawan di sekolah."],"hints":["Di mana kamu belajar?","Sekolah, kelas atau rumah?","Saya belajar di sekolah."],"learningMode":"STANDARD"},{"id":"T1-W-016","word":"membaca","meaning":"Melihat tulisan dan memahami maksudnya.","zh":"阅读","role":"ACTION","examples":["Saya membaca.","Saya membaca buku.","Saya membaca buku di kelas."],"hints":["Apa yang kamu baca?","Buku?","Saya membaca buku."],"learningMode":"STANDARD"},{"id":"T1-W-017","word":"menulis","meaning":"Menghasilkan huruf, perkataan atau ayat.","zh":"写","role":"ACTION","examples":["Saya menulis.","Saya menulis ayat.","Saya menulis ayat di kelas."],"hints":["Apa yang kamu tulis?","Perkataan atau ayat?","Saya menulis ayat."],"learningMode":"STANDARD"},{"id":"T1-W-018","word":"bermain","meaning":"Melakukan aktiviti untuk berseronok.","zh":"玩","role":"ACTION","examples":["Saya bermain.","Saya bermain dengan kawan.","Saya bermain bersama kawan selepas belajar."],"hints":["Dengan siapa kamu bermain?","Adik atau kawan?","Saya bermain bersama kawan."],"learningMode":"STANDARD"},{"id":"T1-W-019","word":"rajin","meaning":"Suka berusaha dan melakukan tugas dengan bersungguh-sungguh.","zh":"勤劳","role":"QUALITY","examples":["Ali rajin.","Ali rajin belajar.","Ali rajin membaca buku."],"hints":["Orang yang rajin suka melakukan apa?","Belajar, membaca atau membantu?","Ali rajin belajar."],"learningMode":"STANDARD"},{"id":"T1-W-020","word":"baik","meaning":"Mempunyai sikap yang elok.","zh":"好/友善","role":"QUALITY","examples":["Ali baik.","Ali seorang kawan yang baik.","Ali baik kerana suka membantu kawan."],"hints":["Apakah sikap yang elok?","Baik atau takut?","Ali seorang kawan yang baik."],"learningMode":"STANDARD"},{"id":"T1-W-021","word":"rumah","meaning":"Tempat kita tinggal bersama keluarga.","zh":"家","role":"PLACE","examples":["Ini rumah saya.","Saya berada di rumah.","Saya membantu ibu di rumah."],"hints":["Di manakah kamu tinggal bersama keluarga?","Rumah atau kelas?","Ini rumah saya."],"learningMode":"STANDARD"},{"id":"T1-W-022","word":"bilik","meaning":"Ruang di dalam rumah.","zh":"房间","role":"PLACE","examples":["Ini bilik saya.","Saya membaca di bilik.","Saya mengemas bilik saya."],"hints":["Apa yang kamu lakukan di bilik?","Membaca, mengemas atau tidur?","Saya membaca di bilik."],"learningMode":"STANDARD"},{"id":"T1-W-023","word":"dapur","meaning":"Tempat menyediakan makanan.","zh":"厨房","role":"PLACE","examples":["Ini dapur.","Ibu berada di dapur.","Saya membantu ibu di dapur."],"hints":["Di manakah makanan disediakan?","Dapur atau kelas?","Ini dapur."],"learningMode":"STANDARD"},{"id":"T1-W-024","word":"makan","meaning":"Mengambil makanan.","zh":"吃","role":"ACTION","examples":["Saya makan.","Saya makan nasi.","Saya makan bersama keluarga."],"hints":["Apa yang kamu makan?","Fikir tentang makanan.","Saya makan bersama keluarga."],"learningMode":"STANDARD"},{"id":"T1-W-025","word":"minum","meaning":"Mengambil air atau minuman.","zh":"喝","role":"ACTION","examples":["Saya minum air.","Saya minum air di rumah.","Saya minum air selepas bermain."],"hints":["Apa yang kamu minum?","Air?","Saya minum air."],"learningMode":"STANDARD"},{"id":"T1-W-026","word":"mengemas","meaning":"Menyusun barang supaya kemas.","zh":"收拾","role":"ACTION","examples":["Saya mengemas.","Saya mengemas bilik.","Saya membantu ibu mengemas rumah."],"hints":["Apa yang kamu kemaskan?","Bilik atau rumah?","Saya mengemas bilik."],"learningMode":"STANDARD"},{"id":"T1-W-027","word":"membersihkan","meaning":"Menjadikan sesuatu bersih.","zh":"清洁","role":"ACTION","examples":["Saya membersihkan meja.","Saya membersihkan bilik.","Saya membantu ibu membersihkan rumah."],"hints":["Apa yang kamu bersihkan?","Bilik, rumah atau kelas?","Saya membersihkan bilik."],"learningMode":"STANDARD"},{"id":"T1-W-028","word":"tidur","meaning":"Berehat dengan memejamkan mata.","zh":"睡觉","role":"ACTION","examples":["Saya tidur.","Saya tidur di bilik.","Saya tidur pada waktu malam."],"hints":["Di mana kamu tidur?","Bilik?","Saya tidur di bilik."],"learningMode":"STANDARD"},{"id":"T1-W-029","word":"bangun","meaning":"Berhenti tidur dan mula berjaga.","zh":"起床","role":"ACTION","examples":["Saya bangun.","Saya bangun pada waktu pagi.","Saya bangun awal pada waktu pagi."],"hints":["Bilakah kamu bangun?","Pagi?","Saya bangun pada waktu pagi."],"learningMode":"STANDARD"},{"id":"T1-W-030","word":"mandi","meaning":"Membersihkan badan dengan air.","zh":"洗澡","role":"ACTION","examples":["Saya mandi.","Saya mandi pada waktu pagi.","Saya mandi sebelum pergi ke sekolah."],"hints":["Bilakah kamu mandi?","Pagi?","Saya mandi pada waktu pagi."],"learningMode":"STANDARD"},{"id":"T1-W-031","word":"sedih","meaning":"Berasa tidak gembira.","zh":"伤心","role":"FEELING","examples":["Saya sedih.","Saya berasa sedih.","Saya sedih kerana mainan saya rosak."],"hints":["Bagaimanakah perasaan kamu?","Sedih atau gembira?","Saya sedih."],"learningMode":"STANDARD"},{"id":"T1-W-032","word":"takut","meaning":"Berasa bimbang atau gentar.","zh":"害怕","role":"FEELING","examples":["Saya takut.","Adik berasa takut.","Adik takut apabila mendengar bunyi kuat."],"hints":["Bagaimanakah perasaan kamu?","Takut atau berani?","Saya takut."],"learningMode":"STANDARD"},{"id":"T1-W-033","word":"seronok","meaning":"Berasa suka dan gembira melakukan sesuatu.","zh":"开心/有趣","role":"FEELING","examples":["Saya seronok.","Saya seronok bermain.","Saya seronok bermain bersama kawan."],"hints":["Aktiviti apa yang seronok?","Bermain atau membaca?","Saya seronok bermain."],"learningMode":"STANDARD"},{"id":"T1-W-034","word":"penat","meaning":"Berasa letih selepas melakukan sesuatu.","zh":"累","role":"FEELING","examples":["Saya penat.","Saya berasa penat.","Saya penat selepas bermain."],"hints":["Bagaimanakah perasaan kamu selepas banyak bergerak?","Penat?","Saya penat."],"learningMode":"STANDARD"},{"id":"T1-W-035","word":"berani","meaning":"Tidak mudah takut.","zh":"勇敢","role":"QUALITY","examples":["Ali berani.","Ali seorang murid yang berani.","Ali berani membantu kawannya."],"hints":["Apakah sikap orang yang tidak mudah takut?","Berani?","Ali berani."],"learningMode":"STANDARD"},{"id":"T1-W-036","word":"bersih","meaning":"Tidak kotor.","zh":"干净","role":"DESCRIPTION","examples":["Kelas saya bersih.","Rumah saya bersih.","Saya menjaga kebersihan kelas."],"hints":["Apa yang tidak kotor?","Rumah atau kelas?","Kelas saya bersih."],"learningMode":"STANDARD"},{"id":"T1-W-037","word":"cantik","meaning":"Elok dan menarik apabila dilihat.","zh":"漂亮","role":"DESCRIPTION","examples":["Bunga itu cantik.","Taman itu cantik.","Taman sekolah saya cantik dan bersih."],"hints":["Bagaimanakah sesuatu yang elok dilihat?","Cantik?","Bunga itu cantik."],"learningMode":"STANDARD"},{"id":"T1-W-038","word":"besar","meaning":"Mempunyai saiz yang besar.","zh":"大","role":"DESCRIPTION","examples":["Rumah itu besar.","Sekolah saya besar.","Sekolah saya besar dan bersih."],"hints":["Bagaimanakah saiznya?","Besar atau kecil?","Sekolah saya besar."],"learningMode":"STANDARD"},{"id":"T1-W-039","word":"kecil","meaning":"Mempunyai saiz yang kecil.","zh":"小","role":"DESCRIPTION","examples":["Bilik itu kecil.","Bilik saya kecil.","Rumah itu kecil."],"hints":["Bagaimanakah saiznya?","Kecil atau besar?","Bilik saya kecil."],"learningMode":"STANDARD"},{"id":"T1-W-040","word":"suka","meaning":"Berasa senang terhadap seseorang, sesuatu atau sesuatu aktiviti.","zh":"喜欢","role":"PREFERENCE","examples":["Saya suka membaca.","Saya suka membaca buku.","Saya suka membaca buku bersama adik."],"hints":["Apa yang kamu suka lakukan?","Membaca, menulis atau bermain?","Saya suka membaca."],"learningMode":"STANDARD"},{"id":"T1-W-041","word":"dan","meaning":"Menghubungkan dua perkara atau idea.","zh":"和/以及","role":"CONNECTOR","examples":["Saya membaca dan menulis.","Saya makan dan minum.","Kelas saya bersih dan cantik."],"hints":["Boleh tambah satu lagi idea?","Gunakan 'dan'.","Saya membaca dan menulis."],"learningMode":"STANDARD"},{"id":"T1-W-042","word":"kerana","meaning":"Digunakan apabila kita mahu memberitahu sebab.","zh":"因为","role":"REASON_CONNECTOR","examples":["Saya gembira kerana membantu ibu.","Saya gembira kerana dapat membantu ibu.","Saya suka sekolah kerana saya dapat belajar bersama kawan."],"hints":["Mengapa?","Cuba gunakan 'kerana'.","Saya gembira kerana dapat membantu ibu."],"learningMode":"GUIDED_FIRST"},{"id":"T1-W-043","word":"pagi","meaning":"Waktu selepas malam apabila hari mula cerah.","zh":"早上","role":"TIME","examples":["Waktu pagi.","Saya mandi pada waktu pagi.","Saya bangun dan mandi pada waktu pagi."],"hints":["Bilakah kamu melakukan aktiviti ini?","Pagi atau petang?","Saya mandi pada waktu pagi."],"learningMode":"STANDARD"},{"id":"T1-W-044","word":"petang","meaning":"Waktu selepas tengah hari sebelum malam.","zh":"傍晚/下午","role":"TIME","examples":["Waktu petang.","Saya bermain pada waktu petang.","Saya bermain bersama kawan pada waktu petang."],"hints":["Bilakah kamu bermain atau pulang?","Pagi atau petang?","Saya bermain pada waktu petang."],"learningMode":"STANDARD"},{"id":"T1-W-045","word":"pergi","meaning":"Bergerak dari satu tempat ke tempat lain.","zh":"去","role":"ACTION","examples":["Saya pergi.","Saya pergi ke sekolah.","Saya pergi ke sekolah pada waktu pagi."],"hints":["Ke mana kamu pergi?","Sekolah?","Saya pergi ke sekolah."],"learningMode":"STANDARD"},{"id":"T1-W-046","word":"pulang","meaning":"Kembali ke rumah atau tempat asal.","zh":"回家/返回","role":"ACTION","examples":["Saya pulang.","Saya pulang ke rumah.","Saya pulang ke rumah pada waktu petang."],"hints":["Ke mana kamu pulang?","Rumah?","Saya pulang ke rumah."],"learningMode":"STANDARD"},{"id":"T1-W-047","word":"membuat","meaning":"Melakukan atau menghasilkan sesuatu.","zh":"做","role":"ACTION","examples":["Saya membuat kerja.","Saya membuat kerja sekolah.","Saya membuat kerja sekolah di rumah."],"hints":["Apa yang kamu buat?","Fikir tentang satu kerja atau aktiviti.","Saya membuat kerja sekolah."],"learningMode":"STANDARD"},{"id":"T1-W-048","word":"melihat","meaning":"Menggunakan mata untuk memandang sesuatu.","zh":"看见","role":"ACTION","examples":["Saya melihat bunga.","Saya melihat bunga yang cantik.","Saya melihat bunga yang cantik di taman."],"hints":["Apa yang kamu lihat?","Bunga atau sesuatu yang lain?","Saya melihat bunga."],"learningMode":"STANDARD"},{"id":"T1-W-049","word":"mempunyai","meaning":"Ada sesuatu yang menjadi milik kita.","zh":"拥有","role":"RELATION","examples":["Saya mempunyai buku.","Saya mempunyai seorang adik.","Saya mempunyai seorang kawan yang baik."],"hints":["Apa atau siapa yang kamu ada?","Adik, kawan atau buku?","Saya mempunyai seorang adik."],"learningMode":"STANDARD"},{"id":"T1-W-050","word":"kemudian","meaning":"Menunjukkan perkara yang berlaku selepas itu.","zh":"然后","role":"SEQUENCE","examples":["Kemudian, saya mandi.","Saya bangun. Kemudian, saya mandi.","Saya bangun pada waktu pagi. Kemudian, saya mandi dan makan."],"hints":["Apa yang berlaku selepas itu?","Gunakan 'Kemudian' untuk idea seterusnya.","Saya bangun. Kemudian, saya mandi."],"learningMode":"GUIDED_FIRST"}];
   const L3_STORAGE="karangan_ai_l3_t1_v1";
   const L3_LEVEL_KEY="karangan_ai_l3_level";
@@ -12015,6 +12015,76 @@ window.KaranganTranslationCache = {
     sentenceBuilderState={task:{focusWord:word.word},l3Word:word,l3Level:level,l3Scaffold:scaffold,l3Mission:mission,hintLevel:0,attempts:0};
     l3RenderScreen();
   }
+  function l3DnDStyle(){
+    if(document.getElementById("l3-dnd-style")) return;
+    const s=document.createElement("style"); s.id="l3-dnd-style";
+    s.textContent=`
+      .l3-bank,.l3-dropzone{display:flex;flex-wrap:wrap;gap:9px;min-height:58px;padding:12px;border-radius:16px}
+      .l3-bank{background:#fff8ea;border:1px solid #f1dfba}
+      .l3-dropzone{background:#f7f5ff;border:2px dashed #cfc7f5}
+      .l3-chip{touch-action:none;user-select:none;-webkit-user-select:none;padding:10px 13px;border-radius:14px;background:white;border:1px solid #ddd;box-shadow:0 2px 5px rgba(0,0,0,.06);font-weight:700}
+      .l3-chip.l3-dragging{opacity:.55;transform:scale(.98)}
+      .l3-dropzone.l3-over{outline:3px solid rgba(108,92,231,.16)}
+      .l3-slot{display:inline-flex;align-items:center;justify-content:center;min-width:105px;min-height:42px;padding:4px 9px;border-radius:12px;border:2px dashed #bfb6ef;background:#fff}
+    `;
+    document.head.appendChild(s);
+  }
+  function l3BindPointerDnD(){
+    l3DnDStyle();
+    let active=null, ghost=null, source=null;
+    const chips=[...document.querySelectorAll(".l3-chip")];
+    chips.forEach(chip=>{
+      chip.addEventListener("pointerdown",e=>{
+        active=chip; source=chip.parentElement; chip.classList.add("l3-dragging");
+        try{chip.setPointerCapture(e.pointerId);}catch(_){}
+        ghost=chip.cloneNode(true); ghost.removeAttribute("id");
+        Object.assign(ghost.style,{position:"fixed",zIndex:"99999",pointerEvents:"none",opacity:".92",margin:"0",left:(e.clientX-30)+"px",top:(e.clientY-22)+"px"});
+        document.body.appendChild(ghost); e.preventDefault();
+      });
+      chip.addEventListener("pointermove",e=>{
+        if(!active||active!==chip||!ghost)return;
+        ghost.style.left=(e.clientX-30)+"px"; ghost.style.top=(e.clientY-22)+"px";
+        document.querySelectorAll(".l3-dropzone,.l3-bank").forEach(x=>x.classList.remove("l3-over"));
+        const el=document.elementFromPoint(e.clientX,e.clientY);
+        const zone=el?.closest?.(".l3-dropzone,.l3-bank");
+        if(zone) zone.classList.add("l3-over");
+      });
+      const end=e=>{
+        if(!active||active!==chip)return;
+        const el=document.elementFromPoint(e.clientX,e.clientY);
+        const zone=el?.closest?.(".l3-dropzone,.l3-bank");
+        if(zone){
+          if(zone.dataset.mode==="single"){
+            const prior=zone.querySelector(".l3-chip");
+            if(prior && prior!==chip) source?.appendChild(prior);
+          }
+          zone.appendChild(chip);
+        }
+        document.querySelectorAll(".l3-dropzone,.l3-bank").forEach(x=>x.classList.remove("l3-over"));
+        chip.classList.remove("l3-dragging"); ghost?.remove(); ghost=null;active=null;source=null;
+      };
+      chip.addEventListener("pointerup",end);
+      chip.addEventListener("pointercancel",()=>{
+        chip.classList.remove("l3-dragging"); ghost?.remove(); ghost=null;active=null;source=null;
+      });
+      // Tap fallback: useful for very young learners and accessibility.
+      chip.addEventListener("click",()=>{
+        if(active) return;
+        const target=document.querySelector(".l3-dropzone");
+        const bank=document.querySelector(".l3-bank");
+        if(chip.closest(".l3-dropzone")) bank?.appendChild(chip);
+        else if(target){
+          if(target.dataset.mode==="single"){
+            const prior=target.querySelector(".l3-chip"); if(prior) bank?.appendChild(prior);
+          }
+          target.appendChild(chip);
+        }
+      });
+    });
+  }
+  function l3DroppedWords(){
+    return [...document.querySelectorAll(".l3-dropzone .l3-chip")].map(x=>x.dataset.word||x.textContent.trim());
+  }
   function l3RenderScreen(){
     const st=sentenceBuilderState, word=st.l3Word, level=st.l3Level, scaffold=st.l3Scaffold;
     let mission="";
@@ -12026,17 +12096,24 @@ window.KaranganTranslationCache = {
         <div style="font-size:20px;margin-top:10px">${escapeHtml(l3Frame(ex,word.word))}</div></div>
         <div style="display:grid;gap:9px">${l3Choices(word).map(x=>`<button type="button" class="secondary-button" data-l3-choice="${escapeHtml(x)}">${escapeHtml(x)}</button>`).join("")}</div>`;
     } else if(missionType==="LENGKAP"){
+      const choices=l3Choices(word);
       mission=`<div style="padding:16px;border-radius:18px;background:#f7f5ff;margin:14px 0">
-        <strong>🧩 Lengkapkan Ayat</strong><div style="font-size:20px;margin-top:10px">${escapeHtml(l3Frame(ex,word.word))}</div></div>
-        <textarea id="l3Answer" rows="3" placeholder="Tulis ayat yang lengkap..." style="width:100%;box-sizing:border-box;border:2px solid #e4dfda;border-radius:16px;padding:14px;font:inherit"></textarea>
-        <button id="l3Check" class="primary-button" type="button" style="width:100%;margin-top:12px">✓ Semak Ayat</button>`;
+        <strong>🧩 Lengkapkan Ayat</strong>
+        <div style="font-size:20px;margin-top:10px">${escapeHtml(l3Frame(ex,word.word))}</div>
+        <div style="margin-top:12px">Seret perkataan yang betul ke kotak.</div>
+        <div class="l3-dropzone" data-mode="single" aria-label="Tempat jawapan"></div>
+      </div>
+      <div class="l3-bank">${choices.map(x=>`<button type="button" class="l3-chip" data-word="${escapeHtml(x)}">${escapeHtml(x)}</button>`).join("")}</div>
+      <button id="l3DropCheck" class="primary-button" type="button" style="width:100%;margin-top:12px">✓ Semak</button>`;
     } else if(missionType==="SUSUN"){
       const toks=l3ShuffleTokens(ex);
       mission=`<div style="padding:16px;border-radius:18px;background:#f7f5ff;margin:14px 0">
-        <strong>🔀 Susun Ayat</strong><div style="margin-top:8px">Susun perkataan ini menjadi satu ayat.</div>
-        <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:10px">${toks.map(x=>`<span style="padding:7px 10px;border-radius:12px;background:white;border:1px solid #ddd">${escapeHtml(x)}</span>`).join("")}</div></div>
-        <textarea id="l3Answer" rows="3" placeholder="Tulis ayat yang betul..." style="width:100%;box-sizing:border-box;border:2px solid #e4dfda;border-radius:16px;padding:14px;font:inherit"></textarea>
-        <button id="l3Check" class="primary-button" type="button" style="width:100%;margin-top:12px">✓ Semak Ayat</button>`;
+        <strong>🔀 Susun Ayat</strong>
+        <div style="margin-top:8px">Seret perkataan mengikut susunan yang betul.</div>
+        <div class="l3-dropzone" data-mode="sequence" aria-label="Susunan ayat"></div>
+      </div>
+      <div class="l3-bank">${toks.map((x,i)=>`<button type="button" class="l3-chip" data-word="${escapeHtml(x)}" data-token="${i}">${escapeHtml(x)}</button>`).join("")}</div>
+      <button id="l3DropCheck" class="primary-button" type="button" style="width:100%;margin-top:12px">✓ Semak Susunan</button>`;
     } else if(missionType==="CANTIKKAN"){
       const base=word.examples[0]||ex;
       mission=`<div style="padding:16px;border-radius:18px;background:#f7f5ff;margin:14px 0">
@@ -12068,6 +12145,19 @@ window.KaranganTranslationCache = {
 
     $$("[data-l3-choice]").forEach(b=>b.onclick=()=>l3Evaluate(b.dataset.l3Choice,true));
     byId("l3Check")?.addEventListener("click",()=>l3Evaluate(byId("l3Answer")?.value||"",false));
+    if(missionType==="LENGKAP" || missionType==="SUSUN"){
+      l3BindPointerDnD();
+      byId("l3DropCheck")?.addEventListener("click",()=>{
+        const dropped=l3DroppedWords();
+        if(!dropped.length){showToast("👆 Seret perkataan ke kotak dahulu.");return;}
+        if(missionType==="LENGKAP"){
+          l3Evaluate(dropped[0],true);
+        } else {
+          const sentence=dropped.join(" ")+".";
+          l3Evaluate(sentence,false);
+        }
+      });
+    }
     byId("l3Hint")?.addEventListener("click",()=>{
       st.hintLevel=Math.min(3,(st.hintLevel||0)+1);
       st.exampleRevealed=st.hintLevel>=3;
@@ -12116,7 +12206,7 @@ window.KaranganTranslationCache = {
       l3Feedback("RETRY","👍 Cubaan yang baik!",msg,false);
       return;
     }
-    const guided=isChoice || st.hintLevel>0 || st.exampleRevealed===true || scaffold===1;
+    const guided=isChoice || st.l3Mission==="LENGKAP" || st.l3Mission==="SUSUN" || st.hintLevel>0 || st.exampleRevealed===true || scaffold===1;
     if(guided){
       x.state="WRITING_LEARNING"; x.depth=Math.max(x.depth||0,2);
     } else {
