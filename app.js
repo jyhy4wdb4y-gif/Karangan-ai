@@ -12818,3 +12818,57 @@ window.KaranganTranslationCache = {
     clearLevelOverride:function(){l3SessionLevel=null;try{localStorage.removeItem(L3_LEVEL_KEY);}catch(_){}}
   };
 })();
+
+/* =========================================================
+   LANGKAH 4 PROTOTYPE v12.11.0 — KEMBANGKAN AYAT
+   Additive prototype. Langkah 2 & Langkah 3 are untouched.
+   ========================================================= */
+(function(){
+  const L4_VERSION="12.11.0";
+  const LEGACY_GRAMMAR=renderGrammarRain;
+  let level="ASAS", stage="START", hint=0, taskIndex=0, draft="";
+  const tasks=[
+    {base:"Saya membaca buku.",q:"Di mana?",type:"TEMPAT",choices:["di bilik","di sekolah","di rumah"],answer:"di bilik",model:"Saya membaca buku di bilik.",next:"Saya bermain.",accept:["di ","bersama "]},
+    {base:"Saya bermain.",q:"Dengan siapa?",type:"BERSAMA",choices:["bersama kawan","bersama adik","bersama ibu"],answer:"bersama kawan",model:"Saya bermain bersama kawan.",next:"Saya makan.",accept:["bersama ","di ","pada "]},
+    {base:"Saya mandi.",q:"Bila?",type:"MASA",choices:["pada waktu pagi","pada waktu petang","di rumah"],answer:"pada waktu pagi",model:"Saya mandi pada waktu pagi.",next:"Saya membaca.",accept:["pada ","di ","bersama "]},
+    {base:"Kelas saya bersih.",q:"Apa lagi?",type:"KETERANGAN",choices:["dan cantik","dan besar","dan kecil"],answer:"dan cantik",model:"Kelas saya bersih dan cantik.",next:"Rumah saya bersih.",accept:["dan "]}
+  ];
+  const esc=s=>String(s??"").replace(/[&<>\"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'\"':"&quot;","'":"&#39;"}[c]));
+  const task=()=>tasks[taskIndex%tasks.length];
+  function speak(text){
+    try{
+      if(!("speechSynthesis" in window)){showToast("🔊 Peranti ini belum menyokong suara.");return;}
+      speechSynthesis.cancel();
+      const u=new SpeechSynthesisUtterance(text); u.lang="zh-CN"; u.rate=.9; u.pitch=1;
+      const vs=speechSynthesis.getVoices(); const zh=vs.find(v=>/^zh/i.test(v.lang)); if(zh)u.voice=zh;
+      speechSynthesis.speak(u);
+    }catch(e){console.warn("[L4 voice]",e);}
+  }
+  function hintText(){
+    const t=task(); hint=Math.min(3,hint+1);
+    const map={
+      TEMPAT:["这题问你在哪里。先想一个适合的地方。","把一个地点加到原来的句子后面，句子就会更完整。","想一想：房间、学校或家里，哪一个最适合？"],
+      BERSAMA:["这题问你和谁一起。先想一个人物。","把‘和谁一起’的资料加进句子。","你可以想想：朋友、弟弟妹妹，或者妈妈。"],
+      MASA:["这题问你什么时候做这件事。","想一个时间，再把时间资料加进句子。","你可以想想早上或下午。"],
+      KETERANGAN:["这题要你再加一个有用的描述。","看看原来的句子，再加一个适合的特点。","你可以想想：漂亮、大或小，哪一个最自然？"]
+    };
+    const txt=(map[t.type]||map.TEMPAT)[hint-1]; speak(txt); showToast(`🔊 Cikgu Aira · Petunjuk ${hint}/3`);
+  }
+  function shell(body,progress=60){openModuleScreen(`<span class="section-kicker">LANGKAH 4 · PROTOTYPE</span><h1>✨ Kembangkan Ayat</h1>${body}<div style="margin-top:18px;color:#8b8b8b;font-size:12px;text-align:center">v${L4_VERSION} · Prototype UX</div>`,progress);}
+  function start(){stage="START";hint=0;draft="";shell(`<div style="background:#fff8e8;border-radius:22px;padding:18px;margin:14px 0"><div style="font-size:42px">🌟</div><h2 style="margin:6px 0">Misi Hari Ini</h2><p style="margin:4px 0">Naik taraf ayat dengan <strong>satu maklumat</strong>.</p></div><p><strong>Pilih cara belajar:</strong></p><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"><button data-l4-level="ASAS" class="${level==='ASAS'?'primary-button':''}">🌱 Asas</button><button data-l4-level="STANDARD" class="${level==='STANDARD'?'primary-button':''}">🌿 Standard</button><button data-l4-level="LANJUTAN" class="${level==='LANJUTAN'?'primary-button':''}">⭐ Lanjutan</button></div><button id="l4Begin" class="primary-button" style="width:100%;margin-top:16px">Mula Misi →</button>`,50);}
+  function guided(){stage="GUIDED";hint=0;const t=task();let action="";
+    if(level==="ASAS") action=`<div style="display:grid;gap:9px">${t.choices.map(x=>`<button data-l4-choice="${esc(x)}" style="padding:14px;border-radius:16px">${esc(x)}</button>`).join("")}</div>`;
+    else if(level==="STANDARD") action=`<input id="l4GuidedInput" placeholder="Tambah satu maklumat..." style="width:100%;padding:14px;border-radius:14px;border:1px solid #ddd"><button id="l4GuidedCheck" class="primary-button" style="width:100%;margin-top:10px">✓ Semak</button>`;
+    else action=`<textarea id="l4GuidedInput" rows="3" placeholder="Tulis ayat yang lebih lengkap..." style="width:100%;padding:14px;border-radius:14px;border:1px solid #ddd"></textarea><button id="l4GuidedCheck" class="primary-button" style="width:100%;margin-top:10px">✓ Semak</button>`;
+    shell(`<div style="background:#f7f7ff;border-radius:20px;padding:17px;margin:12px 0"><small>🐣 NAIK TARAF AYAT</small><div style="font-size:22px;font-weight:800;margin:10px 0">${esc(t.base)}</div><div style="font-weight:800">${esc(t.q)}</div></div>${action}<button id="l4Hint" style="width:100%;margin-top:12px;padding:13px;border-radius:16px">🔊 Tanya Cikgu Aira</button>`,60);}
+  function upgrade(chosen){const t=task();stage="UPGRADE";const full=level==="LANJUTAN"&&/[.!?]$/.test(chosen)?chosen:(t.base.replace(/[.!?]$/,'')+" "+chosen.replace(/[.!?]$/,'')+".");shell(`<div style="text-align:center;padding:10px"><div style="font-size:44px">✨</div><p style="color:#777">Ayat Asas</p><div style="font-size:20px">${esc(t.base)}</div><div style="font-size:30px;margin:10px">↓</div><p style="color:#777">Ayat Lebih Lengkap</p><div style="font-size:23px;font-weight:900;background:#effbf1;padding:16px;border-radius:18px">${esc(full)}</div><h2>🌟 Hebat!</h2><p>Ayat kamu sekarang lebih lengkap.</p></div><button id="l4TryOwn" class="primary-button" style="width:100%">✍️ Sekarang Giliran Kamu</button>`,72);}
+  function independent(message=""){stage="INDEPENDENT";const t=task();shell(`${message?`<div style="background:#fff4e5;padding:12px;border-radius:14px;margin-bottom:10px">${esc(message)}</div>`:""}<div style="background:#f7f7ff;border-radius:20px;padding:17px"><small>🎯 GILIRAN KAMU</small><p>Cuba jadikan ayat ini lebih lengkap.</p><div style="font-size:23px;font-weight:900">${esc(t.next)}</div></div><textarea id="l4Draft" rows="3" style="width:100%;box-sizing:border-box;margin-top:12px;padding:14px;border-radius:14px;border:1px solid #ddd" placeholder="Tulis ayat kamu...">${esc(draft)}</textarea><button id="l4OwnCheck" class="primary-button" style="width:100%;margin-top:10px">✓ Semak Ayat Saya</button><button id="l4Hint" style="width:100%;margin-top:10px;padding:13px;border-radius:16px">🔊 Tanya Cikgu Aira</button>`,84);}
+  function checkOwn(){const el=byId("l4Draft");draft=(el?.value||draft).trim();const t=task();if(!draft){independent("Cuba tulis ayat kamu dahulu.");return;} const words=draft.split(/\s+/);let ok=words.length>=3 && t.accept.some(a=>draft.toLowerCase().includes(a.trim().toLowerCase())); if(!/^[A-Z]/.test(draft)){independent("Cikgu Aira: Bagus! Cuba mula ayat dengan huruf besar.");return;} if(!/[.!?]$/.test(draft)){independent("Cikgu Aira: Ayat kamu hampir siap. Tambah tanda noktah di hujung.");return;} if(!ok){independent("Cikgu Aira: Bagus mencuba. Tambah satu maklumat seperti tempat, masa atau dengan siapa.");return;} success();}
+  function success(){stage="SUCCESS";shell(`<div style="text-align:center;padding:16px"><div style="font-size:68px">🎉</div><h1>Hebat!</h1><p>Kamu berjaya <strong>naik taraf ayat</strong> sendiri!</p><div style="font-size:34px;margin:15px">⭐ +10 XP</div><div style="background:#eef8ff;padding:14px;border-radius:18px">🐣 Cikgu Aira bangga dengan usaha kamu.</div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button id="l4Next" class="primary-button">Cabar Ayat Seterusnya</button><button id="l4Finish">Selesai ✓</button></div>`,100);}
+  function checkGuided(){const t=task(),el=byId("l4GuidedInput"),v=(el?.value||"").trim(); if(!v){showToast("Cuba tambah satu maklumat dahulu.");return;} if(level==="LANJUTAN"){if(v.split(/\s+/).length<3){showToast("Tambah satu maklumat pada ayat.");return;}upgrade(v);}else upgrade(v);}
+  let last=0;function action(e){const el=e.target.closest?.("#l4Begin,#l4Hint,#l4GuidedCheck,#l4TryOwn,#l4OwnCheck,#l4Next,#l4Finish,[data-l4-level],[data-l4-choice]");if(!el)return;const now=Date.now();if(now-last<320)return;last=now;e.preventDefault();e.stopPropagation();
+    if(el.dataset?.l4Level){level=el.dataset.l4Level;start();return;} if(el.id==="l4Begin"){guided();return;} if(el.id==="l4Hint"){hintText();return;} if(el.dataset?.l4Choice){upgrade(el.dataset.l4Choice);return;} if(el.id==="l4GuidedCheck"){checkGuided();return;} if(el.id==="l4TryOwn"){draft="";independent();return;} if(el.id==="l4OwnCheck"){checkOwn();return;} if(el.id==="l4Next"){taskIndex=(taskIndex+1)%tasks.length;draft="";guided();return;} if(el.id==="l4Finish"){try{completeMission("grammar-rain");}catch(_){} shell(`<div style="text-align:center;padding:24px"><div style="font-size:70px">🏆</div><h1>Misi Hari Ini Selesai!</h1><p>Kamu sudah belajar menjadikan ayat lebih lengkap.</p></div>`,100);return;}}
+  document.addEventListener("pointerup",action,true);document.addEventListener("click",action,true);
+  renderGrammarRain=start;
+  window.KaranganLangkah4={version:L4_VERSION,render:start,legacyGrammar:LEGACY_GRAMMAR};
+})();
