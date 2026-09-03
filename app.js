@@ -12824,7 +12824,7 @@ window.KaranganTranslationCache = {
    Additive prototype. Langkah 2 & Langkah 3 are untouched.
    ========================================================= */
 (function(){
-  const L4_VERSION="12.11.0";
+  const L4_VERSION="12.11.1";
   const LEGACY_GRAMMAR=renderGrammarRain;
   let level="ASAS", stage="START", hint=0, taskIndex=0, draft="";
   const tasks=[
@@ -12868,6 +12868,35 @@ window.KaranganTranslationCache = {
   function checkGuided(){const t=task(),el=byId("l4GuidedInput"),v=(el?.value||"").trim(); if(!v){showToast("Cuba tambah satu maklumat dahulu.");return;} if(level==="LANJUTAN"){if(v.split(/\s+/).length<3){showToast("Tambah satu maklumat pada ayat.");return;}upgrade(v);}else upgrade(v);}
   let last=0;function action(e){const el=e.target.closest?.("#l4Begin,#l4Hint,#l4GuidedCheck,#l4TryOwn,#l4OwnCheck,#l4Next,#l4Finish,[data-l4-level],[data-l4-choice]");if(!el)return;const now=Date.now();if(now-last<320)return;last=now;e.preventDefault();e.stopPropagation();
     if(el.dataset?.l4Level){level=el.dataset.l4Level;start();return;} if(el.id==="l4Begin"){guided();return;} if(el.id==="l4Hint"){hintText();return;} if(el.dataset?.l4Choice){upgrade(el.dataset.l4Choice);return;} if(el.id==="l4GuidedCheck"){checkGuided();return;} if(el.id==="l4TryOwn"){draft="";independent();return;} if(el.id==="l4OwnCheck"){checkOwn();return;} if(el.id==="l4Next"){taskIndex=(taskIndex+1)%tasks.length;draft="";guided();return;} if(el.id==="l4Finish"){try{completeMission("grammar-rain");}catch(_){} shell(`<div style="text-align:center;padding:24px"><div style="font-size:70px">🏆</div><h1>Misi Hari Ini Selesai!</h1><p>Kamu sudah belajar menjadikan ayat lebih lengkap.</p></div>`,100);return;}}
+  // iPad/Safari hardening for the Stage 2 "Semak Ayat Saya" button.
+  // Keep the general delegated handler above, but give this critical control
+  // its own document-level route so it cannot be lost after openModuleScreen() rerenders.
+  let l4OwnCheckLast=0;
+  function l4OwnCheckSafe(e){
+    const target=e.target;
+    const btn=(target && target.id==="l4OwnCheck") ? target : target?.closest?.("#l4OwnCheck");
+    if(!btn) return;
+    const now=Date.now();
+    if(now-l4OwnCheckLast<350) return;
+    l4OwnCheckLast=now;
+    try{
+      e.preventDefault();
+      e.stopPropagation();
+      const ta=document.getElementById("l4Draft");
+      if(ta) draft=String(ta.value||"").trim();
+      btn.disabled=true;
+      btn.textContent="⏳ Sedang semak...";
+      // Run synchronously from the user's gesture; checkOwn() rerenders feedback immediately.
+      checkOwn();
+    }catch(err){
+      console.error("[L4 Semak Ayat]",err);
+      try{ btn.disabled=false; btn.textContent="✓ Semak Ayat Saya"; }catch(_){}
+      try{ showToast("Cuba tekan Semak Ayat sekali lagi."); }catch(_){}
+    }
+  }
+  document.addEventListener("pointerup",l4OwnCheckSafe,true);
+  document.addEventListener("touchend",l4OwnCheckSafe,true);
+  document.addEventListener("click",l4OwnCheckSafe,true);
   document.addEventListener("pointerup",action,true);document.addEventListener("click",action,true);
   renderGrammarRain=start;
   window.KaranganLangkah4={version:L4_VERSION,render:start,legacyGrammar:LEGACY_GRAMMAR};
