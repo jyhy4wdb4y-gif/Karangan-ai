@@ -12824,9 +12824,9 @@ window.KaranganTranslationCache = {
    Additive prototype. Langkah 2 & Langkah 3 are untouched.
    ========================================================= */
 (function(){
-  const L4_VERSION="12.11.2";
+  const L4_VERSION="12.11.3";
   const LEGACY_GRAMMAR=renderGrammarRain;
-  let level="ASAS", stage="START", hint=0, taskIndex=0, draft="";
+  let level="ASAS", stage="START", hint=0, taskIndex=0, draft="", guidedDraft="";
   const tasks=[
     {base:"Saya membaca buku.",q:"Di mana?",type:"TEMPAT",choices:["di bilik","di sekolah","di rumah"],answer:"di bilik",model:"Saya membaca buku di bilik.",next:"Saya bermain.",accept:["di ","bersama "]},
     {base:"Saya bermain.",q:"Dengan siapa?",type:"BERSAMA",choices:["bersama kawan","bersama adik","bersama ibu"],answer:"bersama kawan",model:"Saya bermain bersama kawan.",next:"Saya makan.",accept:["bersama ","di ","pada "]},
