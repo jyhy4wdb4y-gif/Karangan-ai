@@ -12824,7 +12824,7 @@ window.KaranganTranslationCache = {
    Additive integration. Langkah 2 & Langkah 3 are untouched.
    ========================================================= */
 (function(){
-  const L4_VERSION="14.1.0-ADAPTIVE-LEARNING";
+  const L4_VERSION="14.2.0-RESILIENT-SUBMIT-PARTIAL-CORRECTNESS";
   const CONTENT_VERSION="1.0_STABLE";
   const LEGACY_GRAMMAR=renderGrammarRain;
   const STATE_KEY="karangan_ai_l4_t1_v1";
@@ -12847,7 +12847,13 @@ window.KaranganTranslationCache = {
     l4Machine.phase=next;l4Machine.lastTransitionAt=Date.now();stage=next;
     return true;
   }
-  function l4SetBusy(value){l4Machine.busy=!!value;}
+  function l4SetBusy(value){
+    l4Machine.busy=!!value;
+    l4Machine.busySince=value?Date.now():0;
+  }
+  function l4BusyIsStale(maxMs=12000){
+    return !!l4Machine.busy && !!l4Machine.busySince && (Date.now()-l4Machine.busySince)>maxMs;
+  }
   function l4ResetCycle(){l4Machine.cycleHintUsed=false;independentHintUsed=false;hint=0;guidedHint3=false;l4SetBusy(false);}
 
 
@@ -13118,6 +13124,7 @@ window.KaranganTranslationCache = {
   function promptFor(t){if(level!=="LANJUTAN")return t.q;if(t.skill==="PLACE")return "Tulis semula ayat penuh dan tambah satu tempat.";if(t.skill==="TIME")return "Tulis semula ayat penuh dan tambah satu masa.";if(t.skill==="COMPANION")return "Tulis semula ayat penuh dan nyatakan dengan siapa.";if(t.skill==="DESCRIPTION")return "Tulis semula ayat penuh dan tambah satu penerangan yang sesuai.";if(t.skill==="INTENSITY")return "Tulis semula ayat penuh dan kuatkan perasaan itu.";return "Tulis semula ayat penuh dan tambah satu maklumat yang sesuai.";}
   function guided(message=""){
     l4Transition("GUIDED",{force:true});
+    l4SetBusy(false);
     if(!message){hint=0;guidedHint3=false;}
     let snap=(message && activeExercise?.stage==="GUIDED")?activeExercise:null;
     if(!snap){const t0=currentTask();snap=l4FreezeExercise(t0,"GUIDED",t0.base);}
@@ -13167,7 +13174,7 @@ window.KaranganTranslationCache = {
     const base=s.currentIndependentBase||pickConnectedTransferBase(currentTask());
     independentRender(base,message);
   }
-  function independentRender(base,message="",snapshot=null){l4Transition("INDEPENDENT",{force:true});const snap=snapshot||((activeExercise?.stage==="INDEPENDENT"&&activeExercise.base===base)?activeExercise:l4FreezeExercise(currentTask(),"INDEPENDENT",base));activeExercise=snap;shell(`<div class="l4-card l4-base"><div class="l4-label">🎯 Giliran Kamu</div><p style="margin:7px 0;color:#5f6970">${l4IndependentSkillPrompt(snap.task)}</p><div class="l4-sentence">${esc(snap.base)}</div></div>${feedback(message)}<div class="l4-card"><div class="l4-label">✍️ Ayat Magic Saya</div><textarea id="l4Draft" rows="3" class="l4-input" style="margin-top:10px" placeholder="Tulis ayat penuh kamu...">${esc(draft)}</textarea><button id="l4OwnCheck" data-l4-action="own-check" class="l4-primary" style="margin-top:10px">✓ Semak Ayat Saya</button></div><button id="l4Hint" data-l4-action="hint" class="l4-secondary">🔊 Tanya Cikgu Aira</button>`,84,3);}
+  function independentRender(base,message="",snapshot=null){l4Transition("INDEPENDENT",{force:true});l4SetBusy(false);const snap=snapshot||((activeExercise?.stage==="INDEPENDENT"&&activeExercise.base===base)?activeExercise:l4FreezeExercise(currentTask(),"INDEPENDENT",base));activeExercise=snap;shell(`<div class="l4-card l4-base"><div class="l4-label">🎯 Giliran Kamu</div><p style="margin:7px 0;color:#5f6970">${l4IndependentSkillPrompt(snap.task)}</p><div class="l4-sentence">${esc(snap.base)}</div></div>${feedback(message)}<div class="l4-card"><div class="l4-label">✍️ Ayat Magic Saya</div><textarea id="l4Draft" rows="3" class="l4-input" style="margin-top:10px" placeholder="Tulis ayat penuh kamu...">${esc(draft)}</textarea><button id="l4OwnCheck" data-l4-action="own-check" class="l4-primary" style="margin-top:10px">✓ Semak Ayat Saya</button></div><button id="l4Hint" data-l4-action="hint" class="l4-secondary">🔊 Tanya Cikgu Aira</button>`,84,3);}
   function l4NormTokens(value){
     return String(value||"")
       .toLowerCase()
@@ -13259,6 +13266,9 @@ window.KaranganTranslationCache = {
   const L4_INTENSITY_WORDS=new Set([
     "sangat","amat","sungguh","terlalu","begitu","benar-benar","sekali"
   ]);
+  const L4_SAFE_DESCRIPTION_WORDS=new Set([
+    "bersih","cantik","besar","kecil","kemas","ceria","luas","selesa","indah","wangi","rajin"
+  ]);
 
   function l4NormText(v){
     return String(v||"").toLowerCase().normalize("NFKC")
@@ -13266,6 +13276,48 @@ window.KaranganTranslationCache = {
       .replace(/\s+/g," ").trim();
   }
   function l4Tokens(v){return l4NormText(v).split(" ").filter(Boolean);}
+
+  function l4EditDistanceAtMostOne(a,b){
+    a=String(a||"");b=String(b||"");
+    if(a===b)return true;
+    if(Math.abs(a.length-b.length)>1)return false;
+    let i=0,j=0,edits=0;
+    while(i<a.length&&j<b.length){
+      if(a[i]===b[j]){i++;j++;continue;}
+      edits++; if(edits>1)return false;
+      if(a.length>b.length)i++;
+      else if(b.length>a.length)j++;
+      else {i++;j++;}
+    }
+    if(i<a.length||j<b.length)edits++;
+    return edits<=1;
+  }
+
+  function l4BaseAlignment(base,answer){
+    const b=l4Tokens(base),a=l4Tokens(answer);
+    if(!b.length)return {preserved:true,exact:true,typo:null};
+    let ai=0,typo=null;
+    for(const expected of b){
+      let found=false;
+      while(ai<a.length){
+        const seen=a[ai++];
+        if(seen===expected){found=true;break;}
+        if(!typo && expected.length>=4 && seen.length>=3 && l4EditDistanceAtMostOne(expected,seen)){
+          typo={seen,expected};found=true;break;
+        }
+      }
+      if(!found)return {preserved:false,exact:false,typo:null};
+    }
+    return {preserved:true,exact:!typo,typo};
+  }
+
+  function l4BaseTypoLanguageIssue(base,answer){
+    const al=l4BaseAlignment(base,answer);
+    if(!al.preserved||!al.typo)return null;
+    const cap=s=>s?String(s)[0].toUpperCase()+String(s).slice(1):s;
+    return `Ejaan: “${cap(al.typo.seen)}” → “${cap(al.typo.expected)}”.`;
+  }
+
   function l4ContainsSubsequence(haystack,needle){
     const h=Array.isArray(haystack)?haystack:l4Tokens(haystack);
     const n=Array.isArray(needle)?needle:l4Tokens(needle);
@@ -13274,6 +13326,9 @@ window.KaranganTranslationCache = {
   }
   function l4BasePreservedLiterally(base,answer){
     return l4ContainsSubsequence(l4Tokens(answer),l4Tokens(base));
+  }
+  function l4BasePreservedForPartialCredit(base,answer){
+    return l4BaseAlignment(base,answer).preserved;
   }
   function l4AddedTokens(base,answer){
     const b=l4Tokens(base),a=l4Tokens(answer),used=new Array(a.length).fill(false);
@@ -13310,7 +13365,11 @@ window.KaranganTranslationCache = {
     }
     if(key==="DESCRIPTION"){
       const changed=l4NormText(answer)!==l4NormText(base);
-      return {met:changed?null:false,cue:null,confidence:changed?.45:.99};
+      if(!changed)return {met:false,cue:null,confidence:.99};
+      const at=l4Tokens(answer);
+      const tail=at.length>=2?at.slice(-2):[];
+      const safe=tail[0]==="dan" && L4_SAFE_DESCRIPTION_WORDS.has(tail[1]);
+      return {met:safe?true:null,cue:safe?tail.join(" "):null,confidence:safe?.96:.45};
     }
     const changed=Array.isArray(added)&&added.length>0;
     return {met:changed?null:false,cue:null,confidence:changed?.45:.99};
@@ -13318,7 +13377,8 @@ window.KaranganTranslationCache = {
 
   function l4StrictLocalAccept(snapshot,answer,target){
     const key=l4SkillKey({skill:snapshot?.skill}),base=snapshot?.base||"";
-    if(!l4BasePreservedLiterally(base,answer)||target?.met!==true)return false;
+    const alignment=l4BaseAlignment(base,answer);
+    if(!alignment.preserved||target?.met!==true)return false;
     const b=l4NormText(base),a=l4NormText(answer);
     if(key==="PLACE"){
       if(!a.startsWith(b+" "))return false;
@@ -13341,6 +13401,12 @@ window.KaranganTranslationCache = {
       const added=l4AddedTokens(base,answer);
       return Array.isArray(added)&&added.length===1&&L4_INTENSITY_WORDS.has(added[0]);
     }
+    if(key==="DESCRIPTION"){
+      const bt=l4Tokens(base),at=l4Tokens(answer);
+      if(at.length!==bt.length+2)return false;
+      const tail=at.slice(-2);
+      return tail[0]==="dan" && L4_SAFE_DESCRIPTION_WORDS.has(tail[1]);
+    }
     return false;
   }
 
@@ -13353,7 +13419,7 @@ window.KaranganTranslationCache = {
 
   function l4LocalTeachingVerdict(snapshot,answer){
     const key=l4SkillKey({skill:snapshot?.skill}),base=snapshot?.base||"";
-    const target=l4TargetEvidence(key,answer,base),languageIssue=l4LanguagePrecheck(String(answer||""));
+    const target=l4TargetEvidence(key,answer,base),languageIssue=l4BaseTypoLanguageIssue(base,answer)||l4LanguagePrecheck(String(answer||""));
     if(target.met===false){
       return {final:true,reason:"DEFINITE_TARGET_MISSING",
         judge:l4MakeLocalJudge({skill:"NOT_MET",primary:"SKILL_TARGET",confidence:.99,languageIssue,source:"LOCAL"}),target};
@@ -13388,14 +13454,30 @@ window.KaranganTranslationCache = {
     const key=l4SkillKey({skill:snapshot?.skill}),base=snapshot?.base||"";
     const target=local?.target||l4TargetEvidence(key,answer,base);
     const languageIssue=local?.languageIssue||l4LanguagePrecheck(String(answer||""));
-    if(target.met===true&&l4BasePreservedLiterally(base,answer)){
+    if(target.met===true&&l4BasePreservedForPartialCredit(base,answer)){
       return l4MakeLocalJudge({skill:"MET",appropriateness:"POSSIBLE",primary:"NONE",confidence:.55,languageIssue,source:"FALLBACK"});
     }
     if((key==="DESCRIPTION"||key==="OPEN"||key==="OPEN_DYNAMIC") &&
-       l4NormText(answer)!==l4NormText(base)&&l4BasePreservedLiterally(base,answer)){
+       l4NormText(answer)!==l4NormText(base)&&l4BasePreservedForPartialCredit(base,answer)){
       return l4MakeLocalJudge({skill:"MET",appropriateness:"POSSIBLE",primary:"NONE",confidence:.50,languageIssue,source:"FALLBACK"});
     }
     return l4MakeLocalJudge({skill:"NOT_MET",appropriateness:"POSSIBLE",primary:"SKILL_TARGET",confidence:.50,languageIssue,source:"FALLBACK"});
+  }
+
+
+  function l4WithTimeout(promise,ms=9000){
+    return new Promise((resolve,reject)=>{
+      let settled=false;
+      const timer=setTimeout(()=>{
+        if(settled)return;
+        settled=true;
+        reject(new Error("AI semantic timeout"));
+      },ms);
+      Promise.resolve(promise).then(
+        v=>{if(settled)return;settled=true;clearTimeout(timer);resolve(v);},
+        e=>{if(settled)return;settled=true;clearTimeout(timer);reject(e);}
+      );
+    });
   }
 
   async function l4HybridTeachingJudge(snapshot,answer){
@@ -13411,7 +13493,7 @@ window.KaranganTranslationCache = {
       return {...l4FallbackTeachingJudge(snapshot,answer,local,type),fallback_error_type:type};
     }
     try{
-      const judge=await l4TeachingJudge(snapshot,answer);
+      const judge=await l4WithTimeout(l4TeachingJudge(snapshot,answer),9000);
       return {...judge,judge_source:"AI",degraded:false};
     }catch(err){
       const errorType=l4AIErrorType(err);l4SetAICooldown(errorType);
@@ -14020,7 +14102,14 @@ window.KaranganTranslationCache = {
       "begin":"l4Begin","hint":"l4Hint","guided-check":"l4GuidedCheck",
       "try-own":"l4TryOwn","own-check":"l4OwnCheck","next":"l4Next","finish":"l4Finish"
     }[semanticAction]||"");
-    if(l4Machine.busy && !["l4Finish"].includes(actionId))return;
+    if(l4Machine.busy && !["l4Finish"].includes(actionId)){
+      if(l4BusyIsStale()){
+        console.warn("[L4 Busy Watchdog] clearing stale interaction lock",l4Machine.lastAction,l4Machine.phase);
+        l4SetBusy(false);
+      }else{
+        return;
+      }
+    }
     e?.preventDefault?.();e?.stopPropagation?.();e?.stopImmediatePropagation?.();
     l4Machine.lastAction=actionId||el.dataset?.l4Choice||el.dataset?.l4Level||"unknown";
     if(el.dataset?.l4Level){level=el.dataset.l4Level;start();return;}
@@ -14073,6 +14162,7 @@ window.KaranganTranslationCache = {
     }catch(err){
       console.error("[L4 action exception]",err);
       l4SetBusy(false);
+      try{ if(el?.disabled){el.disabled=false;} }catch(_){}
       window.__L4_LAST_ACTION_ERROR__=String(err?.stack||err);
       try{showToast("⚠️ Langkah 4 action error — QA telah merekodkan ralat.");}catch(_){}
     }
@@ -14408,5 +14498,5 @@ window.KaranganTranslationCache = {
     return report;
   }
 
-  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v14.1.0-click-only-state-machine+hybrid+adaptive-learning",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMasteryStats:l4MasteryStats,getAdaptivePlan:l4AdaptivePlan,getHybridLocalVerdict:l4LocalTeachingVerdict,getAIStatus:()=>({cooldown:l4AIInCooldown(),until:Number(window.__KARANGAN_L4_AI_COOLDOWN_UNTIL__||0),lastError:window.__KARANGAN_L4_AI_LAST_ERROR_TYPE__||null}),getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null,runTeachingSimulation:l4RunTeachingSimulation,lastTeachingSimulation:()=>window.__KARANGAN_L4_LAST_SIM__||null,runLiveAIBenchmark:l4RunLiveAIBenchmark,lastLiveAIBenchmark:()=>window.__KARANGAN_L4_LAST_LIVE_BENCH__||null,runTargetedSmoke:l4RunTargetedSmoke,lastTargetedSmoke:()=>window.__KARANGAN_L4_LAST_SMOKE__||null,runPredeploymentLab:l4RunPredeploymentLab,lastPredeploymentLab:()=>window.__KARANGAN_L4_LAST_PREDEPLOY_LAB__||null};
+  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v14.2.0-click-only+hybrid+adaptive+resilient-submit+partial-correctness",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMasteryStats:l4MasteryStats,getAdaptivePlan:l4AdaptivePlan,getHybridLocalVerdict:l4LocalTeachingVerdict,getBaseAlignment:l4BaseAlignment,getAIStatus:()=>({cooldown:l4AIInCooldown(),until:Number(window.__KARANGAN_L4_AI_COOLDOWN_UNTIL__||0),lastError:window.__KARANGAN_L4_AI_LAST_ERROR_TYPE__||null}),getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null,runTeachingSimulation:l4RunTeachingSimulation,lastTeachingSimulation:()=>window.__KARANGAN_L4_LAST_SIM__||null,runLiveAIBenchmark:l4RunLiveAIBenchmark,lastLiveAIBenchmark:()=>window.__KARANGAN_L4_LAST_LIVE_BENCH__||null,runTargetedSmoke:l4RunTargetedSmoke,lastTargetedSmoke:()=>window.__KARANGAN_L4_LAST_SMOKE__||null,runPredeploymentLab:l4RunPredeploymentLab,lastPredeploymentLab:()=>window.__KARANGAN_L4_LAST_PREDEPLOY_LAB__||null};
 })();
