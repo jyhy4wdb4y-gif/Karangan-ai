@@ -12824,7 +12824,7 @@ window.KaranganTranslationCache = {
    Additive integration. Langkah 2 & Langkah 3 are untouched.
    ========================================================= */
 (function(){
-  const L4_VERSION="13.4.0-TEACHING-POLICY-SIM";
+  const L4_VERSION="13.5.0-LIVE-AI-SEMANTIC-BENCHMARK";
   const CONTENT_VERSION="1.0_STABLE";
   const LEGACY_GRAMMAR=renderGrammarRain;
   const STATE_KEY="karangan_ai_l4_t1_v1";
@@ -13356,6 +13356,73 @@ window.KaranganTranslationCache = {
     return report;
   }
 
+
+  function l4LiveBenchmarkCases(){
+    const contexts=[
+      {skill:"PLACE",target:"Tambah tempat",base:"Saya membaca buku.",good:"Saya membaca buku di rumah.",missing:"Saya membaca buku dengan teliti.",odd:"Saya membaca buku di atas bulan.",creative:"Saya membaca buku di dalam istana ajaib."},
+      {skill:"TIME",target:"Tambah masa",base:"Aiman bermain bola.",good:"Aiman bermain bola pada waktu petang.",missing:"Aiman bermain bola di padang.",odd:"Aiman bermain bola pada masa batu.",creative:"Aiman bermain bola pada tengah malam semasa pesta sekolah."},
+      {skill:"COMPANION",target:"Tambah dengan siapa",base:"Siti pergi ke kantin.",good:"Siti pergi ke kantin bersama Mei Ling.",missing:"Siti pergi ke kantin pada waktu rehat.",odd:"Siti pergi ke kantin bersama kerusi.",creative:"Siti pergi ke kantin bersama robot mainannya."},
+      {skill:"DESCRIPTION",target:"Tambah penerangan",base:"Bunga itu cantik.",good:"Bunga itu sangat cantik dan berwarna merah.",missing:"Bunga itu di taman.",odd:"Bunga itu cantik dengan rasa masin.",creative:"Bunga itu cantik seperti bintang yang bersinar."},
+      {skill:"INTENSITY",target:"Kuatkan perasaan atau penerangan",base:"Ali gembira.",good:"Ali sangat gembira.",missing:"Ali gembira di sekolah.",odd:"Ali sangat gembira dengan batu marah.",creative:"Ali terlalu gembira sehingga melompat kegirangan."},
+      {skill:"OPEN",target:"Tambah satu maklumat baharu yang bermakna",base:"Ibu memasak.",good:"Ibu memasak nasi di dapur.",missing:"Ibu memasak.",odd:"Ibu memasak kasut untuk makan malam.",creative:"Ibu memasak kek berbentuk kapal angkasa untuk hari jadi saya."}
+    ];
+    const cases=[];
+    let n=0;
+    for(const c of contexts){
+      const snap=(suffix)=>({exerciseId:`LIVE-${c.skill}-${suffix}`,learningTarget:c.target,skill:c.skill,base:c.base,task:{skill:c.skill,base:c.base}});
+      const add=(name,answer,expected,allow=[])=>cases.push({id:`LIVE-${String(++n).padStart(3,"0")}`,name,skill:c.skill,snapshot:snap(n),answer,expected,allow});
+      add("Clean correct",c.good,"ACCEPT");
+      add("Target missing",c.missing,"SKILL_TARGET");
+      add("Semantically odd",c.odd,"APPROPRIATENESS",["UNCERTAIN"]);
+      add("Creative but meaningful",c.creative,"ACCEPT");
+      add("Lowercase only",c.good.charAt(0).toLowerCase()+c.good.slice(1),"LANGUAGE");
+      add("No final punctuation",c.good.replace(/[.!?]$/,""),"LANGUAGE");
+      add("Meaning destroyed",c.skill==="PLACE"?"Saya makan buku di rumah.":c.skill==="TIME"?"Aiman minum bola pada waktu petang.":c.skill==="COMPANION"?"Siti makan kantin bersama Mei Ling.":c.skill==="DESCRIPTION"?"Bunga itu minum dengan cantik.":c.skill==="INTENSITY"?"Ali sangat makan gembira.":"Ibu memasak kasut dan memakannya.","MEANING",["APPROPRIATENESS"]);
+      add("Short incomplete","di rumah","MEANING",["SKILL_TARGET"]);
+      add("Unusual plausible",c.skill==="PLACE"?"Saya membaca buku di dalam khemah semasa hujan.":c.skill==="TIME"?"Aiman bermain bola selepas hujan berhenti.":c.skill==="COMPANION"?"Siti pergi ke kantin bersama pengawas sekolah.":c.skill==="DESCRIPTION"?"Bunga itu cantik dengan kelopak yang berkilau selepas hujan.":c.skill==="INTENSITY"?"Ali sungguh gembira apabila melihat hadiahnya.":"Ibu memasak sup untuk jiran yang sakit.","ACCEPT");
+      add("Clearly unrelated","Kucing itu tidur di atas sofa.","MEANING",["SKILL_TARGET"]);
+    }
+    return cases;
+  }
+
+  function l4LiveBenchmarkShow(report){
+    document.getElementById("l4-live-bench-report")?.remove();
+    const box=document.createElement("div");
+    box.id="l4-live-bench-report";
+    box.style.cssText="position:fixed;inset:14px;z-index:2147483647;overflow:auto;background:#fff;border:2px solid #222;border-radius:18px;padding:18px;font:14px/1.45 system-ui;box-shadow:0 20px 80px rgba(0,0,0,.35)";
+    const rows=report.results.map(x=>`<div style="padding:7px 0;border-bottom:1px solid #eee">${x.pass?"✅":"❌"} <strong>${esc(x.id)} · ${esc(x.name)}</strong><div style="font-size:12px;color:#667">${esc(x.skill)} · expected ${esc(x.expected)}${x.allow.length?` (also tolerates ${esc(x.allow.join(", "))})`:""} · got ${esc(x.actual)} · ${esc(x.answer)}</div></div>`).join("");
+    box.innerHTML=`<div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><h2 style="margin:0">Langkah 4 Live AI Semantic Benchmark</h2><button id="l4LiveBenchClose" style="padding:8px 12px">Close</button></div><p><strong>${report.passed}/${report.total} PASS</strong> · ${report.failed} failed · ${Math.round(report.accuracy*100)}% · ${report.durationMs} ms</p><p style="color:#667">Real /api/ai calls. 60 curated cases across PLACE, TIME, COMPANION, DESCRIPTION, INTENSITY and OPEN. Runs sequentially to avoid request bursts.</p>${rows}`;
+    document.body.appendChild(box);
+    box.querySelector("#l4LiveBenchClose")?.addEventListener("click",()=>box.remove(),{once:true});
+  }
+
+  async function l4RunLiveAIBenchmark({visual=true}={}){
+    if(window.__KARANGAN_L4_LIVE_BENCH_RUNNING__)return window.__KARANGAN_L4_LAST_LIVE_BENCH__||null;
+    window.__KARANGAN_L4_LIVE_BENCH_RUNNING__=true;
+    const started=Date.now(),cases=l4LiveBenchmarkCases(),results=[];
+    try{
+      for(let i=0;i<cases.length;i++){
+        const c=cases[i];
+        let actual="ERROR",judge=null,error="";
+        try{
+          judge=await l4TeachingJudge(c.snapshot,c.answer);
+          actual=l4TeachingDecision(judge,c.answer).issue;
+        }catch(err){error=String(err?.message||err);}
+        const pass=actual===c.expected||c.allow.includes(actual);
+        results.push({...c,actual,pass,error,judge});
+        window.__KARANGAN_L4_LIVE_BENCH_PROGRESS__={done:i+1,total:cases.length,last:c.id};
+      }
+    }finally{
+      window.__KARANGAN_L4_LIVE_BENCH_RUNNING__=false;
+    }
+    const passed=results.filter(x=>x.pass).length;
+    const report={version:L4_VERSION,suite:"LIVE_AI_SEMANTIC_BENCHMARK",total:results.length,passed,failed:results.length-passed,accuracy:passed/results.length,durationMs:Date.now()-started,results};
+    window.__KARANGAN_L4_LAST_LIVE_BENCH__=report;
+    if(visual)l4LiveBenchmarkShow(report);
+    console.table(results.map(x=>({id:x.id,skill:x.skill,expected:x.expected,actual:x.actual,pass:x.pass,error:x.error})));
+    return report;
+  }
+
   async function checkOwn(){
     const el=byId("l4Draft");
     draft=(el?.value||draft).trim();
@@ -13705,10 +13772,11 @@ window.KaranganTranslationCache = {
     if(qp.get("l4debug")==="1")setInterval(l4QaDebugPanel,350);
     if(qp.get("l4qa")==="1")setTimeout(()=>l4RunAutomatedQA({visual:true}),500);
     if(qp.get("l4sim")==="1")setTimeout(()=>l4RunTeachingSimulation({count:1000,visual:true}),500);
+    if(qp.get("l4live")==="1")setTimeout(()=>l4RunLiveAIBenchmark({visual:true}),700);
   }catch(_){}
 
   try{const saved=loadState();if(Number.isInteger(saved.lastTaskIndex))taskIndex=Math.max(0,Math.min(tasks.length-1,saved.lastTaskIndex));}catch(_){}
   document.addEventListener("click",l4ClickGateway,true);
   renderGrammarRain=start;
-  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v13.4.0-click-only-state-machine+teaching-policy-simulation",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null,runTeachingSimulation:l4RunTeachingSimulation,lastTeachingSimulation:()=>window.__KARANGAN_L4_LAST_SIM__||null};
+  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v13.5.0-click-only-state-machine+live-ai-semantic-benchmark",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null,runTeachingSimulation:l4RunTeachingSimulation,lastTeachingSimulation:()=>window.__KARANGAN_L4_LAST_SIM__||null,runLiveAIBenchmark:l4RunLiveAIBenchmark,lastLiveAIBenchmark:()=>window.__KARANGAN_L4_LAST_LIVE_BENCH__||null};
 })();
