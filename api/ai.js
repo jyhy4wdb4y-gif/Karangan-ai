@@ -1,12 +1,13 @@
 /* =========================================================
    KARANGAN AI
    API / AI CONTROLLER
-   Version 4.3 Auto Groq Model
+   Version 4.4 Semantic Judge
 
    Supports:
    - translate
    - writing-feedback
    - mentor
+   - semantic_judge
 
    Translation guarantee:
    - zh
@@ -112,6 +113,18 @@ export default async function handler(
         "Bahasa Melayu",
 
       instruction =
+        "",
+
+      year =
+        1,
+
+      learning_target =
+        "",
+
+      base_sentence =
+        "",
+
+      student_answer =
         ""
 
     } = body;
@@ -184,6 +197,48 @@ export default async function handler(
 
         });
 
+    }
+
+
+    /* =====================================================
+       SEMANTIC JUDGE — LANGKAH 4
+       Understands open vocabulary without changing curriculum/mastery.
+       ===================================================== */
+
+    if (
+      type === "semantic_judge"
+    ) {
+
+      const cleanBase =
+        String(base_sentence || "").trim();
+
+      const cleanAnswer =
+        String(student_answer || "").trim();
+
+      if (!cleanBase || !cleanAnswer) {
+        return res
+          .status(400)
+          .json({
+            error:
+              "Base sentence and student answer are required."
+          });
+      }
+
+      const judgment =
+        await generateSemanticJudgment({
+          year,
+          language,
+          learningTarget:
+            String(learning_target || "").trim(),
+          baseSentence:
+            cleanBase,
+          studentAnswer:
+            cleanAnswer
+        });
+
+      return res
+        .status(200)
+        .json(judgment);
     }
 
 
@@ -1135,6 +1190,355 @@ function cleanTranslation(
 
 
 /* =========================================================
+   SEMANTIC JUDGE ENGINE v1
+   ========================================================= */
+
+async function generateSemanticJudgment({
+  year,
+  language,
+  learningTarget,
+  baseSentence,
+  studentAnswer
+}) {
+
+  const instructions = `
+Anda ialah Semantic Judge untuk Karangan AI,
+aplikasi Bahasa Melayu sekolah rendah Malaysia.
+
+Tugas anda BUKAN menentukan kurikulum atau mastery.
+Tugas anda hanya memahami maksud ayat murid.
+
+Konteks:
+- Tahun murid: ${year || 1}
+- Bahasa: ${language || "Bahasa Melayu"}
+- Sasaran pembelajaran:
+  ${learningTarget || "Kembangkan ayat dengan satu maklumat yang bermakna."}
+
+PRINSIP WAJIB:
+1. Jangan padankan jawapan dengan model answer.
+2. Perkataan murid TIDAK perlu wujud dalam kosa kata Karangan AI.
+3. Nilai maksud ayat dalam konteks Bahasa Melayu Malaysia.
+4. Jawapan yang luar biasa tetapi masih mungkin bukan salah.
+5. Ayat imaginatif boleh diterima jika bermakna dalam konteks imaginasi.
+6. ODD bermaksud meragukan/ganjil tetapi tidak pasti salah.
+7. INVALID hanya jika sasaran tidak dipenuhi atau maklumat tambahan benar-benar tidak masuk akal.
+8. Jika nama tempat/perkataan tidak dikenali, gunakan UNKNOWN dan minta penjelasan; jangan mereka-reka.
+9. Jangan menghukum kreativiti murid.
+10. language_issue hanya SATU pembetulan penting. Jika tiada, null.
+11. Jangan tentukan mastered, XP, level atau curriculum status.
+
+semantic_class mesti salah satu:
+NATURAL, POSSIBLE, IMAGINATIVE, ODD, INVALID, UNKNOWN.
+
+information_type boleh seperti:
+PLACE, TIME, COMPANION, DESCRIPTION, ACTION_DETAIL, OTHER, UNKNOWN.
+
+confidence ialah nombor 0 hingga 1.
+  `.trim();
+
+  const input = `
+Ayat asas:
+${baseSentence}
+
+Ayat murid:
+${studentAnswer}
+
+Nilai sama ada maksud ayat asas dikekalkan dan murid
+telah menambah satu maklumat yang bermakna.
+  `.trim();
+
+  if (process.env.OPENAI_API_KEY) {
+    return requestStructuredSemanticJudgment({
+      instructions,
+      input
+    });
+  }
+
+  if (process.env.GROQ_API_KEY) {
+    return requestGroqSemanticJudgment({
+      instructions,
+      input
+    });
+  }
+
+  const error =
+    new Error("No AI provider available for semantic judgment.");
+  error.status = 503;
+  error.publicMessage =
+    "Semantic checking is temporarily unavailable.";
+  throw error;
+}
+
+
+async function requestStructuredSemanticJudgment({
+  instructions,
+  input
+}) {
+
+  const response =
+    await fetch(
+      OPENAI_URL,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization:
+            `Bearer ${process.env.OPENAI_API_KEY}`
+        },
+        body:
+          JSON.stringify({
+            model: DEFAULT_MODEL,
+            instructions,
+            input,
+            text: {
+              format: {
+                type: "json_schema",
+                name: "karangan_semantic_judgment",
+                strict: true,
+                schema: {
+                  type: "object",
+                  properties: {
+                    target_met: { type: "boolean" },
+                    meaning_preserved: { type: "boolean" },
+                    information_type: { type: "string" },
+                    semantic_class: {
+                      type: "string",
+                      enum: [
+                        "NATURAL",
+                        "POSSIBLE",
+                        "IMAGINATIVE",
+                        "ODD",
+                        "INVALID",
+                        "UNKNOWN"
+                      ]
+                    },
+                    language_issue: {
+                      type: ["string", "null"]
+                    },
+                    needs_clarification: {
+                      type: "boolean"
+                    },
+                    clarification_question: {
+                      type: "string"
+                    },
+                    confidence: {
+                      type: "number",
+                      minimum: 0,
+                      maximum: 1
+                    }
+                  },
+                  required: [
+                    "target_met",
+                    "meaning_preserved",
+                    "information_type",
+                    "semantic_class",
+                    "language_issue",
+                    "needs_clarification",
+                    "clarification_question",
+                    "confidence"
+                  ],
+                  additionalProperties: false
+                }
+              }
+            }
+          })
+      }
+    );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error(
+      "[OpenAI Semantic Judge Error]",
+      data
+    );
+
+    const error =
+      new Error(
+        data?.error?.message ||
+        "OpenAI semantic judgment failed."
+      );
+
+    error.status = response.status;
+    error.publicMessage =
+      "Semantic checking is temporarily unavailable.";
+    throw error;
+  }
+
+  const outputText =
+    extractResponseText(data);
+
+  if (!outputText) {
+    throw new Error(
+      "Empty semantic judgment output."
+    );
+  }
+
+  try {
+    return cleanSemanticJudgment(
+      JSON.parse(outputText)
+    );
+  } catch (error) {
+    console.error(
+      "[Semantic Judge JSON Parse Error]",
+      outputText
+    );
+    throw new Error(
+      "Invalid semantic judgment JSON."
+    );
+  }
+}
+
+
+async function requestGroqSemanticJudgment({
+  instructions,
+  input
+}) {
+
+  const response =
+    await fetch(
+      GROQ_URL,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization:
+            `Bearer ${process.env.GROQ_API_KEY}`
+        },
+        body:
+          JSON.stringify({
+            model:
+              await getGroqTranslationModel(),
+            temperature: 0,
+            response_format: {
+              type: "json_object"
+            },
+            messages: [
+              {
+                role: "system",
+                content:
+                  instructions +
+                  "\nBalas JSON sahaja. Jangan gunakan markdown."
+              },
+              {
+                role: "user",
+                content: input
+              }
+            ]
+          })
+      }
+    );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error(
+      "[Groq Semantic Judge Error]",
+      data
+    );
+    const error =
+      new Error(
+        data?.error?.message ||
+        "Groq semantic judgment failed."
+      );
+    error.status = response.status;
+    throw error;
+  }
+
+  const output =
+    String(
+      data?.choices?.[0]?.message?.content || ""
+    ).trim();
+
+  if (!output) {
+    throw new Error(
+      "Empty Groq semantic judgment output."
+    );
+  }
+
+  try {
+    return cleanSemanticJudgment(
+      JSON.parse(
+        output
+          .replace(/^```(?:json)?\s*/i, "")
+          .replace(/\s*```$/, "")
+      )
+    );
+  } catch (error) {
+    console.error(
+      "[Groq Semantic Judge JSON Parse Error]",
+      output
+    );
+    throw new Error(
+      "Invalid Groq semantic judgment JSON."
+    );
+  }
+}
+
+
+function cleanSemanticJudgment(result) {
+
+  const allowed =
+    new Set([
+      "NATURAL",
+      "POSSIBLE",
+      "IMAGINATIVE",
+      "ODD",
+      "INVALID",
+      "UNKNOWN"
+    ]);
+
+  let semanticClass =
+    String(
+      result?.semantic_class || "UNKNOWN"
+    ).toUpperCase();
+
+  if (!allowed.has(semanticClass)) {
+    semanticClass = "UNKNOWN";
+  }
+
+  const confidenceRaw =
+    Number(result?.confidence);
+
+  const confidence =
+    Number.isFinite(confidenceRaw)
+      ? Math.max(0, Math.min(1, confidenceRaw))
+      : 0;
+
+  return {
+    target_met:
+      result?.target_met === true,
+
+    meaning_preserved:
+      result?.meaning_preserved !== false,
+
+    information_type:
+      String(
+        result?.information_type || "UNKNOWN"
+      ).toUpperCase(),
+
+    semantic_class:
+      semanticClass,
+
+    language_issue:
+      result?.language_issue
+        ? String(result.language_issue).trim()
+        : null,
+
+    needs_clarification:
+      result?.needs_clarification === true,
+
+    clarification_question:
+      String(
+        result?.clarification_question || ""
+      ).trim(),
+
+    confidence
+  };
+}
+
+
+/* =========================================================
    STANDARD TEXT AI
    ========================================================= */
 
@@ -1316,5 +1720,5 @@ function extractResponseText(
 
 
 /* =========================================================
-   END KARANGAN AI API v4.3
+   END KARANGAN AI API v4.4
    ========================================================= */
