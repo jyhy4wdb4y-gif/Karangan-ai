@@ -1,7 +1,7 @@
 /* =========================================================
    KARANGAN AI
    API / AI CONTROLLER
-   Version 4.4 Semantic Judge
+   Version 4.4.1 Semantic Judge Failover
 
    Supports:
    - translate
@@ -1248,10 +1248,21 @@ telah menambah satu maklumat yang bermakna.
   `.trim();
 
   if (process.env.OPENAI_API_KEY) {
-    return requestStructuredSemanticJudgment({
-      instructions,
-      input
-    });
+    try {
+      return await requestStructuredSemanticJudgment({
+        instructions,
+        input
+      });
+    } catch (error) {
+      console.warn(
+        "[Semantic Judge] OpenAI failed; trying Groq fallback:",
+        error?.message || error
+      );
+
+      if (!process.env.GROQ_API_KEY) {
+        throw error;
+      }
+    }
   }
 
   if (process.env.GROQ_API_KEY) {
@@ -1720,5 +1731,5 @@ function extractResponseText(
 
 
 /* =========================================================
-   END KARANGAN AI API v4.4
+   END KARANGAN AI API v4.4.1
    ========================================================= */
