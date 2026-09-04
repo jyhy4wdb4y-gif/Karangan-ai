@@ -12824,7 +12824,7 @@ window.KaranganTranslationCache = {
    Additive integration. Langkah 2 & Langkah 3 are untouched.
    ========================================================= */
 (function(){
-  const L4_VERSION="13.3.2-SEMANTIC-ACTION-QA";
+  const L4_VERSION="13.3.3-ATOMIC-TRANSITION-RENDER";
   const CONTENT_VERSION="1.0_STABLE";
   const LEGACY_GRAMMAR=renderGrammarRain;
   const STATE_KEY="karangan_ai_l4_t1_v1";
@@ -13041,7 +13041,41 @@ window.KaranganTranslationCache = {
     else {const tag=level==="STANDARD"?"input":"textarea";const close=tag==="textarea"?`</textarea>`:"";const val=tag==="input"?`value="${esc(guidedDraft)}"`:"";const inner=tag==="textarea"?esc(guidedDraft):"";action=`<${tag} id="l4GuidedInput" ${val} ${tag==="textarea"?'rows="3"':''} class="l4-input" placeholder="Tulis ayat penuh yang lebih lengkap...">${inner}${close}<button id="l4GuidedCheck" data-l4-action="guided-check" class="l4-primary" style="margin-top:10px">✓ Semak Ayat</button>`;}
     shell(`<div class="l4-card l4-base"><div class="l4-label">🐣 Ayat Biasa</div><div class="l4-sentence">${esc(snap.base)}</div><div class="l4-question">🪄 ${esc(promptFor(t))}</div></div>${feedback(message)}<div class="l4-card"><div class="l4-label">${meta[0]} Magic Block · ${meta[1]}</div>${action}</div><button id="l4Hint" data-l4-action="hint" class="l4-secondary">🔊 Tanya Cikgu Aira</button>`,60,1);
   }
-  function upgrade(chosen,snapshot=activeExercise){const t=snapshot?.task||currentTask();const base=snapshot?.base||t.base;activeExercise=snapshot||l4FreezeExercise(t,"GUIDED",base);l4Transition("UPGRADE",{force:true});let full=String(chosen||"").trim();if(!/^[A-Z]/.test(full)||full.split(/\s+/).length<3)full=joinBase(t.base,full);shell(`<div class="l4-card"><div style="text-align:center"><div class="l4-spark">🪄✨</div><div class="l4-label">Ayat Magic berlaku!</div></div><div class="l4-transform" style="margin-top:16px"><div class="l4-card l4-base" style="margin:0"><div class="l4-label">🐣 Sebelum</div><div class="l4-sentence" style="font-size:21px">${esc(base)}</div></div><div class="l4-arrow">→</div><div class="l4-card l4-magic" style="margin:0"><div class="l4-label">✨ Selepas</div><div class="l4-sentence" style="font-size:22px">${esc(full)}</div></div></div><div class="l4-ai" style="margin-top:16px"><div class="l4-ai-face">🐣</div><div><div class="l4-ai-title">Hebat!</div><div>Kamu menambah maklumat yang membuat ayat lebih bermakna.</div></div></div></div><button id="l4TryOwn" data-l4-action="try-own" class="l4-primary">✍️ Sekarang Cuba Sendiri</button>`,72,2);}
+  function l4JoinBase(base,addition){
+    const b=String(base||"").trim();
+    const a=String(addition||"").trim();
+    if(!b)return a;
+    if(!a)return b;
+    const stem=b.replace(/[.!?]+$/,"").trim();
+    const joined=`${stem} ${a}`.replace(/\s+/g," ").trim();
+    return /[.!?]$/.test(joined)?joined:`${joined}.`;
+  }
+
+  function upgrade(chosen,snapshot=activeExercise){
+    const t=snapshot?.task||currentTask();
+    const base=snapshot?.base||t.base;
+    const nextExercise=snapshot||l4FreezeExercise(t,"GUIDED",base);
+
+    // PREPARE: finish all work that could fail before changing state.
+    let full=String(chosen||"").trim();
+    if(!/^[A-Z]/.test(full)||full.split(/\s+/).length<3){
+      full=l4JoinBase(base,full);
+    }
+
+    const body=`<div class="l4-card"><div style="text-align:center"><div class="l4-spark">🪄✨</div><div class="l4-label">Ayat Magic berlaku!</div></div><div class="l4-transform" style="margin-top:16px"><div class="l4-card l4-base" style="margin:0"><div class="l4-label">🐣 Sebelum</div><div class="l4-sentence" style="font-size:21px">${esc(base)}</div></div><div class="l4-arrow">→</div><div class="l4-card l4-magic" style="margin:0"><div class="l4-label">✨ Selepas</div><div class="l4-sentence" style="font-size:22px">${esc(full)}</div></div></div><div class="l4-ai" style="margin-top:16px"><div class="l4-ai-face">🐣</div><div><div class="l4-ai-title">Hebat!</div><div>Kamu menambah maklumat yang membuat ayat lebih bermakna.</div></div></div></div><button id="l4TryOwn" data-l4-action="try-own" class="l4-primary">✍️ Sekarang Cuba Sendiri</button>`;
+
+    // COMMIT: state + DOM only after preparation succeeded.
+    activeExercise=nextExercise;
+    if(!l4Transition("UPGRADE",{force:true}))return false;
+    shell(body,72,2);
+
+    // Runtime invariant: UPGRADE must render its canonical next action.
+    if(!document.querySelector('[data-l4-action="try-own"]')){
+      console.error("[L4 invariant] UPGRADE rendered without try-own action");
+      return false;
+    }
+    return true;
+  }
   function independent(message=""){
     l4Transition("INDEPENDENT",{force:true});
     const s=loadState();
@@ -13306,7 +13340,14 @@ window.KaranganTranslationCache = {
   function l4ClickGateway(e){
     const el=l4ResolveAction(e.target);
     if(!el)return;
-    l4Dispatch(el,e);
+    try{
+      l4Dispatch(el,e);
+    }catch(err){
+      console.error("[L4 action exception]",err);
+      l4SetBusy(false);
+      window.__L4_LAST_ACTION_ERROR__=String(err?.stack||err);
+      try{showToast("⚠️ Langkah 4 action error — QA telah merekodkan ralat.");}catch(_){}
+    }
   }
   /* =========================================================
      v13.3.2 AUTOMATED BEHAVIOR QA HARNESS
@@ -13400,6 +13441,7 @@ window.KaranganTranslationCache = {
     document.body.appendChild(box);box.querySelector("#l4QaClose")?.addEventListener("click",()=>box.remove(),{once:true});
   }
   async function l4RunAutomatedQA({visual=true}={}){
+    window.__L4_LAST_ACTION_ERROR__=null;
     const checks=[];const started=Date.now();
     const check=(name,pass,detail="")=>checks.push({name,pass:!!pass,detail:String(detail||"")});
     const originalStorage=localStorage.getItem(STATE_KEY);
@@ -13429,6 +13471,7 @@ window.KaranganTranslationCache = {
 
       l4QaClick("[data-l4-choice]");
       check("Choice after hint -> UPGRADE",l4Machine.phase==="UPGRADE",l4Machine.phase);
+      check("Choice action has no runtime exception",!window.__L4_LAST_ACTION_ERROR__,window.__L4_LAST_ACTION_ERROR__||"none");
       const stage2Ready=await l4QaWaitFor(()=>!!l4QaAction("try-own"));
       check("Stage 2 action renders",stage2Ready,stage2Ready?"try-own ready":l4QaDomEvidence());
       if(!stage2Ready)throw new Error("Stage 2 render contract failed after UPGRADE");
@@ -13519,5 +13562,5 @@ window.KaranganTranslationCache = {
   try{const saved=loadState();if(Number.isInteger(saved.lastTaskIndex))taskIndex=Math.max(0,Math.min(tasks.length-1,saved.lastTaskIndex));}catch(_){}
   document.addEventListener("click",l4ClickGateway,true);
   renderGrammarRain=start;
-  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v13.3.2-click-only-state-machine+semantic-action-QA",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null};
+  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v13.3.3-click-only-state-machine+atomic-transition-render-QA",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null};
 })();
