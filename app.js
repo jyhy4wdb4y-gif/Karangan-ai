@@ -12824,7 +12824,7 @@ window.KaranganTranslationCache = {
    Additive integration. Langkah 2 & Langkah 3 are untouched.
    ========================================================= */
 (function(){
-  const L4_VERSION="13.6.2-TARGETED-SMOKE";
+  const L4_VERSION="13.7.0-MASTERY-PROGRESS-UX";
   const CONTENT_VERSION="1.0_STABLE";
   const LEGACY_GRAMMAR=renderGrammarRain;
   const STATE_KEY="karangan_ai_l4_t1_v1";
@@ -12942,6 +12942,49 @@ window.KaranganTranslationCache = {
     return "OPEN";
   }
 
+
+  function l4SkillDisplay(skill){
+    const key=l4SkillKey({skill});
+    const map={
+      PLACE:["📍","Tempat"],
+      TIME:["⏰","Masa"],
+      COMPANION:["👫","Dengan siapa"],
+      DESCRIPTION:["🎨","Penerangan"],
+      INTENSITY:["✨","Penguatan"],
+      OPEN:["🪄","Maklumat baharu"],
+      OPEN_DYNAMIC:["🪄","Maklumat baharu"]
+    };
+    return map[key]||map.OPEN;
+  }
+
+  function l4MasteryStats(){
+    const s=loadState();
+    const evidence=Array.isArray(s.masteryEvidence)?s.masteryEvidence:[];
+    const counts={PLACE:0,TIME:0,COMPANION:0,DESCRIPTION:0,INTENSITY:0,OPEN:0};
+    for(const e of evidence){
+      let key=l4SkillKey({skill:e?.skill});
+      if(key==="OPEN_DYNAMIC")key="OPEN";
+      if(Object.prototype.hasOwnProperty.call(counts,key))counts[key]++;
+    }
+    const total=Object.values(counts).reduce((a,b)=>a+b,0);
+    const practiced=Object.values(counts).filter(n=>n>0).length;
+    return {counts,total,practiced,evidence};
+  }
+
+  function l4MasterySummaryHtml({compact=false}={}){
+    const {counts,total,practiced}=l4MasteryStats();
+    const order=["PLACE","TIME","COMPANION","DESCRIPTION","INTENSITY","OPEN"];
+    const chips=order.map(k=>{
+      const [icon,label]=l4SkillDisplay(k);
+      const n=counts[k]||0;
+      return `<div class="l4-mastery-chip ${n>0?"has":""}"><span>${icon}</span><span>${esc(label)}</span><strong>${n}</strong></div>`;
+    }).join("");
+    if(compact){
+      return `<div class="l4-progress-mini"><strong>🌟 Bukti penguasaan sendiri: ${total}</strong><span>${practiced}/6 kemahiran sudah ada bukti sendiri</span></div>`;
+    }
+    return `<div class="l4-card l4-mastery-card"><div class="l4-label">🌟 Kemajuan Saya</div><div class="l4-mastery-head"><strong>${total}</strong><span>bukti penguasaan sendiri</span></div><div class="l4-mastery-grid">${chips}</div><div class="l4-mastery-note">Hanya kejayaan tanpa petunjuk dikira sebagai bukti penguasaan sendiri.</div></div>`;
+  }
+
   function pickConnectedTransferBase(task){
     const key=l4SkillKey(task);
     const bank=L4_TRANSFER_BY_SKILL[key]||L4_TRANSFER_BY_SKILL.OPEN;
@@ -13024,12 +13067,14 @@ window.KaranganTranslationCache = {
     .l4-primary{touch-action:manipulation;pointer-events:auto;-webkit-tap-highlight-color:transparent;width:100%;border:0;border-radius:18px;padding:16px;font-size:17px;font-weight:950;background:linear-gradient(90deg,#ff9e3d,#ff7845);color:#fff;box-shadow:0 9px 18px rgba(255,126,63,.22)}.l4-secondary{touch-action:manipulation;pointer-events:auto;-webkit-tap-highlight-color:transparent;width:100%;border:0;border-radius:18px;padding:14px;font-size:16px;font-weight:900;background:#eef0f3;color:#334047}
     .l4-levels{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.l4-level{touch-action:manipulation;pointer-events:auto;-webkit-tap-highlight-color:transparent;border:2px solid #e5e7eb;border-radius:18px;padding:13px 8px;background:#fff;font-weight:900}.l4-level.active{border-color:#ffad49;background:#fff4df;color:#ce681b}
     .l4-transform{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center}.l4-arrow{font-size:34px}.l4-spark{font-size:54px;animation:l4pop .65s ease both}@keyframes l4pop{0%{transform:scale(.65) rotate(-12deg);opacity:0}70%{transform:scale(1.12) rotate(4deg)}100%{transform:scale(1);opacity:1}}
-    .l4-success{text-align:center;padding:24px 8px}.l4-success .emoji{font-size:76px}.l4-xp{display:inline-block;margin:12px 0;padding:10px 18px;border-radius:999px;background:#fff3d2;font-size:28px;font-weight:950;color:#9b6512}.l4-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.l4-version{margin-top:18px;color:#92999d;font-size:12px;text-align:center}
+    .l4-success{text-align:center;padding:24px 8px}.l4-success .emoji{font-size:76px}.l4-xp{display:inline-block;margin:12px 0;padding:10px 18px;border-radius:999px;background:#fff3d2;font-size:22px;font-weight:950;color:#9b6512}.l4-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.l4-version{margin-top:18px;color:#92999d;font-size:12px;text-align:center}
+    .l4-progress-mini{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:12px 0 14px;padding:12px 14px;border-radius:16px;background:#f7f8fb;color:#48535b;font-size:13px}.l4-progress-mini strong{font-size:14px;color:#26343c}.l4-progress-mini span{text-align:right}
+    .l4-mastery-card{text-align:left}.l4-mastery-head{display:flex;align-items:baseline;gap:8px;margin:8px 0 12px}.l4-mastery-head strong{font-size:34px;color:#9b6512}.l4-mastery-head span{font-weight:800;color:#667178}.l4-mastery-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.l4-mastery-chip{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;padding:9px 10px;border:1px solid #e7e9ee;border-radius:14px;background:#fafbfc;color:#667178;font-size:13px}.l4-mastery-chip.has{background:#fff8e9;border-color:#ffd18a;color:#3d464c}.l4-mastery-chip strong{font-size:16px;color:#9b6512}.l4-mastery-note{margin-top:10px;font-size:12px;color:#7b848a}
     @media(max-width:620px){.l4-transform{grid-template-columns:1fr}.l4-arrow{transform:rotate(90deg)}.l4-levels,.l4-actions{grid-template-columns:1fr}.l4-card{padding:17px}}
   </style>`;}
   function shell(body,progress=60,active=1){openModuleScreen(`${l4Styles()}<div class="l4-wrap"><div class="l4-kicker">LANGKAH 4 · TAHUN 1</div><div class="l4-title">✨ Kembangkan Ayat</div><p class="l4-sub">Tambah satu maklumat yang menjadikan ayat lebih bermakna.</p><div class="l4-meter"><div class="l4-step ${active>=1?'on':''}">1 · Faham</div><div class="l4-step ${active>=2?'on':''}">2 · Magic</div><div class="l4-step ${active>=3?'on':''}">3 · Cuba Sendiri</div></div>${body}<div class="l4-version">v${L4_VERSION} · Content ${CONTENT_VERSION}</div></div>`,progress);}
   function feedback(m){return m?`<div class="l4-ai"><div class="l4-ai-face">🐣</div><div><div class="l4-ai-title">Cikgu Aira</div><div>${esc(m)}</div></div></div>`:"";}
-  function start(){l4Transition("START",{force:true});l4ResetCycle();draft="";guidedDraft="";shell(`<div class="l4-hero"><div class="l4-spark">🪄</div><h2 style="margin:4px 0 6px">Misi Ayat Magic</h2><p style="margin:0;color:#626d74">Tukar ayat biasa menjadi ayat yang lebih bermakna dengan <strong>satu maklumat</strong>.</p></div><div class="l4-card"><div class="l4-label">Pilih cara belajar</div><div class="l4-levels" style="margin-top:12px"><button data-l4-level="ASAS" class="l4-level ${level==='ASAS'?'active':''}">🌱 Asas<br><small>Pilih bantuan</small></button><button data-l4-level="STANDARD" class="l4-level ${level==='STANDARD'?'active':''}">🌿 Standard<br><small>Tulis sendiri</small></button><button data-l4-level="LANJUTAN" class="l4-level ${level==='LANJUTAN'?'active':''}">⭐ Lanjutan<br><small>Lebih bebas</small></button></div></div><button id="l4Begin" data-l4-action="begin" class="l4-primary">Mula Ayat Magic →</button>`,50,1);}
+  function start(){l4Transition("START",{force:true});l4ResetCycle();draft="";guidedDraft="";shell(`<div class="l4-hero"><div class="l4-spark">🪄</div><h2 style="margin:4px 0 6px">Misi Ayat Magic</h2><p style="margin:0;color:#626d74">Tukar ayat biasa menjadi ayat yang lebih bermakna dengan <strong>satu maklumat</strong>.</p></div>${l4MasterySummaryHtml({compact:true})}<div class="l4-card"><div class="l4-label">Pilih cara belajar</div><div class="l4-levels" style="margin-top:12px"><button data-l4-level="ASAS" class="l4-level ${level==='ASAS'?'active':''}">🌱 Asas<br><small>Pilih bantuan</small></button><button data-l4-level="STANDARD" class="l4-level ${level==='STANDARD'?'active':''}">🌿 Standard<br><small>Tulis sendiri</small></button><button data-l4-level="LANJUTAN" class="l4-level ${level==='LANJUTAN'?'active':''}">⭐ Lanjutan<br><small>Lebih bebas</small></button></div></div><button id="l4Begin" data-l4-action="begin" class="l4-primary">Mula Ayat Magic →</button>`,50,1);}
   function promptFor(t){if(level!=="LANJUTAN")return t.q;if(t.skill==="PLACE")return "Tulis semula ayat penuh dan tambah satu tempat.";if(t.skill==="TIME")return "Tulis semula ayat penuh dan tambah satu masa.";if(t.skill==="COMPANION")return "Tulis semula ayat penuh dan nyatakan dengan siapa.";if(t.skill==="DESCRIPTION")return "Tulis semula ayat penuh dan tambah satu penerangan yang sesuai.";if(t.skill==="INTENSITY")return "Tulis semula ayat penuh dan kuatkan perasaan itu.";return "Tulis semula ayat penuh dan tambah satu maklumat yang sesuai.";}
   function guided(message=""){
     l4Transition("GUIDED",{force:true});
@@ -13721,7 +13766,16 @@ window.KaranganTranslationCache = {
     }
     saveState(patch);
   }
-  function success(independentEvidence=true,judge=null){l4Transition("SUCCESS",{force:true});l4SetBusy(false);const evidenceNote=independentEvidence?"<div class=\"l4-xp\">⭐ Independent mastery evidence +1</div>":"<div class=\"l4-ai\" style=\"margin-top:12px;text-align:left\"><div class=\"l4-ai-face\">🌱</div><div><div class=\"l4-ai-title\">Latihan berjaya</div><div>Kamu berjaya selepas menggunakan bantuan. Ini dikira sebagai pembelajaran, belum sebagai bukti penguasaan sendiri.</div></div></div>";shell(`<div class="l4-success"><div class="emoji">🎉</div><h1 style="margin:4px 0">Hebat!</h1><p>Kamu berjaya <strong>kembangkan ayat</strong>.</p>${evidenceNote}<div class="l4-ai" style="text-align:left"><div class="l4-ai-face">🐣</div><div><div class="l4-ai-title">Cikgu Aira</div><div>${judge?.appropriateness==="IMAGINATIVE"?"Idea imaginasi kamu diterima kerana maksud ayat masih jelas.":"Kamu mengekalkan maksud dan memenuhi kemahiran sasaran."}</div></div></div></div><div class="l4-actions"><button id="l4Next" data-l4-action="next" class="l4-primary">Cabar Ayat Seterusnya</button><button id="l4Finish" data-l4-action="finish" class="l4-secondary">Selesai ✓</button></div>`,100,3);}
+  function success(independentEvidence=true,judge=null){
+    l4Transition("SUCCESS",{force:true});l4SetBusy(false);
+    const evidenceNote=independentEvidence
+      ?`<span style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden">Independent mastery evidence +1</span><div class="l4-xp">⭐ Bukti penguasaan sendiri +1</div>`
+      :`<div class="l4-ai" style="margin-top:12px;text-align:left"><div class="l4-ai-face">🌱</div><div><div class="l4-ai-title">Latihan berjaya</div><div>Kamu berjaya selepas menggunakan bantuan. Ini dikira sebagai pembelajaran, tetapi belum sebagai bukti penguasaan sendiri.</div></div></div>`;
+    const teacherNote=judge?.appropriateness==="IMAGINATIVE"
+      ?"Idea imaginasi kamu diterima kerana maksud ayat masih jelas."
+      :"Kamu mengekalkan maksud dan memenuhi kemahiran sasaran.";
+    shell(`<div class="l4-success"><div class="emoji">🎉</div><h1 style="margin:4px 0">Hebat!</h1><p>Kamu berjaya <strong>kembangkan ayat</strong>.</p>${evidenceNote}<div class="l4-ai" style="text-align:left"><div class="l4-ai-face">🐣</div><div><div class="l4-ai-title">Cikgu Aira</div><div>${teacherNote}</div></div></div>${l4MasterySummaryHtml()}<div class="l4-actions"><button id="l4Next" data-l4-action="next" class="l4-primary">Cabar Ayat Seterusnya</button><button id="l4Finish" data-l4-action="finish" class="l4-secondary">Selesai ✓</button></div></div>`,100,3);
+  }
   // v13.2.1 State Machine Event Gateway
   // Exactly ONE native activation path: click.
   // iPad/iPhone taps synthesize one click; keyboard activation on <button> also clicks natively.
@@ -14124,5 +14178,5 @@ window.KaranganTranslationCache = {
     return report;
   }
 
-  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v13.6.2-click-only-state-machine+targeted-production-smoke",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null,runTeachingSimulation:l4RunTeachingSimulation,lastTeachingSimulation:()=>window.__KARANGAN_L4_LAST_SIM__||null,runLiveAIBenchmark:l4RunLiveAIBenchmark,lastLiveAIBenchmark:()=>window.__KARANGAN_L4_LAST_LIVE_BENCH__||null,runTargetedSmoke:l4RunTargetedSmoke,lastTargetedSmoke:()=>window.__KARANGAN_L4_LAST_SMOKE__||null,runPredeploymentLab:l4RunPredeploymentLab,lastPredeploymentLab:()=>window.__KARANGAN_L4_LAST_PREDEPLOY_LAB__||null};
+  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v13.7.0-click-only-state-machine+mastery-progress-ux",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMasteryStats:l4MasteryStats,getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null,runTeachingSimulation:l4RunTeachingSimulation,lastTeachingSimulation:()=>window.__KARANGAN_L4_LAST_SIM__||null,runLiveAIBenchmark:l4RunLiveAIBenchmark,lastLiveAIBenchmark:()=>window.__KARANGAN_L4_LAST_LIVE_BENCH__||null,runTargetedSmoke:l4RunTargetedSmoke,lastTargetedSmoke:()=>window.__KARANGAN_L4_LAST_SMOKE__||null,runPredeploymentLab:l4RunPredeploymentLab,lastPredeploymentLab:()=>window.__KARANGAN_L4_LAST_PREDEPLOY_LAB__||null};
 })();
