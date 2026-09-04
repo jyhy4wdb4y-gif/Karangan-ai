@@ -1,7 +1,7 @@
 /* =========================================================
    KARANGAN AI
    API / AI CONTROLLER
-   Version 4.4.2 Semantic Judge Calibration
+   Version 4.4.3 Meaning-First Judge
 
    Supports:
    - translate
@@ -1217,24 +1217,34 @@ Konteks:
 PRINSIP WAJIB:
 1. Jangan padankan jawapan dengan model answer.
 2. Perkataan murid TIDAK perlu wujud dalam kosa kata Karangan AI.
-3. Nilai maksud ayat dalam konteks Bahasa Melayu Malaysia.
-4. Jawapan yang luar biasa tetapi masih mungkin bukan salah.
-5. Ayat imaginatif boleh diterima jika bermakna dalam konteks imaginasi.
-6. ODD bermaksud meragukan/ganjil tetapi tidak pasti salah.
-7. INVALID hanya jika sasaran tidak dipenuhi atau maklumat tambahan benar-benar tidak masuk akal.
+3. GUNAKAN PRINSIP MEANING-FIRST. Soalan utama ialah:
+   "Adakah ayat murid membentuk maksud Bahasa Melayu yang boleh difahami?"
+   Jangan tanya dahulu sama ada situasi itu biasa atau lazim.
+4. Jika struktur semantik betul dan maklumat tambahan boleh difahami, target_met=true.
+   Tempat TIDAK perlu menjadi tempat belajar/membaca/bermain yang biasa.
+5. Bezakan kategori berikut:
+   NATURAL = biasa dan jelas dalam dunia sebenar.
+   POSSIBLE = kurang biasa tetapi masih boleh berlaku atau mudah dibayangkan dalam dunia sebenar.
+   IMAGINATIVE = makna bahasa jelas tetapi situasi lebih sesuai dalam cerita/fantasi/imaginasi.
+   ODD = maksud mungkin ada tetapi benar-benar kabur dan memerlukan penjelasan murid.
+   INVALID = gabungan perkataan gagal membentuk hubungan semantik yang diminta.
+   UNKNOWN = perkataan/nama tidak cukup dikenali untuk dinilai dengan yakin.
+6. Contoh kalibrasi WAJIB:
+   "Adik belajar di sekolah." => NATURAL, target_met=true.
+   "Adik belajar di hutan." => POSSIBLE, target_met=true.
+   "Ayah membaca di pusat hiburan." => POSSIBLE, target_met=true.
+   "Ayah membaca di langit." => IMAGINATIVE, target_met=true.
+   "Adik bermain di bulan." => IMAGINATIVE, target_met=true.
+   "Saya membaca di kapal angkasa." => IMAGINATIVE atau POSSIBLE mengikut konteks, target_met=true.
+   "Ayah membaca di rajin." => INVALID, target_met=false.
+   "Ayah membaca di cantik." => INVALID, target_met=false.
+7. Jangan menolak ayat hanya kerana lokasi/keadaan tidak lazim untuk aktiviti itu.
 8. Jika nama tempat/perkataan tidak dikenali, gunakan UNKNOWN dan minta penjelasan; jangan mereka-reka.
 9. Jangan menghukum kreativiti murid.
-10. Bezakan "mustahil dalam dunia sebenar" daripada "tidak bermakna dari segi bahasa".
-    Jika ayat mempunyai struktur dan makna yang jelas tetapi hanya sesuai dalam cerita fantasi,
-    klasifikasikan sebagai IMAGINATIVE, BUKAN INVALID.
-    Contoh konsep: membaca di langit, bermain di bulan, belajar di kapal angkasa boleh menjadi IMAGINATIVE.
-11. INVALID hanya untuk gabungan yang gagal membentuk makna yang sesuai, contohnya tempat diisi
-    dengan sifat seperti "di rajin" atau "di cantik", atau sasaran pengembangan langsung tidak dipenuhi.
-12. Tempat yang luar biasa tetapi secara fizikal/keadaan masih boleh berlaku boleh menjadi POSSIBLE.
-13. language_issue hanya SATU pembetulan penting. Tulis pembetulan itu dalam Bahasa Melayu yang
+10. language_issue hanya SATU pembetulan penting. Tulis pembetulan itu dalam Bahasa Melayu yang
     ringkas dan mesra murid Tahun 1. JANGAN gunakan bahasa Inggeris.
     Contoh: "Cuba tulis ‘di’ dengan huruf kecil."
-14. Jangan tentukan mastered, XP, level atau curriculum status.
+11. Jangan tentukan mastered, XP, level atau curriculum status.
 
 semantic_class mesti salah satu:
 NATURAL, POSSIBLE, IMAGINATIVE, ODD, INVALID, UNKNOWN.
@@ -1740,5 +1750,5 @@ function extractResponseText(
 
 
 /* =========================================================
-   END KARANGAN AI API v4.4.2
+   END KARANGAN AI API v4.4.3
    ========================================================= */
