@@ -12824,7 +12824,7 @@ window.KaranganTranslationCache = {
    Additive integration. Langkah 2 & Langkah 3 are untouched.
    ========================================================= */
 (function(){
-  const L4_VERSION="12.14.1";
+  const L4_VERSION="12.14.2";
   const CONTENT_VERSION="1.0_STABLE";
   const LEGACY_GRAMMAR=renderGrammarRain;
   const STATE_KEY="karangan_ai_l4_t1_v1";
@@ -12910,7 +12910,7 @@ window.KaranganTranslationCache = {
   };
 
   function l4SkillKey(task){
-    const raw=String(task?.type||"").toUpperCase();
+    const raw=String(task?.skill||task?.type||"").toUpperCase();
     if(raw==="TEMPAT") return "PLACE";
     if(raw==="MASA") return "TIME";
     if(raw==="BERSAMA") return "COMPANION";
@@ -12993,7 +12993,12 @@ window.KaranganTranslationCache = {
     shell(`<div class="l4-card l4-base"><div class="l4-label">🐣 Ayat Biasa</div><div class="l4-sentence">${esc(t.base)}</div><div class="l4-question"><span style="margin-right:6px">${meta[0]}</span>${esc(promptFor(t))}</div></div>${feedback(message)}<div class="l4-card"><div class="l4-label">${meta[0]} Magic Block · ${meta[1]}</div>${action}</div><button id="l4Hint" class="l4-secondary">🔊 Tanya Cikgu Aira</button>`,60,1);}
   function joinBase(base,addition){return base.replace(/[.!?]$/,'')+" "+addition.replace(/[.!?]$/,'')+".";}
   function upgrade(chosen){const t=currentTask();stage="UPGRADE";let full=String(chosen||"").trim();if(!/^[A-Z]/.test(full)||full.split(/\s+/).length<3)full=joinBase(t.base,full);shell(`<div class="l4-card"><div style="text-align:center"><div class="l4-spark">🪄✨</div><div class="l4-label">Ayat Magic berlaku!</div></div><div class="l4-transform" style="margin-top:16px"><div class="l4-card l4-base" style="margin:0"><div class="l4-label">🐣 Sebelum</div><div class="l4-sentence" style="font-size:21px">${esc(t.base)}</div></div><div class="l4-arrow">→</div><div class="l4-card l4-magic" style="margin:0"><div class="l4-label">✨ Selepas</div><div class="l4-sentence" style="font-size:22px">${esc(full)}</div></div></div><div class="l4-ai" style="margin-top:16px"><div class="l4-ai-face">🐣</div><div><div class="l4-ai-title">Hebat!</div><div>Kamu menambah maklumat yang membuat ayat lebih bermakna.</div></div></div></div><button id="l4TryOwn" class="l4-primary">✍️ Sekarang Cuba Sendiri</button>`,72,2);}
-  function independent(message=""){stage="INDEPENDENT";const base=pickTransferBase();saveState({currentIndependentBase:base});independentRender(base,message);}
+  function independent(message=""){
+    stage="INDEPENDENT";
+    const s=loadState();
+    const base=s.currentIndependentBase||pickConnectedTransferBase(currentTask());
+    independentRender(base,message);
+  }
   function independentRender(base,message=""){stage="INDEPENDENT";shell(`<div class="l4-card l4-base"><div class="l4-label">🎯 Giliran Kamu</div><p style="margin:7px 0;color:#5f6970">${l4IndependentSkillPrompt(currentTask())}</p><div class="l4-sentence">${esc(base)}</div></div>${feedback(message)}<div class="l4-card"><div class="l4-label">✍️ Ayat Magic Saya</div><textarea id="l4Draft" rows="3" class="l4-input" style="margin-top:10px" placeholder="Tulis ayat penuh kamu...">${esc(draft)}</textarea><button id="l4OwnCheck" class="l4-primary" style="margin-top:10px">✓ Semak Ayat Saya</button></div><button id="l4Hint" class="l4-secondary">🔊 Tanya Cikgu Aira</button>`,84,3);}
   function expansionInfo(base,answer){const b=String(base||"").toLowerCase().replace(/[.!?]/g,"").trim(),a=String(answer||"").toLowerCase().replace(/[.!?]/g,"").trim();return {basePreserved:a.includes(b),added:a.length>b.length+2,hasMarker:/\b(di|bersama|dengan|pada|dan|sangat)\b/i.test(a)};}
 
@@ -13138,10 +13143,16 @@ window.KaranganTranslationCache = {
   function recordSuccess(kind,base){const s=loadState(),history=Array.isArray(s.history)?s.history:[];history.push({taskId:currentTask().id,skill:currentTask().skill,kind,level,hintUsed:hint,hint3:guidedHint3,base,at:Date.now()});saveState({history:history.slice(-100),lastTaskIndex:taskIndex});}
   function success(){stage="SUCCESS";shell(`<div class="l4-success"><div class="emoji">🎉</div><h1 style="margin:4px 0">Hebat!</h1><p>Kamu berjaya <strong>kembangkan ayat sendiri</strong>.</p><div class="l4-xp">⭐ +10 XP</div><div class="l4-ai" style="text-align:left"><div class="l4-ai-face">🐣</div><div><div class="l4-ai-title">Cikgu Aira</div><div>Saya bangga kerana kamu cuba sendiri.</div></div></div></div><div class="l4-actions"><button id="l4Next" class="l4-primary">Cabar Ayat Seterusnya</button><button id="l4Finish" class="l4-secondary">Selesai ✓</button></div>`,100,3);}
   function checkGuided(){const t=currentTask(),el=byId("l4GuidedInput"),v=(el?.value||guidedDraft||"").trim();guidedDraft=v;if(!v){guided("Cuba tulis jawapan kamu dahulu.");return;}if(v.split(/\s+/).length<3){guided("Hampir betul! Jangan tulis maklumat sahaja. Cuba lengkapkan seluruh ayat.");return;}if(!/^[A-Z]/.test(v)){guided("Bagus! Cuba mula ayat dengan huruf besar.");return;}if(!/[.!?]$/.test(v)){guided("Ayat kamu hampir siap. Tambah tanda noktah di hujung.");return;}const info=expansionInfo(t.base,v);if(!info.basePreserved||!info.added){guided("Kekalkan ayat asal dan tambah satu maklumat yang sesuai.");return;}recordSuccess(guidedHint3?"GUIDED_SUCCESS":"GUIDED_INDEPENDENT",t.base);upgrade(v);}
-  let last=0;function action(e){const el=e.target.closest?.("#l4Begin,#l4Hint,#l4GuidedCheck,#l4TryOwn,#l4OwnCheck,#l4Next,#l4Finish,[data-l4-level],[data-l4-choice]");if(!el)return;const now=Date.now();if(now-last<320)return;last=now;e.preventDefault();e.stopPropagation();if(el.dataset?.l4Level){level=el.dataset.l4Level;start();return;}if(el.id==="l4Begin"){guidedDraft="";guided();return;}if(el.id==="l4Hint"){hintText();return;}if(el.dataset?.l4Choice){recordSuccess("GUIDED_CHOICE",currentTask().base);upgrade(el.dataset.l4Choice);return;}if(el.id==="l4GuidedCheck"){checkGuided();return;}if(el.id==="l4TryOwn"){draft="";saveState({currentIndependentBase:null,currentIndependentSkill:null});pickConnectedTransferBase(currentTask());independent();return;}if(el.id==="l4OwnCheck"){checkOwn();return;}if(el.id==="l4Next"){taskIndex=(taskIndex+1)%tasks.length;saveState({lastTaskIndex:taskIndex});draft="";guidedDraft="";guided();return;}if(el.id==="l4Finish"){try{completeMission("grammar-rain");}catch(_){}shell(`<div style="text-align:center;padding:24px"><div style="font-size:70px">🏆</div><h1>Misi Hari Ini Selesai!</h1><p>Kamu sudah belajar menjadikan ayat lebih lengkap.</p></div>`,100);return;}}
+  let last=0;function action(e){const el=e.target.closest?.("#l4Begin,#l4Hint,#l4GuidedCheck,#l4TryOwn,#l4OwnCheck,#l4Next,#l4Finish,[data-l4-level],[data-l4-choice]");if(!el)return;const now=Date.now();if(now-last<320)return;last=now;e.preventDefault();e.stopPropagation();if(el.dataset?.l4Level){level=el.dataset.l4Level;start();return;}if(el.id==="l4Begin"){guidedDraft="";guided();return;}if(el.id==="l4Hint"){hintText();return;}if(el.dataset?.l4Choice){recordSuccess("GUIDED_CHOICE",currentTask().base);upgrade(el.dataset.l4Choice);return;}if(el.id==="l4GuidedCheck"){checkGuided();return;}if(el.id==="l4TryOwn"){
+      draft="";
+      saveState({currentIndependentBase:null,currentIndependentSkill:null});
+      const connectedBase=pickConnectedTransferBase(currentTask());
+      independentRender(connectedBase);
+      return;
+    }if(el.id==="l4OwnCheck"){checkOwn();return;}if(el.id==="l4Next"){taskIndex=(taskIndex+1)%tasks.length;saveState({lastTaskIndex:taskIndex});draft="";guidedDraft="";guided();return;}if(el.id==="l4Finish"){try{completeMission("grammar-rain");}catch(_){}shell(`<div style="text-align:center;padding:24px"><div style="font-size:70px">🏆</div><h1>Misi Hari Ini Selesai!</h1><p>Kamu sudah belajar menjadikan ayat lebih lengkap.</p></div>`,100);return;}}
   let l4OwnCheckLast=0;function l4OwnCheckSafe(e){const target=e.target,btn=(target&&target.id==="l4OwnCheck")?target:target?.closest?.("#l4OwnCheck");if(!btn)return;const now=Date.now();if(now-l4OwnCheckLast<350)return;l4OwnCheckLast=now;try{e.preventDefault();e.stopPropagation();const ta=document.getElementById("l4Draft");if(ta)draft=String(ta.value||"").trim();btn.disabled=true;btn.textContent="⏳ Sedang semak...";checkOwn();}catch(err){console.error("[L4 Semak Ayat]",err);try{btn.disabled=false;btn.textContent="✓ Semak Ayat Saya";}catch(_){}try{showToast("Cuba tekan Semak Ayat sekali lagi.");}catch(_){}}}
   try{const saved=loadState();if(Number.isInteger(saved.lastTaskIndex))taskIndex=Math.max(0,Math.min(tasks.length-1,saved.lastTaskIndex));}catch(_){}
   document.addEventListener("pointerup",l4OwnCheckSafe,true);document.addEventListener("touchend",l4OwnCheckSafe,true);document.addEventListener("click",l4OwnCheckSafe,true);document.addEventListener("pointerup",action,true);document.addEventListener("click",action,true);
   renderGrammarRain=start;
-  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"v1.1-safe-fast-path",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState};
+  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"v1.1-safe-fast-path",connectedTransfer:"v1.1-fixed",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState};
 })();

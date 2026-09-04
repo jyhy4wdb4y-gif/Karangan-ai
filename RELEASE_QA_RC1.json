@@ -1,0 +1,3667 @@
+{
+  "release_candidate": "Karangan AI Langkah 4 RC1",
+  "frontend": "v12.14.2",
+  "backend": "API v4.7.0",
+  "result": "PASS",
+  "release_gate": {
+    "frontend_syntax": true,
+    "backend_syntax": true,
+    "frontend_contracts": true,
+    "backend_contracts": true,
+    "all_20_tasks_found": true,
+    "all_20_connected": true,
+    "500_case_matrix_built": true
+  },
+  "frontend_checks": {
+    "version": true,
+    "connected_metadata": true,
+    "skill_field": true,
+    "no_legacy_independent_random": true,
+    "connected_picker": true,
+    "semantic_fast_path": true,
+    "ipad_pointerup": true,
+    "ipad_click": true,
+    "l3_draft_preserved": true
+  },
+  "backend_checks": {
+    "semantic_route": true,
+    "groq_failover": true,
+    "hard_gate": true,
+    "meaning_priority": true,
+    "no_ghostwrite": true,
+    "makan_tahi_block": true,
+    "hutan_pass": true,
+    "langit_pass": true,
+    "bm_only": true
+  },
+  "task_flow_checks": [
+    {
+      "task_id": "L4-T1-001",
+      "skill": "PLACE",
+      "bank_size": 5,
+      "pass": true
+    },
+    {
+      "task_id": "L4-T1-002",
+      "skill": "PLACE",
+      "bank_size": 5,
+      "pass": true
+    },
+    {
+      "task_id": "L4-T1-003",
+      "skill": "PLACE",
+      "bank_size": 5,
+      "pass": true
+    },
+    {
+      "task_id": "L4-T1-004",
+      "skill": "PLACE",
+      "bank_size": 5,
+      "pass": true
+    },
+    {
+      "task_id": "L4-T1-005",
+      "skill": "PLACE",
+      "bank_size": 5,
+      "pass": true
+    },
+    {
+      "task_id": "L4-T1-006",
+      "skill": "TIME",
+      "bank_size": 5,
+      "pass": true
+    },
+    {
+      "task_id": "L4-T1-007",
+      "skill": "TIME",
+      "bank_size": 5,
+      "pass": true
+    },
+    {
+      "task_id": "L4-T1-008",
+      "skill": "TIME",
+      "bank_size": 5,
+      "pass": true
+    },
+    {
+      "task_id": "L4-T1-009",
+      "skill": "TIME",
+      "bank_size": 5,
+      "pass": true
+    },
+    {
+      "task_id": "L4-T1-010",
+      "skill": "COMPANION",
+      "bank_size": 5,
+      "pass": true
+    },
+    {
+      "task_id": "L4-T1-011",
+      "skill": "COMPANION",
+      "bank_size": 5,
+      "pass": true
+    },
+    {
+      "task_id": "L4-T1-012",
+      "skill": "COMPANION",
+      "bank_size": 5,
+      "pass": true
+    },
+    {
+      "task_id": "L4-T1-013",
+      "skill": "COMPANION",
+      "bank_size": 5,
+      "pass": true
+    },
+    {
+      "task_id": "L4-T1-014",
+      "skill": "DESCRIPTION",
+      "bank_size": 5,
+      "pass": true
+    },
+    {
+      "task_id": "L4-T1-015",
+      "skill": "DESCRIPTION",
+      "bank_size": 5,
+      "pass": true
+    },
+    {
+      "task_id": "L4-T1-016",
+      "skill": "INTENSITY",
+      "bank_size": 5,
+      "pass": true
+    },
+    {
+      "task_id": "L4-T1-017",
+      "skill": "DESCRIPTION",
+      "bank_size": 5,
+      "pass": true
+    },
+    {
+      "task_id": "L4-T1-018",
+      "skill": "OPEN",
+      "bank_size": 5,
+      "pass": true
+    },
+    {
+      "task_id": "L4-T1-019",
+      "skill": "OPEN",
+      "bank_size": 5,
+      "pass": true
+    },
+    {
+      "task_id": "L4-T1-020",
+      "skill": "OPEN_DYNAMIC",
+      "bank_size": 5,
+      "pass": true
+    }
+  ],
+  "regression_case_count": 500,
+  "regression_matrix": [
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya makan nasi di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-001"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya makan nasi di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-002"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya makan nasi di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-003"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya makan nasi di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-004"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya makan nasi di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-005"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya makan nasi di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-006"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya makan nasi di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-007"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya makan nasi di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-008"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya makan nasi di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-009"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya makan roti di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-010"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya makan roti di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-011"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya makan roti di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-012"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya makan roti di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-013"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya makan roti di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-014"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya makan roti di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-015"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya makan roti di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-016"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya makan roti di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-017"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya makan roti di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-018"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya minum air di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-019"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya minum air di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-020"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya minum air di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-021"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya minum air di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-022"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya minum air di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-023"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya minum air di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-024"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya minum air di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-025"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya minum air di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-026"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya minum air di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-027"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya minum susu di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-028"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya minum susu di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-029"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya minum susu di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-030"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya minum susu di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-031"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya minum susu di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-032"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya minum susu di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-033"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya minum susu di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-034"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya minum susu di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-035"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya minum susu di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-036"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya membaca buku di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-037"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya membaca buku di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-038"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya membaca buku di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-039"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya membaca buku di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-040"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya membaca buku di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-041"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya membaca buku di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-042"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya membaca buku di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-043"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya membaca buku di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-044"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya membaca buku di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-045"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya membaca cerita di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-046"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya membaca cerita di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-047"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya membaca cerita di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-048"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya membaca cerita di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-049"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya membaca cerita di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-050"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya membaca cerita di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-051"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya membaca cerita di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-052"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya membaca cerita di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-053"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya membaca cerita di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-054"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya mengemas bilik di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-055"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya mengemas bilik di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-056"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya mengemas bilik di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-057"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya mengemas bilik di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-058"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya mengemas bilik di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-059"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya mengemas bilik di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-060"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya mengemas bilik di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-061"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya mengemas bilik di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-062"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya mengemas bilik di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-063"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya mengemas rumah di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-064"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya mengemas rumah di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-065"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya mengemas rumah di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-066"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya mengemas rumah di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-067"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya mengemas rumah di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-068"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya mengemas rumah di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-069"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya mengemas rumah di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-070"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya mengemas rumah di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-071"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya mengemas rumah di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-072"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya menulis ayat di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-073"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya menulis ayat di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-074"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya menulis ayat di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-075"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya menulis ayat di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-076"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya menulis ayat di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-077"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya menulis ayat di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-078"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya menulis ayat di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-079"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya menulis ayat di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-080"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya menulis ayat di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-081"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya menulis cerita di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-082"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya menulis cerita di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-083"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya menulis cerita di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-084"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya menulis cerita di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-085"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya menulis cerita di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-086"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya menulis cerita di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-087"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Saya menulis cerita di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-088"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Saya menulis cerita di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-089"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "saya menulis cerita di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-090"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu makan nasi di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-091"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu makan nasi di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-092"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu makan nasi di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-093"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu makan nasi di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-094"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu makan nasi di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-095"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu makan nasi di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-096"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu makan nasi di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-097"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu makan nasi di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-098"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu makan nasi di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-099"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu makan roti di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-100"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu makan roti di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-101"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu makan roti di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-102"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu makan roti di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-103"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu makan roti di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-104"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu makan roti di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-105"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu makan roti di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-106"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu makan roti di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-107"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu makan roti di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-108"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu minum air di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-109"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu minum air di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-110"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu minum air di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-111"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu minum air di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-112"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu minum air di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-113"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu minum air di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-114"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu minum air di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-115"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu minum air di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-116"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu minum air di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-117"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu minum susu di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-118"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu minum susu di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-119"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu minum susu di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-120"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu minum susu di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-121"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu minum susu di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-122"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu minum susu di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-123"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu minum susu di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-124"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu minum susu di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-125"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu minum susu di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-126"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu membaca buku di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-127"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu membaca buku di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-128"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu membaca buku di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-129"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu membaca buku di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-130"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu membaca buku di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-131"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu membaca buku di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-132"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu membaca buku di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-133"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu membaca buku di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-134"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu membaca buku di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-135"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu membaca cerita di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-136"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu membaca cerita di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-137"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu membaca cerita di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-138"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu membaca cerita di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-139"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu membaca cerita di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-140"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu membaca cerita di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-141"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu membaca cerita di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-142"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu membaca cerita di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-143"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu membaca cerita di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-144"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu mengemas bilik di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-145"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu mengemas bilik di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-146"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu mengemas bilik di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-147"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu mengemas bilik di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-148"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu mengemas bilik di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-149"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu mengemas bilik di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-150"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu mengemas bilik di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-151"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu mengemas bilik di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-152"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu mengemas bilik di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-153"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu mengemas rumah di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-154"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu mengemas rumah di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-155"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu mengemas rumah di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-156"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu mengemas rumah di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-157"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu mengemas rumah di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-158"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu mengemas rumah di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-159"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu mengemas rumah di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-160"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu mengemas rumah di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-161"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu mengemas rumah di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-162"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu menulis ayat di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-163"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu menulis ayat di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-164"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu menulis ayat di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-165"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu menulis ayat di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-166"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu menulis ayat di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-167"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu menulis ayat di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-168"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu menulis ayat di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-169"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu menulis ayat di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-170"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu menulis ayat di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-171"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu menulis cerita di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-172"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu menulis cerita di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-173"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu menulis cerita di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-174"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu menulis cerita di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-175"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu menulis cerita di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-176"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu menulis cerita di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-177"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ibu menulis cerita di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-178"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ibu menulis cerita di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-179"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ibu menulis cerita di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-180"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah makan nasi di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-181"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah makan nasi di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-182"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah makan nasi di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-183"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah makan nasi di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-184"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah makan nasi di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-185"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah makan nasi di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-186"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah makan nasi di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-187"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah makan nasi di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-188"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah makan nasi di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-189"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah makan roti di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-190"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah makan roti di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-191"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah makan roti di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-192"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah makan roti di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-193"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah makan roti di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-194"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah makan roti di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-195"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah makan roti di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-196"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah makan roti di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-197"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah makan roti di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-198"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah minum air di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-199"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah minum air di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-200"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah minum air di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-201"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah minum air di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-202"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah minum air di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-203"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah minum air di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-204"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah minum air di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-205"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah minum air di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-206"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah minum air di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-207"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah minum susu di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-208"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah minum susu di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-209"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah minum susu di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-210"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah minum susu di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-211"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah minum susu di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-212"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah minum susu di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-213"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah minum susu di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-214"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah minum susu di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-215"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah minum susu di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-216"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah membaca buku di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-217"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah membaca buku di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-218"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah membaca buku di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-219"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah membaca buku di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-220"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah membaca buku di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-221"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah membaca buku di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-222"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah membaca buku di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-223"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah membaca buku di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-224"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah membaca buku di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-225"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah membaca cerita di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-226"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah membaca cerita di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-227"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah membaca cerita di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-228"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah membaca cerita di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-229"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah membaca cerita di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-230"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah membaca cerita di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-231"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah membaca cerita di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-232"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah membaca cerita di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-233"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah membaca cerita di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-234"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah mengemas bilik di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-235"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah mengemas bilik di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-236"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah mengemas bilik di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-237"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah mengemas bilik di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-238"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah mengemas bilik di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-239"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah mengemas bilik di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-240"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah mengemas bilik di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-241"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah mengemas bilik di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-242"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah mengemas bilik di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-243"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah mengemas rumah di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-244"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah mengemas rumah di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-245"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah mengemas rumah di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-246"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah mengemas rumah di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-247"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah mengemas rumah di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-248"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah mengemas rumah di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-249"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah mengemas rumah di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-250"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah mengemas rumah di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-251"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah mengemas rumah di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-252"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah menulis ayat di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-253"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah menulis ayat di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-254"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah menulis ayat di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-255"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah menulis ayat di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-256"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah menulis ayat di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-257"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah menulis ayat di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-258"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah menulis ayat di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-259"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah menulis ayat di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-260"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah menulis ayat di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-261"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah menulis cerita di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-262"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah menulis cerita di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-263"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah menulis cerita di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-264"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah menulis cerita di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-265"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah menulis cerita di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-266"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah menulis cerita di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-267"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Ayah menulis cerita di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-268"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Ayah menulis cerita di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-269"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "ayah menulis cerita di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-270"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik makan nasi di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-271"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik makan nasi di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-272"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik makan nasi di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-273"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik makan nasi di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-274"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik makan nasi di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-275"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik makan nasi di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-276"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik makan nasi di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-277"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik makan nasi di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-278"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik makan nasi di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-279"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik makan roti di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-280"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik makan roti di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-281"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik makan roti di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-282"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik makan roti di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-283"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik makan roti di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-284"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik makan roti di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-285"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik makan roti di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-286"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik makan roti di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-287"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik makan roti di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-288"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik minum air di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-289"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik minum air di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-290"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik minum air di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-291"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik minum air di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-292"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik minum air di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-293"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik minum air di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-294"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik minum air di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-295"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik minum air di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-296"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik minum air di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-297"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik minum susu di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-298"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik minum susu di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-299"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik minum susu di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-300"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik minum susu di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-301"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik minum susu di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-302"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik minum susu di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-303"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik minum susu di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-304"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik minum susu di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-305"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik minum susu di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-306"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik membaca buku di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-307"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik membaca buku di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-308"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik membaca buku di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-309"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik membaca buku di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-310"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik membaca buku di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-311"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik membaca buku di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-312"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik membaca buku di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-313"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik membaca buku di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-314"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik membaca buku di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-315"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik membaca cerita di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-316"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik membaca cerita di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-317"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik membaca cerita di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-318"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik membaca cerita di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-319"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik membaca cerita di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-320"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik membaca cerita di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-321"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik membaca cerita di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-322"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik membaca cerita di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-323"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik membaca cerita di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-324"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik mengemas bilik di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-325"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik mengemas bilik di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-326"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik mengemas bilik di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-327"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik mengemas bilik di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-328"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik mengemas bilik di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-329"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik mengemas bilik di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-330"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik mengemas bilik di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-331"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik mengemas bilik di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-332"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik mengemas bilik di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-333"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik mengemas rumah di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-334"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik mengemas rumah di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-335"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik mengemas rumah di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-336"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik mengemas rumah di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-337"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik mengemas rumah di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-338"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik mengemas rumah di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-339"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik mengemas rumah di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-340"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik mengemas rumah di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-341"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik mengemas rumah di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-342"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik menulis ayat di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-343"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik menulis ayat di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-344"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik menulis ayat di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-345"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik menulis ayat di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-346"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik menulis ayat di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-347"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik menulis ayat di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-348"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik menulis ayat di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-349"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik menulis ayat di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-350"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik menulis ayat di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-351"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik menulis cerita di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-352"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik menulis cerita di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-353"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik menulis cerita di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-354"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik menulis cerita di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-355"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik menulis cerita di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-356"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik menulis cerita di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-357"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Adik menulis cerita di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-358"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Adik menulis cerita di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-359"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "adik menulis cerita di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-360"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya makan nasi di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-361"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya makan nasi di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-362"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya makan nasi di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-363"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya makan nasi di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-364"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya makan nasi di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-365"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya makan nasi di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-366"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya makan nasi di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-367"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya makan nasi di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-368"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya makan nasi di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-369"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya makan roti di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-370"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya makan roti di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-371"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya makan roti di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-372"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya makan roti di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-373"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya makan roti di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-374"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya makan roti di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-375"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya makan roti di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-376"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya makan roti di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-377"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya makan roti di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-378"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya minum air di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-379"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya minum air di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-380"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya minum air di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-381"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya minum air di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-382"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya minum air di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-383"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya minum air di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-384"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya minum air di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-385"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya minum air di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-386"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya minum air di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-387"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya minum susu di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-388"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya minum susu di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-389"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya minum susu di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-390"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya minum susu di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-391"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya minum susu di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-392"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya minum susu di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-393"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya minum susu di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-394"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya minum susu di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-395"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya minum susu di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-396"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya membaca buku di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-397"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya membaca buku di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-398"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya membaca buku di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-399"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya membaca buku di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-400"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya membaca buku di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-401"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya membaca buku di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-402"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya membaca buku di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-403"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya membaca buku di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-404"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya membaca buku di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-405"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya membaca cerita di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-406"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya membaca cerita di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-407"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya membaca cerita di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-408"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya membaca cerita di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-409"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya membaca cerita di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-410"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya membaca cerita di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-411"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya membaca cerita di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-412"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya membaca cerita di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-413"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya membaca cerita di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-414"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya mengemas bilik di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-415"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya mengemas bilik di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-416"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya mengemas bilik di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-417"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya mengemas bilik di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-418"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya mengemas bilik di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-419"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya mengemas bilik di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-420"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya mengemas bilik di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-421"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya mengemas bilik di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-422"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya mengemas bilik di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-423"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya mengemas rumah di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-424"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya mengemas rumah di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-425"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya mengemas rumah di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-426"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya mengemas rumah di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-427"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya mengemas rumah di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-428"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya mengemas rumah di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-429"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya mengemas rumah di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-430"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya mengemas rumah di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-431"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya mengemas rumah di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-432"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya menulis ayat di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-433"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya menulis ayat di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-434"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya menulis ayat di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-435"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya menulis ayat di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-436"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya menulis ayat di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-437"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya menulis ayat di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-438"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya menulis ayat di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-439"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya menulis ayat di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-440"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya menulis ayat di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-441"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya menulis cerita di rumah.",
+      "expected": "PASS",
+      "case_id": "RC1-442"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya menulis cerita di rumah",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-443"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya menulis cerita di rumah.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-444"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya menulis cerita di kelas.",
+      "expected": "PASS",
+      "case_id": "RC1-445"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya menulis cerita di kelas",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-446"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya menulis cerita di kelas.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-447"
+    },
+    {
+      "kind": "VALID",
+      "variant": "normal",
+      "sentence": "Kawan saya menulis cerita di taman.",
+      "expected": "PASS",
+      "case_id": "RC1-448"
+    },
+    {
+      "kind": "VALID",
+      "variant": "no_period",
+      "sentence": "Kawan saya menulis cerita di taman",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-449"
+    },
+    {
+      "kind": "VALID",
+      "variant": "lowercase",
+      "sentence": "kawan saya menulis cerita di taman.",
+      "expected": "CORRECT_MINOR",
+      "case_id": "RC1-450"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "normal",
+      "sentence": "Saya makan tahi di rumah.",
+      "expected": "RETRY",
+      "case_id": "RC1-451"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "no_period",
+      "sentence": "Saya makan tahi di rumah",
+      "expected": "RETRY",
+      "case_id": "RC1-452"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "lowercase",
+      "sentence": "saya makan tahi di rumah.",
+      "expected": "RETRY",
+      "case_id": "RC1-453"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "normal",
+      "sentence": "Saya makan tahi di kelas.",
+      "expected": "RETRY",
+      "case_id": "RC1-454"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "no_period",
+      "sentence": "Saya makan tahi di kelas",
+      "expected": "RETRY",
+      "case_id": "RC1-455"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "lowercase",
+      "sentence": "saya makan tahi di kelas.",
+      "expected": "RETRY",
+      "case_id": "RC1-456"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "normal",
+      "sentence": "Saya makan tahi di taman.",
+      "expected": "RETRY",
+      "case_id": "RC1-457"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "no_period",
+      "sentence": "Saya makan tahi di taman",
+      "expected": "RETRY",
+      "case_id": "RC1-458"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "lowercase",
+      "sentence": "saya makan tahi di taman.",
+      "expected": "RETRY",
+      "case_id": "RC1-459"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "normal",
+      "sentence": "Saya makan buku di rumah.",
+      "expected": "RETRY",
+      "case_id": "RC1-460"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "no_period",
+      "sentence": "Saya makan buku di rumah",
+      "expected": "RETRY",
+      "case_id": "RC1-461"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "lowercase",
+      "sentence": "saya makan buku di rumah.",
+      "expected": "RETRY",
+      "case_id": "RC1-462"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "normal",
+      "sentence": "Saya makan buku di kelas.",
+      "expected": "RETRY",
+      "case_id": "RC1-463"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "no_period",
+      "sentence": "Saya makan buku di kelas",
+      "expected": "RETRY",
+      "case_id": "RC1-464"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "lowercase",
+      "sentence": "saya makan buku di kelas.",
+      "expected": "RETRY",
+      "case_id": "RC1-465"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "normal",
+      "sentence": "Saya makan buku di taman.",
+      "expected": "RETRY",
+      "case_id": "RC1-466"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "no_period",
+      "sentence": "Saya makan buku di taman",
+      "expected": "RETRY",
+      "case_id": "RC1-467"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "lowercase",
+      "sentence": "saya makan buku di taman.",
+      "expected": "RETRY",
+      "case_id": "RC1-468"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "normal",
+      "sentence": "Saya makan pensel di rumah.",
+      "expected": "RETRY",
+      "case_id": "RC1-469"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "no_period",
+      "sentence": "Saya makan pensel di rumah",
+      "expected": "RETRY",
+      "case_id": "RC1-470"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "lowercase",
+      "sentence": "saya makan pensel di rumah.",
+      "expected": "RETRY",
+      "case_id": "RC1-471"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "normal",
+      "sentence": "Saya makan pensel di kelas.",
+      "expected": "RETRY",
+      "case_id": "RC1-472"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "no_period",
+      "sentence": "Saya makan pensel di kelas",
+      "expected": "RETRY",
+      "case_id": "RC1-473"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "lowercase",
+      "sentence": "saya makan pensel di kelas.",
+      "expected": "RETRY",
+      "case_id": "RC1-474"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "normal",
+      "sentence": "Saya makan pensel di taman.",
+      "expected": "RETRY",
+      "case_id": "RC1-475"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "no_period",
+      "sentence": "Saya makan pensel di taman",
+      "expected": "RETRY",
+      "case_id": "RC1-476"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "lowercase",
+      "sentence": "saya makan pensel di taman.",
+      "expected": "RETRY",
+      "case_id": "RC1-477"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "normal",
+      "sentence": "Saya minum pensel di rumah.",
+      "expected": "RETRY",
+      "case_id": "RC1-478"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "no_period",
+      "sentence": "Saya minum pensel di rumah",
+      "expected": "RETRY",
+      "case_id": "RC1-479"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "lowercase",
+      "sentence": "saya minum pensel di rumah.",
+      "expected": "RETRY",
+      "case_id": "RC1-480"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "normal",
+      "sentence": "Saya minum pensel di kelas.",
+      "expected": "RETRY",
+      "case_id": "RC1-481"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "no_period",
+      "sentence": "Saya minum pensel di kelas",
+      "expected": "RETRY",
+      "case_id": "RC1-482"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "lowercase",
+      "sentence": "saya minum pensel di kelas.",
+      "expected": "RETRY",
+      "case_id": "RC1-483"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "normal",
+      "sentence": "Saya minum pensel di taman.",
+      "expected": "RETRY",
+      "case_id": "RC1-484"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "no_period",
+      "sentence": "Saya minum pensel di taman",
+      "expected": "RETRY",
+      "case_id": "RC1-485"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "lowercase",
+      "sentence": "saya minum pensel di taman.",
+      "expected": "RETRY",
+      "case_id": "RC1-486"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "normal",
+      "sentence": "Saya minum buku di rumah.",
+      "expected": "RETRY",
+      "case_id": "RC1-487"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "no_period",
+      "sentence": "Saya minum buku di rumah",
+      "expected": "RETRY",
+      "case_id": "RC1-488"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "lowercase",
+      "sentence": "saya minum buku di rumah.",
+      "expected": "RETRY",
+      "case_id": "RC1-489"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "normal",
+      "sentence": "Saya minum buku di kelas.",
+      "expected": "RETRY",
+      "case_id": "RC1-490"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "no_period",
+      "sentence": "Saya minum buku di kelas",
+      "expected": "RETRY",
+      "case_id": "RC1-491"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "lowercase",
+      "sentence": "saya minum buku di kelas.",
+      "expected": "RETRY",
+      "case_id": "RC1-492"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "normal",
+      "sentence": "Saya minum buku di taman.",
+      "expected": "RETRY",
+      "case_id": "RC1-493"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "no_period",
+      "sentence": "Saya minum buku di taman",
+      "expected": "RETRY",
+      "case_id": "RC1-494"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "lowercase",
+      "sentence": "saya minum buku di taman.",
+      "expected": "RETRY",
+      "case_id": "RC1-495"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "normal",
+      "sentence": "Saya minum meja di rumah.",
+      "expected": "RETRY",
+      "case_id": "RC1-496"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "no_period",
+      "sentence": "Saya minum meja di rumah",
+      "expected": "RETRY",
+      "case_id": "RC1-497"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "lowercase",
+      "sentence": "saya minum meja di rumah.",
+      "expected": "RETRY",
+      "case_id": "RC1-498"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "normal",
+      "sentence": "Saya minum meja di kelas.",
+      "expected": "RETRY",
+      "case_id": "RC1-499"
+    },
+    {
+      "kind": "INVALID_RELATION",
+      "variant": "no_period",
+      "sentence": "Saya minum meja di kelas",
+      "expected": "RETRY",
+      "case_id": "RC1-500"
+    }
+  ],
+  "limitations": [
+    "Offline QA validates code structure, stage routing and semantic policy contracts.",
+    "It does not execute the user's private Vercel/Groq environment.",
+    "Live LLM output is stochastic, so only a short real-device smoke test remains."
+  ]
+}
