@@ -1,7 +1,7 @@
 /* =========================================================
    KARANGAN AI
    API / AI CONTROLLER
-   Version 4.8.0 AI-Native Teaching Engine v3
+   Version 4.8.1 AI-Native Teaching Engine v3.1 — Benchmark-Calibrated
 
    Supports:
    - translate
@@ -1265,6 +1265,11 @@ KALIBRASI KRITIKAL:
 - “Adik bermain di bulan.” => meaning PASS, appropriateness IMAGINATIVE.
 - “Bilik saya bersih dan unik.” => jangan gagal hanya kerana “unik” mungkin tiada dalam kamus aplikasi; nilai gabungan makna.
 - Jika jawapan bermakna tetapi diminta PLACE dan murid hanya menambah TIME, skill_target_status=NOT_MET.
+- Prinsip yang sama mesti digunakan untuk SEMUA sasaran: jika sasaran INTENSITY tetapi murid hanya menambah PLACE/TIME/COMPANION, skill_target_status=NOT_MET. Contoh: asas “Ali gembira.” + jawapan “Ali gembira di sekolah.” => meaning PASS, skill_target_status NOT_MET, primary_issue SKILL_TARGET.
+- Untuk DESCRIPTION, semak sama ada sifat/deria yang ditambah benar-benar sesuai dengan benda yang diterangkan. “Bunga itu cantik dengan rasa masin.” tanpa konteks makanan => appropriateness ODD/UNKNOWN, bukan terus PASS.
+- Jika sasaran sudah dipenuhi tetapi tambahan lain membentuk gabungan yang pelik seperti “Ali sangat gembira dengan batu marah.”, jangan abaikan kejanggalan itu. meaning boleh PASS jika inti masih jelas, tetapi appropriateness mesti ODD/UNKNOWN dan primary_issue APPROPRIATENESS atau CLARIFY.
+- Jangan paksa semua kes pelik ke APPROPRIATENESS. Jika hubungan inti rosak, gunakan MEANING; jika jenis sasaran tidak dipenuhi (contohnya WITH-WHOM tetapi objek bukan teman), gunakan SKILL_TARGET.
+- Lokasi imaginatif yang masih boleh difahami seperti “Saya membaca buku di atas bulan.” boleh IMAGINATIVE dan PASS; jangan tandakan salah hanya kerana tidak realistik.
   `.trim();
 
   const input = `
