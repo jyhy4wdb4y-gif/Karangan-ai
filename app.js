@@ -12824,7 +12824,7 @@ window.KaranganTranslationCache = {
    Additive integration. Langkah 2 & Langkah 3 are untouched.
    ========================================================= */
 (function(){
-  const L4_VERSION="13.3.0-AUTOMATED-QA";
+  const L4_VERSION="13.3.1-QA-HARNESS-HARDENED";
   const CONTENT_VERSION="1.0_STABLE";
   const LEGACY_GRAMMAR=renderGrammarRain;
   const STATE_KEY="karangan_ai_l4_t1_v1";
@@ -13304,7 +13304,7 @@ window.KaranganTranslationCache = {
     l4Dispatch(el,e);
   }
   /* =========================================================
-     v13.3.0 AUTOMATED BEHAVIOR QA HARNESS
+     v13.3.1 AUTOMATED BEHAVIOR QA HARNESS
      - Exercises the real rendered buttons and the real click gateway.
      - Replaces only the AI network provider with deterministic verdicts.
      - Restores the learner's saved Langkah 4 state after the run.
@@ -13402,9 +13402,12 @@ window.KaranganTranslationCache = {
 
       l4QaClick("[data-l4-choice]");
       check("Choice after hint -> UPGRADE",l4Machine.phase==="UPGRADE",l4Machine.phase);
-      check("Stage 2 action renders",!!document.querySelector("#l4TryOwn"));
+      const stage2Ready=await l4QaWaitFor(()=>!!document.querySelector("#l4TryOwn"));
+      check("Stage 2 action renders",stage2Ready,stage2Ready?"#l4TryOwn ready":"phase="+l4Machine.phase+"; module="+String(document.getElementById("moduleContent")?.textContent||"").trim().slice(0,180));
+      if(!stage2Ready)throw new Error("Stage 2 render contract failed after UPGRADE");
       l4QaClick("#l4TryOwn");
-      check("UPGRADE -> INDEPENDENT",l4Machine.phase==="INDEPENDENT",l4Machine.phase);
+      const independentReady=await l4QaWaitFor(()=>l4Machine.phase==="INDEPENDENT"&&!!document.querySelector("#l4OwnCheck"));
+      check("UPGRADE -> INDEPENDENT",independentReady,l4Machine.phase);
       check("Cycle hint survives transfer",l4Machine.cycleHintUsed===true);
       const beforeHintMastery=(loadState().masteryEvidence||[]).length;
       l4QaSetValue("#l4Draft",l4QaAnswerFor(activeExercise));
@@ -13420,7 +13423,10 @@ window.KaranganTranslationCache = {
       l4QaClick("#l4Next");
       check("Next challenge returns GUIDED",l4Machine.phase==="GUIDED",l4Machine.phase);
       check("New cycle resets hint flag",l4Machine.cycleHintUsed===false);
-      l4QaClick("[data-l4-choice]");l4QaClick("#l4TryOwn");
+      l4QaClick("[data-l4-choice]");
+      await l4QaWaitFor(()=>!!document.querySelector("#l4TryOwn"));
+      l4QaClick("#l4TryOwn");
+      await l4QaWaitFor(()=>l4Machine.phase==="INDEPENDENT"&&!!document.querySelector("#l4OwnCheck"));
       const beforeIndependent=(loadState().masteryEvidence||[]).length;
       l4QaSetValue("#l4Draft",l4QaAnswerFor(activeExercise));
       l4QaClick("#l4OwnCheck");
@@ -13486,5 +13492,5 @@ window.KaranganTranslationCache = {
   try{const saved=loadState();if(Number.isInteger(saved.lastTaskIndex))taskIndex=Math.max(0,Math.min(tasks.length-1,saved.lastTaskIndex));}catch(_){}
   document.addEventListener("click",l4ClickGateway,true);
   renderGrammarRain=start;
-  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v13.3.0-click-only-state-machine+automated-behavior-QA",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null};
+  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v13.3.1-click-only-state-machine+automated-behavior-QA",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null};
 })();
