@@ -1,7 +1,7 @@
 /* =========================================================
    KARANGAN AI
    API / AI CONTROLLER
-   Version 4.6.0 Meaning-Priority Semantic Judge
+   Version 4.7.0 Hard Semantic Relationship Gate
 
    Supports:
    - translate
@@ -1294,14 +1294,53 @@ PRINSIP WAJIB:
     - "di langit" boleh dianggap IMAGINATIVE secara berasingan.
     - Kehadiran unsur imaginatif yang sah TIDAK boleh menutup hubungan semantik lain yang gagal.
 
-14. FEEDBACK SAFETY:
+14. HARD SEMANTIC RELATIONSHIP GATE — RELEASE BLOCKER:
+    Sebelum keputusan akhir PASS/CORRECT, semak semula hubungan inti ACTION + OBJECT/COMPLEMENT.
+    Gate ini berasingan daripada PLACE/TIME/IMAGINATION dan punctuation.
+
+    - Jika objek/complement ditambah selepas kata kerja, hubungan maknanya mesti jelas dan sesuai.
+    - Lokasi yang sah TIDAK boleh menyelamatkan objek yang tidak sesuai.
+    - Struktur tatabahasa lengkap TIDAK bermaksud hubungan semantik betul.
+    - Jangan lulus hanya kerana semua perkataan ialah perkataan Bahasa Melayu yang sah.
+    - Jika core relationship gagal, keputusan akhir TIDAK BOLEH PASS walaupun lokasi NATURAL/POSSIBLE/IMAGINATIVE.
+    - Imaginasi diterima hanya apabila hubungan bahasa yang diuji masih jelas.
+
+    HARD NEGATIVE CALIBRATION — mesti RETRY:
+    "Ibu makan tahi di rumah." => SEMANTIC_RELATIONSHIP, target_met=false.
+    "Saya makan tahi di rumah." => SEMANTIC_RELATIONSHIP, target_met=false.
+    "Saya makan buku di dapur." => SEMANTIC_RELATIONSHIP, target_met=false.
+    "Saya membaca nasi di rumah." => SEMANTIC_RELATIONSHIP, target_met=false.
+    "Saya minum pensel di kelas." => SEMANTIC_RELATIONSHIP, target_met=false.
+    "Saya mengemas tahi di langit." => SEMANTIC_RELATIONSHIP, target_met=false.
+    "Adik tidur pensel di bilik." => SEMANTIC_RELATIONSHIP, target_met=false.
+    "Kawan saya bermain nasi di tandas." => SEMANTIC_RELATIONSHIP, target_met=false.
+
+    HARD POSITIVE CALIBRATION:
+    "Ibu makan nasi di rumah." => NATURAL/POSSIBLE, target_met=true.
+    "Saya membaca buku di rumah." => NATURAL, target_met=true.
+    "Saya minum air di kelas." => NATURAL/POSSIBLE, target_met=true.
+    "Saya mengemas bilik di rumah." => NATURAL, target_met=true.
+    "Kawan saya bermain dengan bola di taman." => NATURAL, target_met=true.
+
+    CREATIVE LOCATION CALIBRATION:
+    "Adik belajar di hutan." => POSSIBLE, target_met=true.
+    "Ayah membaca di langit." => IMAGINATIVE, target_met=true.
+    "Adik bermain di bulan." => IMAGINATIVE, target_met=true.
+
+    FINAL SELF-CHECK SEBELUM JSON:
+    1. Sudah semak ACTION + OBJECT/COMPLEMENT?
+    2. Jika hubungan inti gagal, result=RETRY dan main_issue=SEMANTIC_RELATIONSHIP?
+    3. Adakah PLACE/IMAGINATION tersilap menutup hubungan inti yang gagal?
+    4. Feedback hanya SATU masalah dan tidak ghostwrite?
+
+15. FEEDBACK SAFETY:
     Untuk ODD/INVALID akibat hubungan semantik, jangan beri ayat jawapan penuh.
     Gunakan maklum balas pendek seperti:
     "Bagus mencuba. Cuba fikir semula perkataan selepas ‘bermain’. Adakah perkataan itu sesuai dengan perbuatan bermain?"
     atau soalan ringkas yang menunjuk SATU bahagian untuk difikir semula.
     Jangan masukkan perkataan baharu yang boleh menjadi jawapan murid.
 
-15. Jangan tentukan mastered, XP, level atau curriculum status.
+16. Jangan tentukan mastered, XP, level atau curriculum status.
 
 semantic_class mesti salah satu:
 NATURAL, POSSIBLE, IMAGINATIVE, ODD, INVALID, UNKNOWN.
@@ -1807,5 +1846,5 @@ function extractResponseText(
 
 
 /* =========================================================
-   END KARANGAN AI API v4.6.0
+   END KARANGAN AI API v4.7.0
    ========================================================= */

@@ -1,0 +1,630 @@
+{
+  "suite": "Karangan AI Semantic Regression Gate v1.6",
+  "backend": "API v4.7.0 Hard Semantic Relationship Gate",
+  "result": "PASS",
+  "syntax": "PASS",
+  "total_policy_regression_cases": 300,
+  "retained_previous_cases": 150,
+  "new_action_object_boundary_cases": 150,
+  "critical_release_blockers": [
+    "Ibu makan tahi di rumah. => RETRY / SEMANTIC_RELATIONSHIP",
+    "Saya mengemas tahi di langit. => RETRY before punctuation",
+    "Kawan saya bermain nasi di tandas. => RETRY; never repair into bermain dengan nasi",
+    "Adik belajar di hutan. and Ayah membaca di langit. remain acceptable"
+  ],
+  "contract_checks": {
+    "HARD SEMANTIC RELATIONSHIP GATE": true,
+    "\"Ibu makan tahi di rumah.\" => SEMANTIC_RELATIONSHIP, target_met=false.": true,
+    "\"Saya mengemas tahi di langit.\" => SEMANTIC_RELATIONSHIP, target_met=false.": true,
+    "\"Kawan saya bermain nasi di tandas.\" => SEMANTIC_RELATIONSHIP, target_met=false.": true,
+    "\"Ibu makan nasi di rumah.\" => NATURAL/POSSIBLE, target_met=true.": true,
+    "\"Adik belajar di hutan.\" => POSSIBLE, target_met=true.": true,
+    "\"Ayah membaca di langit.\" => IMAGINATIVE, target_met=true.": true,
+    "FINAL SELF-CHECK": true,
+    "OpenAI failed; trying Groq fallback": true,
+    "JANGAN gunakan bahasa Inggeris": true
+  },
+  "new_case_matrix": [
+    {
+      "sentence": "Saya makan nasi di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Saya makan roti di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Saya makan tahi di taman.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Saya makan buku di hutan.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Saya makan pensel di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ibu makan nasi di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Ibu makan roti di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Ibu makan tahi di taman.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ibu makan buku di hutan.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ibu makan pensel di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ayah makan nasi di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Ayah makan roti di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Ayah makan tahi di taman.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ayah makan buku di hutan.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ayah makan pensel di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Adik makan nasi di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Adik makan roti di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Adik makan tahi di taman.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Adik makan buku di hutan.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Adik makan pensel di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Kawan saya makan nasi di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Kawan saya makan roti di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Kawan saya makan tahi di taman.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Kawan saya makan buku di hutan.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Kawan saya makan pensel di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Saya minum air di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Saya minum susu di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Saya minum pensel di taman.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Saya minum buku di hutan.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Saya minum kelas di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ibu minum air di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Ibu minum susu di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Ibu minum pensel di taman.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ibu minum buku di hutan.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ibu minum kelas di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ayah minum air di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Ayah minum susu di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Ayah minum pensel di taman.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ayah minum buku di hutan.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ayah minum kelas di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Adik minum air di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Adik minum susu di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Adik minum pensel di taman.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Adik minum buku di hutan.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Adik minum kelas di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Kawan saya minum air di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Kawan saya minum susu di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Kawan saya minum pensel di taman.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Kawan saya minum buku di hutan.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Kawan saya minum kelas di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Saya membaca buku di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Saya membaca cerita di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Saya membaca nasi di taman.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Saya membaca air di hutan.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Saya membaca meja di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ibu membaca buku di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Ibu membaca cerita di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Ibu membaca nasi di taman.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ibu membaca air di hutan.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ibu membaca meja di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ayah membaca buku di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Ayah membaca cerita di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Ayah membaca nasi di taman.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ayah membaca air di hutan.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ayah membaca meja di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Adik membaca buku di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Adik membaca cerita di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Adik membaca nasi di taman.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Adik membaca air di hutan.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Adik membaca meja di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Kawan saya membaca buku di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Kawan saya membaca cerita di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Kawan saya membaca nasi di taman.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Kawan saya membaca air di hutan.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Kawan saya membaca meja di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Saya mengemas bilik di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Saya mengemas rumah di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Saya mengemas tahi di taman.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Saya mengemas air di hutan.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Saya mengemas gembira di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ibu mengemas bilik di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Ibu mengemas rumah di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Ibu mengemas tahi di taman.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ibu mengemas air di hutan.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ibu mengemas gembira di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ayah mengemas bilik di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Ayah mengemas rumah di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Ayah mengemas tahi di taman.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ayah mengemas air di hutan.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ayah mengemas gembira di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Adik mengemas bilik di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Adik mengemas rumah di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Adik mengemas tahi di taman.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Adik mengemas air di hutan.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Adik mengemas gembira di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Kawan saya mengemas bilik di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Kawan saya mengemas rumah di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Kawan saya mengemas tahi di taman.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Kawan saya mengemas air di hutan.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Kawan saya mengemas gembira di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Saya menulis ayat di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Saya menulis cerita di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Saya menulis air di taman.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Saya menulis nasi di hutan.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Saya menulis tidur di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ibu menulis ayat di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Ibu menulis cerita di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Ibu menulis air di taman.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ibu menulis nasi di hutan.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ibu menulis tidur di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ayah menulis ayat di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Ayah menulis cerita di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Ayah menulis air di taman.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ayah menulis nasi di hutan.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ayah menulis tidur di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Adik menulis ayat di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Adik menulis cerita di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Adik menulis air di taman.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Adik menulis nasi di hutan.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Adik menulis tidur di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Kawan saya menulis ayat di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Kawan saya menulis cerita di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Kawan saya menulis air di taman.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Kawan saya menulis nasi di hutan.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Kawan saya menulis tidur di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ibu makan tahi di rumah.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Saya makan tahi di rumah.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Saya mengemas tahi di langit.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Kawan saya bermain nasi di tandas.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Saya membaca nasi di rumah.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Adik tidur pensel di bilik.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Saya minum pensel di kelas.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Saya makan buku di dapur.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ibu makan nasi di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Saya membaca buku di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Saya minum air di kelas.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Saya mengemas bilik di rumah.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Adik tidur di bilik.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Kawan saya bermain dengan bola di taman.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Adik belajar di hutan.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Ayah membaca di langit.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Adik bermain di bulan.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Saya membaca di kapal angkasa.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Ibu membaca di pusat hiburan.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Saya belajar di zoo.",
+      "expected": "PASS"
+    },
+    {
+      "sentence": "Ayah membaca di rajin.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Saya bermain di cantik.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Ibu makan di berani.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Adik belajar di gembira.",
+      "expected": "RETRY"
+    },
+    {
+      "sentence": "Saya membaca di penat.",
+      "expected": "RETRY"
+    }
+  ],
+  "limit": "Offline deterministic prompt/code/policy regression; live provider output remains stochastic."
+}
