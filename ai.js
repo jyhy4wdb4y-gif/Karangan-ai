@@ -1,7 +1,7 @@
 /* =========================================================
    KARANGAN AI
    API / AI CONTROLLER
-   Version 4.4.3 Meaning-First Judge
+   Version 4.8.1 AI-Native Teaching Engine v3.1 — Benchmark-Calibrated
 
    Supports:
    - translate
@@ -205,8 +205,47 @@ export default async function handler(
        Understands open vocabulary without changing curriculum/mastery.
        ===================================================== */
 
+    if (type === "teaching_critic_v1") {
+      const cleanBase = String(base_sentence || "").trim();
+      const cleanAnswer = String(student_answer || "").trim();
+      if (!cleanBase || !cleanAnswer) {
+        return res.status(400).json({ error: "Base sentence and student answer are required." });
+      }
+
+      const critique = await generateTeachingCritique({
+        year,
+        language,
+        learningTarget: String(learning_target || "").trim(),
+        skillKey: String(skill_key || "").trim(),
+        baseSentence: cleanBase,
+        studentAnswer: cleanAnswer,
+        teacherJudgment: body?.teacher_judgment || null
+      });
+
+      return res.status(200).json(critique);
+    }
+
+    if (type === "teaching_generate_v1") {
+      const cleanBase = String(base_sentence || "").trim();
+      if (!cleanBase) {
+        return res.status(400).json({ error: "Base sentence is required." });
+      }
+
+      const example = await generateTeachingExample({
+        year,
+        language,
+        learningTarget: String(learning_target || "").trim(),
+        skillKey: String(skill_key || "").trim(),
+        baseSentence: cleanBase
+      });
+
+      return res.status(200).json(example);
+    }
+
     if (
-      type === "semantic_judge"
+      type === "semantic_judge" ||
+      type === "teaching_judge_v2" ||
+      type === "teaching_judge_v3"
     ) {
 
       const cleanBase =
@@ -1190,8 +1229,241 @@ function cleanTranslation(
 
 
 /* =========================================================
-   SEMANTIC JUDGE ENGINE v1
+   AI-NATIVE TEACHING ENGINE v3 — LANGKAH 4
+   Decision order: Meaning -> Skill Target -> Appropriateness -> Language.
+   Independence/mastery remains client-owned.
    ========================================================= */
+
+
+
+async function generateTeachingCritique({
+  year,
+  language,
+  learningTarget,
+  skillKey,
+  baseSentence,
+  studentAnswer,
+  teacherJudgment
+}) {
+  const instructions = `
+Anda ialah Cikgu Aira Critic, pemeriksa kedua yang BEBAS daripada penilai pertama.
+
+Tugas utama anda: kurangkan FALSE POSITIVE dalam latihan Bahasa Melayu Tahun ${year || 1}.
+Jangan cari alasan untuk meluluskan jawapan hanya kerana ayat boleh difahami.
+
+Ayat asas: "${baseSentence}"
+Jawapan murid: "${studentAnswer}"
+Kemahiran sasaran: ${skillKey || "OPEN"}
+Sasaran pembelajaran: ${learningTarget || "Kembangkan ayat dengan maklumat yang sesuai."}
+
+Penilaian pertama (boleh salah):
+${JSON.stringify(teacherJudgment || {})}
+
+Semak enam lapisan:
+1. MEANING — ayat keseluruhan masuk akal?
+2. SKILL TARGET — kemahiran benar-benar dipenuhi, bukan sekadar kata kunci?
+3. SEMANTIC APPROPRIATENESS — gabungan perkataan sesuai dalam konteks?
+4. PEDAGOGICAL APPROPRIATENESS — adakah guru Tahun 1 patut menerima dan membenarkan murid meniru ayat ini?
+5. LANGUAGE — ejaan/tatabahasa.
+6. PARTIAL CORRECTNESS — simpan bahagian yang betul dan betulkan hanya bahagian bermasalah.
+
+PERATURAN KETAT:
+- "boleh difahami" TIDAK sama dengan "patut PASS".
+- Ayat pelik, menghina, tidak sesuai, tidak natural atau tidak patut dijadikan model murid Tahun 1 mesti VETO atau CLARIFY.
+- "Kawan saya baik dan gila." mesti VETO untuk PEDAGOGICAL_APPROPRIATENESS; "baik" boleh dipelihara sebagai bahagian betul.
+- "Bunga itu cantik dengan rasa masin." mesti VETO.
+- Idea imaginatif boleh PASS jika jelas, sesuai untuk kanak-kanak dan masih mengekalkan maksud.
+- CLARIFY hanya untuk ambiguiti sebenar: sekurang-kurangnya dua tafsiran munasabah masih mungkin dan konteks tambahan murid benar-benar diperlukan.
+- Jika masalah sudah boleh dikenal pasti daripada ayat, pilih VETO, BUKAN CLARIFY.
+- Contoh: "Adik gembira dan Kelas." ialah kesalahan yang sudah diketahui: "dan kelas" tidak sesuai sebagai penerangan. Mesti VETO, bukan CLARIFY.
+- Jika ragu-ragu sama ada guru patut menerima jawapan tetapi masalahnya sudah kelihatan, pilih VETO.
+
+Output JSON sahaja:
+{
+  "verdict": "PASS" | "VETO" | "CLARIFY",
+  "issue": "NONE" | "MEANING" | "SKILL_TARGET" | "APPROPRIATENESS" | "PEDAGOGICAL_APPROPRIATENESS" | "LANGUAGE" | "UNCERTAIN",
+  "pedagogically_appropriate": true | false | null,
+  "preserve": ["bahagian yang betul"],
+  "problem_span": "teks bermasalah atau kosong",
+  "better_alternatives": ["maksimum 3 alternatif ringkas"],
+  "student_feedback": "maklum balas ringkas untuk murid",
+  "confidence": 0.0
+}
+  `.trim();
+
+  const input = "Semak semula keputusan penilai pertama. Utamakan keselamatan pedagogi.";
+
+  let result;
+  if (process.env.OPENAI_API_KEY) {
+    try {
+      result = await requestStructuredTeachingCritique({ instructions, input });
+    } catch (error) {
+      console.warn("[Teaching Critic] OpenAI failed; trying Groq fallback:", error?.message || error);
+      if (!process.env.GROQ_API_KEY) throw error;
+    }
+  }
+  if (!result && process.env.GROQ_API_KEY) {
+    result = await requestGroqTeachingCritique({ instructions, input });
+  }
+  if (!result) {
+    const error = new Error("No AI provider available for teaching critic.");
+    error.status = 503;
+    throw error;
+  }
+  return result;
+}
+
+async function requestStructuredTeachingCritique({instructions,input}) {
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":`Bearer ${process.env.OPENAI_API_KEY}`
+    },
+    body:JSON.stringify({
+      model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+      temperature:0.0,
+      response_format:{type:"json_object"},
+      messages:[
+        {role:"system",content:instructions},
+        {role:"user",content:input}
+      ]
+    })
+  });
+  if(!response.ok){
+    const e=new Error(`OpenAI critic ${response.status}`); e.status=response.status; throw e;
+  }
+  const data=await response.json();
+  return JSON.parse(data?.choices?.[0]?.message?.content || "{}");
+}
+
+async function requestGroqTeachingCritique({instructions,input}) {
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":`Bearer ${process.env.GROQ_API_KEY}`
+    },
+    body:JSON.stringify({
+      model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
+      temperature:0.0,
+      response_format:{type:"json_object"},
+      messages:[
+        {role:"system",content:instructions},
+        {role:"user",content:input}
+      ]
+    })
+  });
+  if(!response.ok){
+    const e=new Error(`Groq critic ${response.status}`); e.status=response.status; throw e;
+  }
+  const data=await response.json();
+  return JSON.parse(data?.choices?.[0]?.message?.content || "{}");
+}
+
+
+async function generateTeachingExample({
+  year,
+  language,
+  learningTarget,
+  skillKey,
+  baseSentence
+}) {
+  const instructions = `
+Anda ialah Cikgu Aira, guru Bahasa Melayu sekolah rendah Malaysia.
+
+Tugas: hasilkan SATU contoh pengajaran untuk murid Tahun ${year || 1}.
+Ayat asas: "${baseSentence}"
+Kemahiran sasaran: ${skillKey || "OPEN"}
+Sasaran pembelajaran: ${learningTarget || "Kembangkan ayat dengan satu maklumat yang bermakna."}
+
+Peraturan wajib:
+1. Kekalkan maksud ayat asas.
+2. Tambah tepat satu jenis maklumat yang memenuhi kemahiran sasaran.
+3. Ayat mesti semula jadi, gramatis, mudah difahami dan sesuai untuk murid Tahun 1.
+4. Jangan guna nama/perkataan rawak, jargon, bahasa asing, atau perkataan yang tidak pasti.
+5. Jangan sekadar menambah perkataan; hubungan makna seluruh ayat mesti masuk akal.
+6. PLACE = tempat; TIME = masa; COMPANION = dengan siapa; DESCRIPTION = penerangan/sifat yang sesuai; INTENSITY = penguatan; OPEN = satu maklumat baharu yang sesuai.
+7. Untuk DESCRIPTION, sifat mesti benar-benar sesuai dengan benda/orang yang diterangkan.
+8. Output hanya JSON dengan medan:
+   sentence: ayat penuh yang betul
+   added_information: maklumat yang ditambah
+   skill_key: kemahiran sasaran
+   appropriateness: NATURAL atau POSSIBLE
+   explanation: penerangan sangat pendek untuk murid Tahun 1
+   confidence: 0 hingga 1
+  `.trim();
+
+  const input = `Hasilkan contoh pengajaran sekarang.`;
+
+  let result;
+  if (process.env.OPENAI_API_KEY) {
+    try {
+      result = await requestStructuredTeachingExample({ instructions, input });
+    } catch (error) {
+      console.warn("[Teaching Generate] OpenAI failed; trying Groq fallback:", error?.message || error);
+      if (!process.env.GROQ_API_KEY) throw error;
+    }
+  }
+  if (!result && process.env.GROQ_API_KEY) {
+    result = await requestGroqTeachingExample({ instructions, input });
+  }
+  if (!result) {
+    const error = new Error("No AI provider available for teaching generation.");
+    error.status = 503;
+    throw error;
+  }
+  return result;
+}
+
+async function requestStructuredTeachingExample({instructions,input}) {
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":`Bearer ${process.env.OPENAI_API_KEY}`
+    },
+    body:JSON.stringify({
+      model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+      temperature:0.15,
+      response_format:{type:"json_object"},
+      messages:[
+        {role:"system",content:instructions},
+        {role:"user",content:input}
+      ]
+    })
+  });
+  if(!response.ok){
+    const e=new Error(`OpenAI ${response.status}`); e.status=response.status; throw e;
+  }
+  const data=await response.json();
+  return JSON.parse(data?.choices?.[0]?.message?.content || "{}");
+}
+
+async function requestGroqTeachingExample({instructions,input}) {
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":`Bearer ${process.env.GROQ_API_KEY}`
+    },
+    body:JSON.stringify({
+      model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
+      temperature:0.15,
+      response_format:{type:"json_object"},
+      messages:[
+        {role:"system",content:instructions},
+        {role:"user",content:input}
+      ]
+    })
+  });
+  if(!response.ok){
+    const e=new Error(`Groq ${response.status}`); e.status=response.status; throw e;
+  }
+  const data=await response.json();
+  return JSON.parse(data?.choices?.[0]?.message?.content || "{}");
+}
+
 
 async function generateSemanticJudgment({
   year,
@@ -1202,57 +1474,70 @@ async function generateSemanticJudgment({
 }) {
 
   const instructions = `
-Anda ialah Semantic Judge untuk Karangan AI,
-aplikasi Bahasa Melayu sekolah rendah Malaysia.
-
-Tugas anda BUKAN menentukan kurikulum atau mastery.
-Tugas anda hanya memahami maksud ayat murid.
+Anda ialah AI Teacher Judge v3 untuk Karangan AI, aplikasi Bahasa Melayu sekolah rendah Malaysia. Tugas anda ialah MENILAI secara profesional, bukan sekadar memberi galakan.
 
 Konteks:
 - Tahun murid: ${year || 1}
 - Bahasa: ${language || "Bahasa Melayu"}
-- Sasaran pembelajaran:
-  ${learningTarget || "Kembangkan ayat dengan satu maklumat yang bermakna."}
+- Sasaran kemahiran: ${learningTarget || "Kembangkan ayat dengan satu maklumat yang bermakna."}
 
-PRINSIP WAJIB:
-1. Jangan padankan jawapan dengan model answer.
-2. Perkataan murid TIDAK perlu wujud dalam kosa kata Karangan AI.
-3. GUNAKAN PRINSIP MEANING-FIRST. Soalan utama ialah:
-   "Adakah ayat murid membentuk maksud Bahasa Melayu yang boleh difahami?"
-   Jangan tanya dahulu sama ada situasi itu biasa atau lazim.
-4. Jika struktur semantik betul dan maklumat tambahan boleh difahami, target_met=true.
-   Tempat TIDAK perlu menjadi tempat belajar/membaca/bermain yang biasa.
-5. Bezakan kategori berikut:
-   NATURAL = biasa dan jelas dalam dunia sebenar.
-   POSSIBLE = kurang biasa tetapi masih boleh berlaku atau mudah dibayangkan dalam dunia sebenar.
-   IMAGINATIVE = makna bahasa jelas tetapi situasi lebih sesuai dalam cerita/fantasi/imaginasi.
-   ODD = maksud mungkin ada tetapi benar-benar kabur dan memerlukan penjelasan murid.
-   INVALID = gabungan perkataan gagal membentuk hubungan semantik yang diminta.
-   UNKNOWN = perkataan/nama tidak cukup dikenali untuk dinilai dengan yakin.
-6. Contoh kalibrasi WAJIB:
-   "Adik belajar di sekolah." => NATURAL, target_met=true.
-   "Adik belajar di hutan." => POSSIBLE, target_met=true.
-   "Ayah membaca di pusat hiburan." => POSSIBLE, target_met=true.
-   "Ayah membaca di langit." => IMAGINATIVE, target_met=true.
-   "Adik bermain di bulan." => IMAGINATIVE, target_met=true.
-   "Saya membaca di kapal angkasa." => IMAGINATIVE atau POSSIBLE mengikut konteks, target_met=true.
-   "Ayah membaca di rajin." => INVALID, target_met=false.
-   "Ayah membaca di cantik." => INVALID, target_met=false.
-7. Jangan menolak ayat hanya kerana lokasi/keadaan tidak lazim untuk aktiviti itu.
-8. Jika nama tempat/perkataan tidak dikenali, gunakan UNKNOWN dan minta penjelasan; jangan mereka-reka.
-9. Jangan menghukum kreativiti murid.
-10. language_issue hanya SATU pembetulan penting. Tulis pembetulan itu dalam Bahasa Melayu yang
-    ringkas dan mesra murid Tahun 1. JANGAN gunakan bahasa Inggeris.
-    Contoh: "Cuba tulis ‘di’ dengan huruf kecil."
-11. Jangan tentukan mastered, XP, level atau curriculum status.
+IKUT URUTAN KEPUTUSAN INI. JANGAN LOMPAT:
+1. MEANING — Adakah maksud keseluruhan ayat boleh difahami dan hubungan inti seperti ACTION+OBJECT/COMPLEMENT masuk akal?
+2. SKILL TARGET — Jika meaning lulus, adakah murid benar-benar menunjukkan kemahiran sasaran semasa? Ayat boleh bermakna tetapi masih tidak memenuhi sasaran.
+3. APPROPRIATENESS — Jika sasaran dipenuhi, bezakan NATURAL, POSSIBLE, IMAGINATIVE, ODD, INVALID, UNKNOWN. Kreativiti yang jelas dari segi bahasa tidak boleh dihukum hanya kerana luar biasa.
+4. LANGUAGE — Hanya selepas meaning/skill/appropriateness lulus, pilih SATU isu bahasa paling penting jika ada.
+5. INDEPENDENCE — JANGAN tentukan mastery, XP atau independence. Itu milik aplikasi klien.
 
-semantic_class mesti salah satu:
-NATURAL, POSSIBLE, IMAGINATIVE, ODD, INVALID, UNKNOWN.
+PERATURAN SISTEM:
+- Ini ialah semantic judge untuk SEMUA jawapan teks bebas di Guided/Magic dan Independent Stage. Standard penilaian mesti sama di semua stage.
+- Jangan beri PASS hanya kerana murid menambah perkataan, tempat, masa, atau frasa baharu. Hubungan semantik inti mesti masuk akal dahulu.
+- Untuk kata kerja, semak keserasian kata kerja dengan objek/pelengkapnya. Frasa lokasi atau masa yang betul tidak boleh menyelamatkan hubungan kata kerja+objek yang tidak masuk akal.
+- Bezakan struktur yang sengaja kreatif daripada gabungan kata yang tidak membawa maksud. Kreativiti boleh PASS; semantic incompatibility tidak boleh PASS.
+- Jangan padankan dengan model answer.
+- Perkataan murid tidak perlu berada dalam kosa kata aplikasi.
+- Perkataan yang sah secara individu tidak bermaksud gabungannya sesuai. Contoh: “Saya membaca nasi di rumah.” gagal pada MEANING.
+- Lokasi imaginatif yang sah tidak boleh menyelamatkan hubungan inti yang salah. “Saya mengemas tahi di langit.” tetap gagal pada MEANING.
+- “Ayah membaca di langit.” boleh IMAGINATIVE dan lulus jika skill PLACE dipenuhi.
+- “Adik belajar di hutan.” boleh POSSIBLE dan lulus.
+- Jawapan kreatif tetapi boleh difahami mesti diterima sebagai POSSIBLE/IMAGINATIVE, bukan ditolak kerana tidak biasa.
+- Jika sebahagian jawapan betul, preserve bahagian itu melalui preserved_parts. Jangan buang semua usaha murid.
+- preserved_parts hanya boleh menggunakan: BASE_MEANING, SKILL_TARGET, CREATIVE_IDEA, LANGUAGE_FORM.
+- Jika meaning gagal, primary_issue=MEANING walaupun tanda baca/huruf besar juga salah.
+- Jika meaning lulus tetapi skill tidak dipenuhi, primary_issue=SKILL_TARGET.
+- Jika meaning+skill lulus tetapi kesesuaian benar-benar bermasalah, primary_issue=APPROPRIATENESS.
+- Jika semua di atas lulus tetapi ada satu pembetulan bahasa penting, primary_issue=LANGUAGE.
+- Jika semuanya lulus, primary_issue=NONE dan result=PASS.
+- ODD/UNKNOWN boleh menghasilkan CLARIFY apabila makna mungkin wujud tetapi tidak cukup yakin.
+- Jangan ghostwrite. Jangan beri satu ayat jawapan baharu. language_issue/clarification_question mesti pendek dan mesra murid Tahun 1.
 
-information_type boleh seperti:
-PLACE, TIME, COMPANION, DESCRIPTION, ACTION_DETAIL, OTHER, UNKNOWN.
+OUTPUT WAJIB:
+result: PASS, RETRY, atau CLARIFY
+meaning_status: PASS, FAIL, atau UNCERTAIN
+skill_target_status: MET, NOT_MET, atau UNCERTAIN
+appropriateness: NATURAL, POSSIBLE, IMAGINATIVE, ODD, INVALID, atau UNKNOWN
+language_status: CLEAN atau MINOR_ISSUE
+language_issue: string pendek atau null
+primary_issue: MEANING, SKILL_TARGET, APPROPRIATENESS, LANGUAGE, atau NONE
+preserved_parts: array daripada BASE_MEANING, SKILL_TARGET, CREATIVE_IDEA, LANGUAGE_FORM
+needs_clarification: boolean
+clarification_question: string
+confidence: 0 hingga 1
 
-confidence ialah nombor 0 hingga 1.
+KALIBRASI KRITIKAL:
+- “Ibu makan nasi di rumah.” => meaning PASS.
+- “Saya makan buku di dapur.” => meaning FAIL, RETRY, primary_issue MEANING.
+- “Saya membaca nasi di rumah.” => meaning FAIL, RETRY, primary_issue MEANING.
+- “Kawan saya belajar nasi di sekolah.” => meaning FAIL kerana “belajar nasi” tidak membentuk hubungan yang sesuai; lokasi “di sekolah” tidak mengubah kegagalan hubungan inti. “Kawan saya belajar tentang nasi di sekolah.” pula boleh dinilai berbeza kerana “tentang nasi” mempunyai hubungan makna yang jelas.
+- “Kawan saya bermain nasi di tandas.” => meaning FAIL/UNCERTAIN, tidak boleh PASS hanya kerana ada lokasi.
+- “Ayah membaca di langit.” => meaning PASS, appropriateness IMAGINATIVE.
+- “Adik bermain di bulan.” => meaning PASS, appropriateness IMAGINATIVE.
+- “Bilik saya bersih dan unik.” => jangan gagal hanya kerana “unik” mungkin tiada dalam kamus aplikasi; nilai gabungan makna.
+- Jika jawapan bermakna tetapi diminta PLACE dan murid hanya menambah TIME, skill_target_status=NOT_MET.
+- Prinsip yang sama mesti digunakan untuk SEMUA sasaran: jika sasaran INTENSITY tetapi murid hanya menambah PLACE/TIME/COMPANION, skill_target_status=NOT_MET. Contoh: asas “Ali gembira.” + jawapan “Ali gembira di sekolah.” => meaning PASS, skill_target_status NOT_MET, primary_issue SKILL_TARGET.
+- Untuk DESCRIPTION, semak sama ada sifat/deria yang ditambah benar-benar sesuai dengan benda yang diterangkan. “Bunga itu cantik dengan rasa masin.” tanpa konteks makanan => appropriateness ODD/UNKNOWN, bukan terus PASS.
+- Jika sasaran sudah dipenuhi tetapi tambahan lain membentuk gabungan yang pelik seperti “Ali sangat gembira dengan batu marah.”, jangan abaikan kejanggalan itu. meaning boleh PASS jika inti masih jelas, tetapi appropriateness mesti ODD/UNKNOWN dan primary_issue APPROPRIATENESS atau CLARIFY.
+- Jangan paksa semua kes pelik ke APPROPRIATENESS. Jika hubungan inti rosak, gunakan MEANING; jika jenis sasaran tidak dipenuhi (contohnya WITH-WHOM tetapi objek bukan teman), gunakan SKILL_TARGET.
+- Lokasi imaginatif yang masih boleh difahami seperti “Saya membaca buku di atas bulan.” boleh IMAGINATIVE dan PASS; jangan tandakan salah hanya kerana tidak realistik.
   `.trim();
 
   const input = `
@@ -1328,41 +1613,30 @@ async function requestStructuredSemanticJudgment({
                 schema: {
                   type: "object",
                   properties: {
-                    target_met: { type: "boolean" },
-                    meaning_preserved: { type: "boolean" },
-                    information_type: { type: "string" },
-                    semantic_class: {
-                      type: "string",
-                      enum: [
-                        "NATURAL",
-                        "POSSIBLE",
-                        "IMAGINATIVE",
-                        "ODD",
-                        "INVALID",
-                        "UNKNOWN"
-                      ]
+                    result: { type: "string", enum: ["PASS", "RETRY", "CLARIFY"] },
+                    meaning_status: { type: "string", enum: ["PASS", "FAIL", "UNCERTAIN"] },
+                    skill_target_status: { type: "string", enum: ["MET", "NOT_MET", "UNCERTAIN"] },
+                    appropriateness: { type: "string", enum: ["NATURAL", "POSSIBLE", "IMAGINATIVE", "ODD", "INVALID", "UNKNOWN"] },
+                    language_status: { type: "string", enum: ["CLEAN", "MINOR_ISSUE"] },
+                    language_issue: { type: ["string", "null"] },
+                    primary_issue: { type: "string", enum: ["MEANING", "SKILL_TARGET", "APPROPRIATENESS", "LANGUAGE", "NONE"] },
+                    preserved_parts: {
+                      type: "array",
+                      items: { type: "string", enum: ["BASE_MEANING", "SKILL_TARGET", "CREATIVE_IDEA", "LANGUAGE_FORM"] }
                     },
-                    language_issue: {
-                      type: ["string", "null"]
-                    },
-                    needs_clarification: {
-                      type: "boolean"
-                    },
-                    clarification_question: {
-                      type: "string"
-                    },
-                    confidence: {
-                      type: "number",
-                      minimum: 0,
-                      maximum: 1
-                    }
+                    needs_clarification: { type: "boolean" },
+                    clarification_question: { type: "string" },
+                    confidence: { type: "number", minimum: 0, maximum: 1 }
                   },
                   required: [
-                    "target_met",
-                    "meaning_preserved",
-                    "information_type",
-                    "semantic_class",
+                    "result",
+                    "meaning_status",
+                    "skill_target_status",
+                    "appropriateness",
+                    "language_status",
                     "language_issue",
+                    "primary_issue",
+                    "preserved_parts",
                     "needs_clarification",
                     "clarification_question",
                     "confidence"
@@ -1507,63 +1781,75 @@ async function requestGroqSemanticJudgment({
 
 
 function cleanSemanticJudgment(result) {
+  const allowedAppropriateness=new Set(["NATURAL","POSSIBLE","IMAGINATIVE","ODD","INVALID","UNKNOWN"]);
+  const allowedPrimary=new Set(["MEANING","SKILL_TARGET","APPROPRIATENESS","LANGUAGE","NONE"]);
+  const allowedPreserved=new Set(["BASE_MEANING","SKILL_TARGET","CREATIVE_IDEA","LANGUAGE_FORM"]);
+  const norm=(v,allowed,fallback)=>{const x=String(v||fallback).toUpperCase();return allowed.has(x)?x:fallback;};
+  const resultSet=new Set(["PASS","RETRY","CLARIFY"]), meaningSet=new Set(["PASS","FAIL","UNCERTAIN"]), skillSet=new Set(["MET","NOT_MET","UNCERTAIN"]), languageSet=new Set(["CLEAN","MINOR_ISSUE"]);
+  const confidenceRaw=Number(result?.confidence);
+  const confidence=Number.isFinite(confidenceRaw)?Math.max(0,Math.min(1,confidenceRaw)):0;
+  const meaning_status=norm(result?.meaning_status,meaningSet,"UNCERTAIN");
+  const skill_target_status=norm(result?.skill_target_status,skillSet,"UNCERTAIN");
+  const appropriateness=norm(result?.appropriateness||result?.semantic_class,allowedAppropriateness,"UNKNOWN");
+  const language_status=norm(result?.language_status,languageSet,result?.language_issue?"MINOR_ISSUE":"CLEAN");
+  const language_issue=result?.language_issue?String(result.language_issue).trim():null;
+  let primary_issue="NONE";
+  let finalResult="PASS";
 
-  const allowed =
-    new Set([
-      "NATURAL",
-      "POSSIBLE",
-      "IMAGINATIVE",
-      "ODD",
-      "INVALID",
-      "UNKNOWN"
-    ]);
-
-  let semanticClass =
-    String(
-      result?.semantic_class || "UNKNOWN"
-    ).toUpperCase();
-
-  if (!allowed.has(semanticClass)) {
-    semanticClass = "UNKNOWN";
+  // Canonical Teaching Engine v2 hierarchy. Lower layers can never override
+  // an earlier layer, and model-provided result/primary_issue are normalized
+  // into one internally consistent contract.
+  if(meaning_status==="UNCERTAIN"){
+    finalResult="CLARIFY";
+  }
+  else if(meaning_status==="FAIL"){
+    primary_issue="MEANING";finalResult="RETRY";
+  }
+  else if(skill_target_status==="UNCERTAIN"){
+    finalResult="CLARIFY";
+  }
+  else if(skill_target_status==="NOT_MET"){
+    primary_issue="SKILL_TARGET";finalResult="RETRY";
+  }
+  else if(["ODD","UNKNOWN"].includes(appropriateness)){
+    finalResult="CLARIFY";
+  }
+  else if(appropriateness==="INVALID"){
+    primary_issue="APPROPRIATENESS";finalResult="RETRY";
+  }
+  else if(language_status==="MINOR_ISSUE"){
+    primary_issue="LANGUAGE";finalResult="RETRY";
   }
 
-  const confidenceRaw =
-    Number(result?.confidence);
+  const needs_clarification=finalResult==="CLARIFY";
+  let clarification_question=String(result?.clarification_question||"").trim();
+  if(needs_clarification && !clarification_question){
+    clarification_question="Boleh jelaskan maksud ayat kamu sedikit lagi?";
+  }
+  if(!needs_clarification){
+    clarification_question="";
+  }
 
-  const confidence =
-    Number.isFinite(confidenceRaw)
-      ? Math.max(0, Math.min(1, confidenceRaw))
-      : 0;
-
+  const preserved=Array.isArray(result?.preserved_parts)?result.preserved_parts.map(x=>String(x).toUpperCase()).filter(x=>allowedPreserved.has(x)):[];
   return {
-    target_met:
-      result?.target_met === true,
-
-    meaning_preserved:
-      result?.meaning_preserved !== false,
-
-    information_type:
-      String(
-        result?.information_type || "UNKNOWN"
-      ).toUpperCase(),
-
-    semantic_class:
-      semanticClass,
-
-    language_issue:
-      result?.language_issue
-        ? String(result.language_issue).trim()
-        : null,
-
-    needs_clarification:
-      result?.needs_clarification === true,
-
-    clarification_question:
-      String(
-        result?.clarification_question || ""
-      ).trim(),
-
-    confidence
+    result:finalResult,
+    meaning_status,
+    skill_target_status,
+    appropriateness,
+    language_status,
+    language_issue,
+    primary_issue,
+    preserved_parts:[...new Set(preserved)],
+    needs_clarification,
+    clarification_question,
+    confidence,
+    // Backward-compatible aliases for older clients.
+    target_met:skill_target_status==="MET",
+    meaning_preserved:meaning_status==="PASS",
+    semantic_class:appropriateness,
+    information_type:"UNKNOWN",
+    engine_version:"AI-NATIVE-V3",
+    provider_model:DEFAULT_MODEL
   };
 }
 
@@ -1750,5 +2036,5 @@ function extractResponseText(
 
 
 /* =========================================================
-   END KARANGAN AI API v4.4.3
+   END KARANGAN AI API v4.7.0
    ========================================================= */

@@ -1,6 +1,6 @@
-Karangan AI Langkah 4 — RC1 TESTED RELEASE CANDIDATE
+Karangan AI Langkah 4 — v17.0.1 TESTED RELEASE CANDIDATE
 
-Frontend: v12.14.2
+Frontend: v17.0.1
 Backend: API v4.7.0
 
 Offline Release Gate: PASS
@@ -12,6 +12,9 @@ Offline Release Gate: PASS
 - Semantic AI route and OpenAI->Groq failover retained
 - Hard semantic relationship gate retained
 - 500-case deterministic regression matrix completed
+- Teacher + Critic production gate retained
+- Deterministic QA verifier aligned with the production action contract
+- Root/API backend copies synchronized
 
 Deploy only this paired set:
 1) root app.js <- app.js

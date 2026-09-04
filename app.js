@@ -2,7 +2,7 @@
    KARANGAN AI
    MASTER APP CONTROLLER
    Stable Integrated Build
-   Version 3.0
+   Release 17.0.1
    ========================================================= */
 
 "use strict";
@@ -13,7 +13,7 @@
    ========================================================= */
 
 const APP_CONFIG = {
-  version: "3.0",
+  version: "17.0.1",
   storageKey: "karanganAI_v3_state",
 
   missionOrder: [
@@ -6053,7 +6053,7 @@ window.KaranganAI = {
 
 /* =========================================================
    END
-   KARANGAN AI v3.0
+   KARANGAN AI CORE (state schema v3 retained for compatibility)
    ========================================================= */
 /* =========================================================
    KARANGAN AI v3.1
@@ -12824,7 +12824,7 @@ window.KaranganTranslationCache = {
    Additive integration. Langkah 2 & Langkah 3 are untouched.
    ========================================================= */
 (function(){
-  const L4_VERSION="17.0.0-PRODUCTION-TEACHING-ENGINE";
+  const L4_VERSION="17.0.1-PRODUCTION-TEACHING-ENGINE";
   const CONTENT_VERSION="1.0_STABLE";
   const LEGACY_GRAMMAR=renderGrammarRain;
   const STATE_KEY="karangan_ai_l4_t1_v1";
@@ -13650,7 +13650,10 @@ window.KaranganTranslationCache = {
     if(!snapshot?.base)throw new Error("Missing frozen exercise snapshot");
     if(window.__KARANGAN_L4_QA_PROVIDER__){
       const judge=await l4TeachingJudge(snapshot,answer);
-      return {...judge,judge_source:"QA",degraded:false};
+      // The deterministic QA provider stands in for the complete
+      // Teacher + Critic pipeline. This branch is unreachable unless the
+      // private test seam above has been explicitly installed.
+      return {...judge,judge_source:"QA",critic_status:"PASS",degraded:false};
     }
     const local=l4LocalTeachingVerdict(snapshot,answer);
     if(local.final)return local.judge;
@@ -13802,7 +13805,8 @@ window.KaranganTranslationCache = {
     // 3) AI-based PASS requires Critic PASS. Deterministic LOCAL safe patterns may pass directly.
     const localSafe=j.judge_source==="LOCAL" && j.degraded!==true;
     const aiVerified=j.critic_status==="PASS" && j.judge_source==="AI_TEACHER_CRITIC";
-    if(localSafe || aiVerified){
+    const qaVerified=j.critic_status==="PASS" && j.judge_source==="QA";
+    if(localSafe || aiVerified || qaVerified){
       return {action:"PASS",issue:"NONE"};
     }
 
@@ -13860,7 +13864,7 @@ window.KaranganTranslationCache = {
       },
       {
         name:"Imaginative but meaningful is accepted",
-        judge:{meaning_status:"PASS",skill_target_status:"MET",appropriateness:"IMAGINATIVE",language_issue:null,primary_issue:"NONE",needs_clarification:false},
+        judge:{meaning_status:"PASS",skill_target_status:"MET",appropriateness:"IMAGINATIVE",language_issue:null,primary_issue:"NONE",needs_clarification:false,judge_source:"LOCAL"},
         answer:"Saya membaca buku di dalam istana ajaib.",
         expected:"NONE"
       },
@@ -13878,7 +13882,7 @@ window.KaranganTranslationCache = {
       },
       {
         name:"Clean meaningful target answer accepted",
-        judge:{meaning_status:"PASS",skill_target_status:"MET",appropriateness:"NATURAL",language_issue:null,primary_issue:"NONE",needs_clarification:false},
+        judge:{meaning_status:"PASS",skill_target_status:"MET",appropriateness:"NATURAL",language_issue:null,primary_issue:"NONE",needs_clarification:false,judge_source:"LOCAL"},
         answer:"Saya membaca buku di rumah.",
         expected:"NONE"
       }
@@ -14530,6 +14534,7 @@ window.KaranganTranslationCache = {
       check("Hint does not lock choices",!!document.querySelector("[data-l4-choice]")&&!document.querySelector("[data-l4-choice]").disabled);
 
       l4QaClick("[data-l4-choice]");
+      await l4QaWaitFor(()=>l4Machine.phase==="UPGRADE");
       check("Choice after hint -> UPGRADE",l4Machine.phase==="UPGRADE",l4Machine.phase);
       check("Choice action has no runtime exception",!window.__L4_LAST_ACTION_ERROR__,window.__L4_LAST_ACTION_ERROR__||"none");
       const stage2Ready=await l4QaWaitFor(()=>!!l4QaAction("try-own"));
@@ -14696,7 +14701,7 @@ window.KaranganTranslationCache = {
 
     // 8 creative but meaningful accepted
     {
-      const judge={meaning_status:"PASS",skill_target_status:"MET",appropriateness:"IMAGINATIVE",language_issue:null,primary_issue:"NONE"};
+      const judge={meaning_status:"PASS",skill_target_status:"MET",appropriateness:"IMAGINATIVE",language_issue:null,primary_issue:"NONE",judge_source:"LOCAL"};
       const d=l4TeachingDecision(judge,"Saya membaca buku di dalam istana ajaib.");
       add("Creative meaningful answer accepted",d.issue==="NONE",`issue=${d.issue}`);
     }
@@ -14740,5 +14745,5 @@ window.KaranganTranslationCache = {
     return report;
   }
 
-  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v17.0.0-click-only+adaptive+central-teaching-action-contract",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMasteryStats:l4MasteryStats,getAdaptivePlan:l4AdaptivePlan,getHybridLocalVerdict:l4LocalTeachingVerdict,getBaseAlignment:l4BaseAlignment,generateTeachingExample:l4GenerateTeachingExample,resolveTeachingExample:l4ResolveTeachingExample,runTeachingCritic:l4TeachingCritic,teachingActionContract:l4TeachingActionContract,getAIStatus:()=>({cooldown:l4AIInCooldown(),until:Number(window.__KARANGAN_L4_AI_COOLDOWN_UNTIL__||0),lastError:window.__KARANGAN_L4_AI_LAST_ERROR_TYPE__||null}),getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null,runTeachingSimulation:l4RunTeachingSimulation,lastTeachingSimulation:()=>window.__KARANGAN_L4_LAST_SIM__||null,runLiveAIBenchmark:l4RunLiveAIBenchmark,lastLiveAIBenchmark:()=>window.__KARANGAN_L4_LAST_LIVE_BENCH__||null,runTargetedSmoke:l4RunTargetedSmoke,lastTargetedSmoke:()=>window.__KARANGAN_L4_LAST_SMOKE__||null,runPredeploymentLab:l4RunPredeploymentLab,lastPredeploymentLab:()=>window.__KARANGAN_L4_LAST_PREDEPLOY_LAB__||null};
+  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v17.0.1-click-only+adaptive+central-teaching-action-contract",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMasteryStats:l4MasteryStats,getAdaptivePlan:l4AdaptivePlan,getHybridLocalVerdict:l4LocalTeachingVerdict,getBaseAlignment:l4BaseAlignment,generateTeachingExample:l4GenerateTeachingExample,resolveTeachingExample:l4ResolveTeachingExample,runTeachingCritic:l4TeachingCritic,teachingActionContract:l4TeachingActionContract,getAIStatus:()=>({cooldown:l4AIInCooldown(),until:Number(window.__KARANGAN_L4_AI_COOLDOWN_UNTIL__||0),lastError:window.__KARANGAN_L4_AI_LAST_ERROR_TYPE__||null}),getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null,runTeachingSimulation:l4RunTeachingSimulation,lastTeachingSimulation:()=>window.__KARANGAN_L4_LAST_SIM__||null,runLiveAIBenchmark:l4RunLiveAIBenchmark,lastLiveAIBenchmark:()=>window.__KARANGAN_L4_LAST_LIVE_BENCH__||null,runTargetedSmoke:l4RunTargetedSmoke,lastTargetedSmoke:()=>window.__KARANGAN_L4_LAST_SMOKE__||null,runPredeploymentLab:l4RunPredeploymentLab,lastPredeploymentLab:()=>window.__KARANGAN_L4_LAST_PREDEPLOY_LAB__||null};
 })();

@@ -1,0 +1,30 @@
+{
+  "version": "17.0.1",
+  "name": "Teaching Contract and Release Consistency Hotfix",
+  "result": "PASS",
+  "fixes": [
+    "Aligned the deterministic QA provider with the production Teacher plus Critic verification contract.",
+    "Removed the asynchronous race in the Asas guided-choice behavior test.",
+    "Marked deterministic safe-policy fixtures with their trusted local source.",
+    "Synchronized the root release backend copy with api/ai.js.",
+    "Aligned frontend, Langkah 4 and deployment version markers."
+  ],
+  "release_gates": {
+    "javascript_syntax": "PASS",
+    "predeployment_fault_injection": "12/12 PASS",
+    "behavior_state_machine": "30/30 PASS",
+    "teaching_policy_simulation": "1000/1000 PASS",
+    "langkah_2_3_regression": "7/7 PASS",
+    "runtime_errors": 0,
+    "backend_pair_identical": true
+  },
+  "protected": [
+    "Meaning > Skill Target > Appropriateness > Language > Independence",
+    "Creative meaningful answers remain acceptable",
+    "Only independent success counts as mastery",
+    "Langkah 2",
+    "Langkah 3",
+    "iPad/Safari interaction handlers",
+    "API v4.7.0"
+  ]
+}
