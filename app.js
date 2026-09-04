@@ -12824,7 +12824,7 @@ window.KaranganTranslationCache = {
    Additive integration. Langkah 2 & Langkah 3 are untouched.
    ========================================================= */
 (function(){
-  const L4_VERSION="16.0.0-TEACHER-CRITIC-ENGINE";
+  const L4_VERSION="17.0.0-PRODUCTION-TEACHING-ENGINE";
   const CONTENT_VERSION="1.0_STABLE";
   const LEGACY_GRAMMAR=renderGrammarRain;
   const STATE_KEY="karangan_ai_l4_t1_v1";
@@ -13669,7 +13669,9 @@ window.KaranganTranslationCache = {
       const teacher=await l4WithTimeout(l4TeachingJudge(snapshot,answer),9000);
       const teacherDecision=l4TeachingDecision(teacher,answer);
 
-      if(teacherDecision.issue!=="NONE"){
+      // Definite Teacher errors can go straight to the central action contract.
+      // ACCEPT and genuine/claimed ambiguity both require independent Critic review.
+      if(["MEANING","SKILL_TARGET","APPROPRIATENESS","LANGUAGE"].includes(teacherDecision.issue)){
         return {...teacher,judge_source:"AI_TEACHER",critic_status:"NOT_REQUIRED",degraded:false};
       }
 
@@ -13744,7 +13746,9 @@ window.KaranganTranslationCache = {
       const map={PLACE:"Kamu sudah membina ayat yang boleh difahami. Sekarang tambah maklumat tempat.",TIME:"Kamu sudah membina ayat yang boleh difahami. Sekarang tambah maklumat masa.",COMPANION:"Kamu sudah membina ayat yang boleh difahami. Sekarang tambah maklumat dengan siapa.",DESCRIPTION:"Kamu sudah membina ayat yang boleh difahami. Sekarang tambah satu penerangan yang sesuai.",INTENSITY:"Kamu sudah mengekalkan maksud ayat. Sekarang kuatkan perasaan atau penerangan itu.",OPEN:"Ayat kamu boleh difahami. Sekarang tambah satu maklumat baharu yang bermakna.",OPEN_DYNAMIC:"Ayat kamu boleh difahami. Sekarang tambah satu maklumat baharu yang bermakna."};
       return map[key]||map.OPEN;
     }
-    if(j.primary_issue==="APPROPRIATENESS") return praise+"Idea kamu menarik. Cuba fikir sama ada maklumat itu sesuai dengan maksud seluruh ayat.";
+    if(j.primary_issue==="APPROPRIATENESS"){
+      return praise+"Ada bahagian yang tidak sesuai dengan maksud ayat. Kekalkan bahagian yang betul dan tukar maklumat yang tidak sesuai kepada penerangan yang lebih tepat.";
+    }
     if(j.primary_issue==="LANGUAGE" && j.language_issue) return "Idea kamu sudah boleh difahami. Baiki satu perkara sahaja: "+j.language_issue;
     if(j.needs_clarification || j.appropriateness==="ODD" || j.appropriateness==="UNKNOWN" || j.confidence<0.65){
       return j.clarification_question || "Idea kamu menarik. Boleh jelaskan sedikit maksud maklumat yang kamu tambah?";
@@ -13760,28 +13764,60 @@ window.KaranganTranslationCache = {
   }
 
 
-  function l4TeachingDecision(judge,answer){
+  function l4TeachingActionContract(judge,answer){
     const j=judge||{};
-    if(j.meaning_status==="UNCERTAIN" || j.needs_clarification===true){
-      return {outcome:"CLARIFY",issue:"UNCERTAIN"};
-    }
-    if(j.meaning_status==="FAIL"){
-      return {outcome:"RETRY",issue:"MEANING"};
-    }
-    if(j.skill_target_status==="UNCERTAIN"){
-      return {outcome:"CLARIFY",issue:"UNCERTAIN"};
-    }
-    if(j.skill_target_status==="NOT_MET"){
-      return {outcome:"RETRY",issue:"SKILL_TARGET"};
-    }
-    if(["ODD","INVALID","UNKNOWN"].includes(j.appropriateness) || j.primary_issue==="APPROPRIATENESS"){
-      return {outcome:"RETRY",issue:"APPROPRIATENESS"};
-    }
     const languageIssue=j.language_issue||l4LanguagePrecheck(String(answer||""));
-    if(languageIssue){
-      return {outcome:"RETRY",issue:"LANGUAGE",language_issue:languageIssue};
+
+    // 1) Known errors are CORRECT, never CLARIFY.
+    if(j.meaning_status==="FAIL" || j.primary_issue==="MEANING"){
+      return {action:"CORRECT",issue:"MEANING",preserve:j.critic_preserve||j.preserved_parts||[]};
     }
-    return {outcome:"ACCEPT",issue:"NONE"};
+    if(j.skill_target_status==="NOT_MET" || j.primary_issue==="SKILL_TARGET"){
+      return {action:"RETRY",issue:"SKILL_TARGET",preserve:j.critic_preserve||j.preserved_parts||[]};
+    }
+    if(j.critic_status==="VETO" ||
+       j.pedagogically_appropriate===false ||
+       ["ODD","INVALID"].includes(j.appropriateness) ||
+       j.primary_issue==="APPROPRIATENESS"){
+      return {
+        action:"CORRECT",
+        issue:j.pedagogical_issue||"APPROPRIATENESS",
+        preserve:j.critic_preserve||j.preserved_parts||[],
+        alternatives:j.critic_alternatives||[]
+      };
+    }
+    if(languageIssue){
+      return {action:"CORRECT",issue:"LANGUAGE",language_issue:languageIssue,preserve:j.critic_preserve||j.preserved_parts||[]};
+    }
+
+    // 2) CLARIFY is reserved for genuine unresolved semantic ambiguity.
+    if(j.critic_status==="CLARIFY" ||
+       j.meaning_status==="UNCERTAIN" ||
+       j.skill_target_status==="UNCERTAIN" ||
+       j.needs_clarification===true ||
+       j.appropriateness==="UNKNOWN"){
+      return {action:"CLARIFY",issue:"UNCERTAIN"};
+    }
+
+    // 3) AI-based PASS requires Critic PASS. Deterministic LOCAL safe patterns may pass directly.
+    const localSafe=j.judge_source==="LOCAL" && j.degraded!==true;
+    const aiVerified=j.critic_status==="PASS" && j.judge_source==="AI_TEACHER_CRITIC";
+    if(localSafe || aiVerified){
+      return {action:"PASS",issue:"NONE"};
+    }
+
+    // 4) No subsystem can invent PASS outside this contract.
+    return {action:"CLARIFY",issue:"UNCERTAIN"};
+  }
+
+  function l4TeachingDecision(judge,answer){
+    const a=l4TeachingActionContract(judge,answer);
+    return {
+      outcome:a.action==="PASS"?"ACCEPT":(a.action==="CLARIFY"?"CLARIFY":"RETRY"),
+      issue:a.issue==="PEDAGOGICAL_APPROPRIATENESS"?"APPROPRIATENESS":a.issue,
+      teaching_action:a.action,
+      language_issue:a.language_issue||null
+    };
   }
 
   function l4TeachingSimulationCases(count=1000){
@@ -14217,13 +14253,16 @@ window.KaranganTranslationCache = {
       const history=Array.isArray(loadState().teachingHistory)?loadState().teachingHistory:[];
       history.push({exerciseId:snap.exerciseId,taskId:snap.taskId,base:snap.base,answer:draft,skill:snap.skill,...judge,at:Date.now()});
       saveState({teachingHistory:history.slice(-100)});
-      if(judge.meaning_status==="UNCERTAIN"){independentRender(snap.base,l4TeachingFeedback(snap.task,{...judge,primary_issue:"NONE",needs_clarification:true}),snap);return;}
-      if(judge.meaning_status==="FAIL"){independentRender(snap.base,l4TeachingFeedback(snap.task,{...judge,primary_issue:"MEANING"}),snap);return;}
-      if(judge.skill_target_status==="UNCERTAIN"){independentRender(snap.base,l4TeachingFeedback(snap.task,{...judge,primary_issue:"NONE",needs_clarification:true}),snap);return;}
-      if(judge.skill_target_status==="NOT_MET"){independentRender(snap.base,l4TeachingFeedback(snap.task,{...judge,primary_issue:"SKILL_TARGET"}),snap);return;}
-      if(["ODD","INVALID","UNKNOWN"].includes(judge.appropriateness)||judge.primary_issue==="APPROPRIATENESS"){independentRender(snap.base,l4TeachingFeedback(snap.task,judge),snap);return;}
-      const localLanguageIssue=l4LanguagePrecheck(draft),languageIssue=judge.language_issue||localLanguageIssue;
-      if(languageIssue){independentRender(snap.base,l4TeachingFeedback(snap.task,{...judge,primary_issue:"LANGUAGE",language_issue:languageIssue}),snap);return;}
+      const teachingAction=l4TeachingActionContract(judge,draft);
+      if(teachingAction.action!=="PASS"){
+        const feedbackJudge={
+          ...judge,
+          primary_issue:teachingAction.issue==="PEDAGOGICAL_APPROPRIATENESS"?"APPROPRIATENESS":teachingAction.issue,
+          needs_clarification:teachingAction.action==="CLARIFY",
+          language_issue:teachingAction.language_issue||judge.language_issue
+        };
+        independentRender(snap.base,l4TeachingFeedback(snap.task,feedbackJudge),snap);return;
+      }
       const independentEvidence=!l4Machine.cycleHintUsed && !independentHintUsed && judge?.degraded!==true;
       recordSuccess("STAGE3_SUCCESS",snap.base,{independentEvidence,judge,snapshot:snap});
       success(independentEvidence,judge);
@@ -14244,12 +14283,16 @@ window.KaranganTranslationCache = {
       const judge=await l4HybridTeachingJudge(snap,v);
       l4SetBusy(false);
       if(seq!==l4JudgeSeq || activeExercise?.exerciseId!==snap.exerciseId) return;
-      if(judge.meaning_status==="UNCERTAIN"||judge.skill_target_status==="UNCERTAIN"||judge.needs_clarification){guided(l4TeachingFeedback(snap.task,{...judge,primary_issue:"NONE",needs_clarification:true}));return;}
-      if(judge.meaning_status==="FAIL"){guided(l4TeachingFeedback(snap.task,{...judge,primary_issue:"MEANING"}));return;}
-      if(judge.skill_target_status==="NOT_MET"){guided(l4TeachingFeedback(snap.task,{...judge,primary_issue:"SKILL_TARGET"}));return;}
-      if(["ODD","INVALID","UNKNOWN"].includes(judge.appropriateness)||judge.primary_issue==="APPROPRIATENESS"){guided(l4TeachingFeedback(snap.task,judge));return;}
-      const localLanguageIssue=l4LanguagePrecheck(v),languageIssue=judge.language_issue||localLanguageIssue;
-      if(languageIssue){guided(l4TeachingFeedback(snap.task,{...judge,primary_issue:"LANGUAGE",language_issue:languageIssue}));return;}
+      const teachingAction=l4TeachingActionContract(judge,v);
+      if(teachingAction.action!=="PASS"){
+        const feedbackJudge={
+          ...judge,
+          primary_issue:teachingAction.issue==="PEDAGOGICAL_APPROPRIATENESS"?"APPROPRIATENESS":teachingAction.issue,
+          needs_clarification:teachingAction.action==="CLARIFY",
+          language_issue:teachingAction.language_issue||judge.language_issue
+        };
+        guided(l4TeachingFeedback(snap.task,feedbackJudge));return;
+      }
       recordSuccess(guidedHint3?"GUIDED_SUCCESS":"GUIDED_INDEPENDENT",snap.base,{judge,snapshot:snap});
       await l4TeachMagic(snap,v);
     }catch(err){
@@ -14697,5 +14740,5 @@ window.KaranganTranslationCache = {
     return report;
   }
 
-  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v16.0.0-click-only+adaptive+teacher-critic+conservative-fallback",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMasteryStats:l4MasteryStats,getAdaptivePlan:l4AdaptivePlan,getHybridLocalVerdict:l4LocalTeachingVerdict,getBaseAlignment:l4BaseAlignment,generateTeachingExample:l4GenerateTeachingExample,resolveTeachingExample:l4ResolveTeachingExample,runTeachingCritic:l4TeachingCritic,getAIStatus:()=>({cooldown:l4AIInCooldown(),until:Number(window.__KARANGAN_L4_AI_COOLDOWN_UNTIL__||0),lastError:window.__KARANGAN_L4_AI_LAST_ERROR_TYPE__||null}),getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null,runTeachingSimulation:l4RunTeachingSimulation,lastTeachingSimulation:()=>window.__KARANGAN_L4_LAST_SIM__||null,runLiveAIBenchmark:l4RunLiveAIBenchmark,lastLiveAIBenchmark:()=>window.__KARANGAN_L4_LAST_LIVE_BENCH__||null,runTargetedSmoke:l4RunTargetedSmoke,lastTargetedSmoke:()=>window.__KARANGAN_L4_LAST_SMOKE__||null,runPredeploymentLab:l4RunPredeploymentLab,lastPredeploymentLab:()=>window.__KARANGAN_L4_LAST_PREDEPLOY_LAB__||null};
+  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v17.0.0-click-only+adaptive+central-teaching-action-contract",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMasteryStats:l4MasteryStats,getAdaptivePlan:l4AdaptivePlan,getHybridLocalVerdict:l4LocalTeachingVerdict,getBaseAlignment:l4BaseAlignment,generateTeachingExample:l4GenerateTeachingExample,resolveTeachingExample:l4ResolveTeachingExample,runTeachingCritic:l4TeachingCritic,teachingActionContract:l4TeachingActionContract,getAIStatus:()=>({cooldown:l4AIInCooldown(),until:Number(window.__KARANGAN_L4_AI_COOLDOWN_UNTIL__||0),lastError:window.__KARANGAN_L4_AI_LAST_ERROR_TYPE__||null}),getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null,runTeachingSimulation:l4RunTeachingSimulation,lastTeachingSimulation:()=>window.__KARANGAN_L4_LAST_SIM__||null,runLiveAIBenchmark:l4RunLiveAIBenchmark,lastLiveAIBenchmark:()=>window.__KARANGAN_L4_LAST_LIVE_BENCH__||null,runTargetedSmoke:l4RunTargetedSmoke,lastTargetedSmoke:()=>window.__KARANGAN_L4_LAST_SMOKE__||null,runPredeploymentLab:l4RunPredeploymentLab,lastPredeploymentLab:()=>window.__KARANGAN_L4_LAST_PREDEPLOY_LAB__||null};
 })();
