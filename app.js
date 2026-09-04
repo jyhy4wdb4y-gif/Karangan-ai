@@ -12824,7 +12824,7 @@ window.KaranganTranslationCache = {
    Additive integration. Langkah 2 & Langkah 3 are untouched.
    ========================================================= */
 (function(){
-  const L4_VERSION="14.0.0-INTEGRATED-HYBRID-ENGINE";
+  const L4_VERSION="14.1.0-ADAPTIVE-LEARNING";
   const CONTENT_VERSION="1.0_STABLE";
   const LEGACY_GRAMMAR=renderGrammarRain;
   const STATE_KEY="karangan_ai_l4_t1_v1";
@@ -12969,6 +12969,46 @@ window.KaranganTranslationCache = {
     const total=Object.values(counts).reduce((a,b)=>a+b,0);
     const practiced=Object.values(counts).filter(n=>n>0).length;
     return {counts,total,practiced,evidence};
+  }
+
+
+  // v14.1.0 Adaptive Learning
+  // Weak-skill prioritization uses ONLY independent mastery evidence.
+  // It changes the NEXT task selection, never the Stage 1 -> Magic -> Stage 3
+  // skill contract inside an active learning cycle.
+  const L4_ADAPTIVE_SKILLS=["PLACE","TIME","COMPANION","DESCRIPTION","INTENSITY","OPEN"];
+
+  function l4AdaptiveSkillCounts(){
+    return {...l4MasteryStats().counts};
+  }
+
+  function l4AdaptiveTargetSkill(){
+    const counts=l4AdaptiveSkillCounts();
+    const min=Math.min(...L4_ADAPTIVE_SKILLS.map(k=>counts[k]||0));
+    const weakest=L4_ADAPTIVE_SKILLS.filter(k=>(counts[k]||0)===min);
+    const s=loadState();
+    const last=String(s.lastAdaptiveSkill||"");
+    const pool=weakest.length>1?weakest.filter(k=>k!==last):weakest;
+    return (pool.length?pool:weakest)[0]||"PLACE";
+  }
+
+  function l4AdaptiveTaskIndex(){
+    const target=l4AdaptiveTargetSkill();
+    const s=loadState();
+    const history=Array.isArray(s.history)?s.history:[];
+    const recentIds=history.slice(-8).map(x=>x?.taskId).filter(Boolean);
+    const candidates=tasks.map((t,i)=>({t,i,key:l4SkillKey(t)}))
+      .filter(x=>(x.key==="OPEN_DYNAMIC"?"OPEN":x.key)===target);
+    if(!candidates.length)return (taskIndex+1)%tasks.length;
+    const fresh=candidates.filter(x=>!recentIds.includes(x.t.id));
+    const chosen=(fresh.length?fresh:candidates)[0];
+    saveState({lastAdaptiveSkill:target});
+    return chosen.i;
+  }
+
+  function l4AdaptivePlan(){
+    const counts=l4AdaptiveSkillCounts(),target=l4AdaptiveTargetSkill();
+    return {counts,target,nextTaskIndex:l4AdaptiveTaskIndex()};
   }
 
   function l4MasterySummaryHtml({compact=false}={}){
@@ -14015,7 +14055,7 @@ window.KaranganTranslationCache = {
     }
     if(actionId==="l4Next"){
       if(l4Machine.phase!=="SUCCESS")return;
-      l4JudgeSeq++;activeExercise=null;taskIndex=(taskIndex+1)%tasks.length;
+      l4JudgeSeq++;activeExercise=null;taskIndex=l4AdaptiveTaskIndex();
       saveState({lastTaskIndex:taskIndex,currentIndependentBase:null,currentIndependentSkill:null});
       draft="";guidedDraft="";l4ResetCycle();guided();return;
     }
@@ -14368,5 +14408,5 @@ window.KaranganTranslationCache = {
     return report;
   }
 
-  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v14.0.0-click-only-state-machine+hybrid-local-ai-fallback",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMasteryStats:l4MasteryStats,getHybridLocalVerdict:l4LocalTeachingVerdict,getAIStatus:()=>({cooldown:l4AIInCooldown(),until:Number(window.__KARANGAN_L4_AI_COOLDOWN_UNTIL__||0),lastError:window.__KARANGAN_L4_AI_LAST_ERROR_TYPE__||null}),getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null,runTeachingSimulation:l4RunTeachingSimulation,lastTeachingSimulation:()=>window.__KARANGAN_L4_LAST_SIM__||null,runLiveAIBenchmark:l4RunLiveAIBenchmark,lastLiveAIBenchmark:()=>window.__KARANGAN_L4_LAST_LIVE_BENCH__||null,runTargetedSmoke:l4RunTargetedSmoke,lastTargetedSmoke:()=>window.__KARANGAN_L4_LAST_SMOKE__||null,runPredeploymentLab:l4RunPredeploymentLab,lastPredeploymentLab:()=>window.__KARANGAN_L4_LAST_PREDEPLOY_LAB__||null};
+  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v14.1.0-click-only-state-machine+hybrid+adaptive-learning",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMasteryStats:l4MasteryStats,getAdaptivePlan:l4AdaptivePlan,getHybridLocalVerdict:l4LocalTeachingVerdict,getAIStatus:()=>({cooldown:l4AIInCooldown(),until:Number(window.__KARANGAN_L4_AI_COOLDOWN_UNTIL__||0),lastError:window.__KARANGAN_L4_AI_LAST_ERROR_TYPE__||null}),getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null,runTeachingSimulation:l4RunTeachingSimulation,lastTeachingSimulation:()=>window.__KARANGAN_L4_LAST_SIM__||null,runLiveAIBenchmark:l4RunLiveAIBenchmark,lastLiveAIBenchmark:()=>window.__KARANGAN_L4_LAST_LIVE_BENCH__||null,runTargetedSmoke:l4RunTargetedSmoke,lastTargetedSmoke:()=>window.__KARANGAN_L4_LAST_SMOKE__||null,runPredeploymentLab:l4RunPredeploymentLab,lastPredeploymentLab:()=>window.__KARANGAN_L4_LAST_PREDEPLOY_LAB__||null};
 })();
