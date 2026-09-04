@@ -205,6 +205,26 @@ export default async function handler(
        Understands open vocabulary without changing curriculum/mastery.
        ===================================================== */
 
+    if (type === "teaching_critic_v1") {
+      const cleanBase = String(base_sentence || "").trim();
+      const cleanAnswer = String(student_answer || "").trim();
+      if (!cleanBase || !cleanAnswer) {
+        return res.status(400).json({ error: "Base sentence and student answer are required." });
+      }
+
+      const critique = await generateTeachingCritique({
+        year,
+        language,
+        learningTarget: String(learning_target || "").trim(),
+        skillKey: String(skill_key || "").trim(),
+        baseSentence: cleanBase,
+        studentAnswer: cleanAnswer,
+        teacherJudgment: body?.teacher_judgment || null
+      });
+
+      return res.status(200).json(critique);
+    }
+
     if (type === "teaching_generate_v1") {
       const cleanBase = String(base_sentence || "").trim();
       if (!cleanBase) {
@@ -1213,6 +1233,130 @@ function cleanTranslation(
    Decision order: Meaning -> Skill Target -> Appropriateness -> Language.
    Independence/mastery remains client-owned.
    ========================================================= */
+
+
+
+async function generateTeachingCritique({
+  year,
+  language,
+  learningTarget,
+  skillKey,
+  baseSentence,
+  studentAnswer,
+  teacherJudgment
+}) {
+  const instructions = `
+Anda ialah Cikgu Aira Critic, pemeriksa kedua yang BEBAS daripada penilai pertama.
+
+Tugas utama anda: kurangkan FALSE POSITIVE dalam latihan Bahasa Melayu Tahun ${year || 1}.
+Jangan cari alasan untuk meluluskan jawapan hanya kerana ayat boleh difahami.
+
+Ayat asas: "${baseSentence}"
+Jawapan murid: "${studentAnswer}"
+Kemahiran sasaran: ${skillKey || "OPEN"}
+Sasaran pembelajaran: ${learningTarget || "Kembangkan ayat dengan maklumat yang sesuai."}
+
+Penilaian pertama (boleh salah):
+${JSON.stringify(teacherJudgment || {})}
+
+Semak enam lapisan:
+1. MEANING — ayat keseluruhan masuk akal?
+2. SKILL TARGET — kemahiran benar-benar dipenuhi, bukan sekadar kata kunci?
+3. SEMANTIC APPROPRIATENESS — gabungan perkataan sesuai dalam konteks?
+4. PEDAGOGICAL APPROPRIATENESS — adakah guru Tahun 1 patut menerima dan membenarkan murid meniru ayat ini?
+5. LANGUAGE — ejaan/tatabahasa.
+6. PARTIAL CORRECTNESS — simpan bahagian yang betul dan betulkan hanya bahagian bermasalah.
+
+PERATURAN KETAT:
+- "boleh difahami" TIDAK sama dengan "patut PASS".
+- Ayat pelik, menghina, tidak sesuai, tidak natural atau tidak patut dijadikan model murid Tahun 1 mesti VETO atau CLARIFY.
+- "Kawan saya baik dan gila." mesti VETO untuk PEDAGOGICAL_APPROPRIATENESS; "baik" boleh dipelihara sebagai bahagian betul.
+- "Bunga itu cantik dengan rasa masin." mesti VETO.
+- Idea imaginatif boleh PASS jika jelas, sesuai untuk kanak-kanak dan masih mengekalkan maksud.
+- Jika ragu-ragu sama ada guru patut menerima jawapan, pilih CLARIFY/VETO, bukan PASS.
+
+Output JSON sahaja:
+{
+  "verdict": "PASS" | "VETO" | "CLARIFY",
+  "issue": "NONE" | "MEANING" | "SKILL_TARGET" | "APPROPRIATENESS" | "PEDAGOGICAL_APPROPRIATENESS" | "LANGUAGE" | "UNCERTAIN",
+  "pedagogically_appropriate": true | false | null,
+  "preserve": ["bahagian yang betul"],
+  "problem_span": "teks bermasalah atau kosong",
+  "better_alternatives": ["maksimum 3 alternatif ringkas"],
+  "student_feedback": "maklum balas ringkas untuk murid",
+  "confidence": 0.0
+}
+  `.trim();
+
+  const input = "Semak semula keputusan penilai pertama. Utamakan keselamatan pedagogi.";
+
+  let result;
+  if (process.env.OPENAI_API_KEY) {
+    try {
+      result = await requestStructuredTeachingCritique({ instructions, input });
+    } catch (error) {
+      console.warn("[Teaching Critic] OpenAI failed; trying Groq fallback:", error?.message || error);
+      if (!process.env.GROQ_API_KEY) throw error;
+    }
+  }
+  if (!result && process.env.GROQ_API_KEY) {
+    result = await requestGroqTeachingCritique({ instructions, input });
+  }
+  if (!result) {
+    const error = new Error("No AI provider available for teaching critic.");
+    error.status = 503;
+    throw error;
+  }
+  return result;
+}
+
+async function requestStructuredTeachingCritique({instructions,input}) {
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":`Bearer ${process.env.OPENAI_API_KEY}`
+    },
+    body:JSON.stringify({
+      model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+      temperature:0.0,
+      response_format:{type:"json_object"},
+      messages:[
+        {role:"system",content:instructions},
+        {role:"user",content:input}
+      ]
+    })
+  });
+  if(!response.ok){
+    const e=new Error(`OpenAI critic ${response.status}`); e.status=response.status; throw e;
+  }
+  const data=await response.json();
+  return JSON.parse(data?.choices?.[0]?.message?.content || "{}");
+}
+
+async function requestGroqTeachingCritique({instructions,input}) {
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":`Bearer ${process.env.GROQ_API_KEY}`
+    },
+    body:JSON.stringify({
+      model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
+      temperature:0.0,
+      response_format:{type:"json_object"},
+      messages:[
+        {role:"system",content:instructions},
+        {role:"user",content:input}
+      ]
+    })
+  });
+  if(!response.ok){
+    const e=new Error(`Groq critic ${response.status}`); e.status=response.status; throw e;
+  }
+  const data=await response.json();
+  return JSON.parse(data?.choices?.[0]?.message?.content || "{}");
+}
 
 
 async function generateTeachingExample({
