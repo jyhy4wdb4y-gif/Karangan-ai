@@ -12824,7 +12824,7 @@ window.KaranganTranslationCache = {
    Additive integration. Langkah 2 & Langkah 3 are untouched.
    ========================================================= */
 (function(){
-  const L4_VERSION="13.3.3-ATOMIC-TRANSITION-RENDER";
+  const L4_VERSION="13.4.0-TEACHING-POLICY-SIM";
   const CONTENT_VERSION="1.0_STABLE";
   const LEGACY_GRAMMAR=renderGrammarRain;
   const STATE_KEY="karangan_ai_l4_t1_v1";
@@ -13209,6 +13209,153 @@ window.KaranganTranslationCache = {
     return issues[0]||null;
   }
 
+
+  function l4TeachingDecision(judge,answer){
+    const j=judge||{};
+    if(j.meaning_status==="UNCERTAIN" || j.needs_clarification===true){
+      return {outcome:"CLARIFY",issue:"UNCERTAIN"};
+    }
+    if(j.meaning_status==="FAIL"){
+      return {outcome:"RETRY",issue:"MEANING"};
+    }
+    if(j.skill_target_status==="UNCERTAIN"){
+      return {outcome:"CLARIFY",issue:"UNCERTAIN"};
+    }
+    if(j.skill_target_status==="NOT_MET"){
+      return {outcome:"RETRY",issue:"SKILL_TARGET"};
+    }
+    if(["ODD","INVALID","UNKNOWN"].includes(j.appropriateness) || j.primary_issue==="APPROPRIATENESS"){
+      return {outcome:"RETRY",issue:"APPROPRIATENESS"};
+    }
+    const languageIssue=j.language_issue||l4LanguagePrecheck(String(answer||""));
+    if(languageIssue){
+      return {outcome:"RETRY",issue:"LANGUAGE",language_issue:languageIssue};
+    }
+    return {outcome:"ACCEPT",issue:"NONE"};
+  }
+
+  function l4TeachingSimulationCases(count=1000){
+    const templates=[
+      {
+        name:"Meaning outranks everything",
+        judge:{meaning_status:"FAIL",skill_target_status:"NOT_MET",appropriateness:"INVALID",language_issue:"Ejaan salah",primary_issue:"MEANING",needs_clarification:false},
+        answer:"saya belajar nasi di sekolah",
+        expected:"MEANING"
+      },
+      {
+        name:"Meaning uncertainty asks clarification",
+        judge:{meaning_status:"UNCERTAIN",skill_target_status:"MET",appropriateness:"POSSIBLE",language_issue:null,primary_issue:"NONE",needs_clarification:false},
+        answer:"Saya bermain di sana.",
+        expected:"UNCERTAIN"
+      },
+      {
+        name:"Skill target outranks appropriateness/language",
+        judge:{meaning_status:"PASS",skill_target_status:"NOT_MET",appropriateness:"ODD",language_issue:"Tanda baca",primary_issue:"SKILL_TARGET",needs_clarification:false},
+        answer:"Saya membaca buku",
+        expected:"SKILL_TARGET"
+      },
+      {
+        name:"Skill uncertainty asks clarification",
+        judge:{meaning_status:"PASS",skill_target_status:"UNCERTAIN",appropriateness:"NATURAL",language_issue:null,primary_issue:"NONE",needs_clarification:false},
+        answer:"Saya bermain bersama-sama.",
+        expected:"UNCERTAIN"
+      },
+      {
+        name:"Appropriateness outranks language",
+        judge:{meaning_status:"PASS",skill_target_status:"MET",appropriateness:"ODD",language_issue:"Ejaan kecil",primary_issue:"APPROPRIATENESS",needs_clarification:false},
+        answer:"saya membaca buku di bulan",
+        expected:"APPROPRIATENESS"
+      },
+      {
+        name:"Invalid semantic combination rejected",
+        judge:{meaning_status:"PASS",skill_target_status:"MET",appropriateness:"INVALID",language_issue:null,primary_issue:"NONE",needs_clarification:false},
+        answer:"Saya makan di awan.",
+        expected:"APPROPRIATENESS"
+      },
+      {
+        name:"Imaginative but meaningful is accepted",
+        judge:{meaning_status:"PASS",skill_target_status:"MET",appropriateness:"IMAGINATIVE",language_issue:null,primary_issue:"NONE",needs_clarification:false},
+        answer:"Saya membaca buku di dalam istana ajaib.",
+        expected:"NONE"
+      },
+      {
+        name:"Language issue comes after semantics",
+        judge:{meaning_status:"PASS",skill_target_status:"MET",appropriateness:"NATURAL",language_issue:"Gunakan huruf besar pada awal ayat.",primary_issue:"LANGUAGE",needs_clarification:false},
+        answer:"saya membaca buku di rumah.",
+        expected:"LANGUAGE"
+      },
+      {
+        name:"Local punctuation gate",
+        judge:{meaning_status:"PASS",skill_target_status:"MET",appropriateness:"NATURAL",language_issue:null,primary_issue:"NONE",needs_clarification:false},
+        answer:"Saya membaca buku di rumah",
+        expected:"LANGUAGE"
+      },
+      {
+        name:"Clean meaningful target answer accepted",
+        judge:{meaning_status:"PASS",skill_target_status:"MET",appropriateness:"NATURAL",language_issue:null,primary_issue:"NONE",needs_clarification:false},
+        answer:"Saya membaca buku di rumah.",
+        expected:"NONE"
+      }
+    ];
+    const cases=[];
+    const n=Math.max(1,Math.min(5000,Number(count)||1000));
+    for(let i=0;i<n;i++){
+      const t=templates[i%templates.length];
+      cases.push({
+        id:`SIM-${String(i+1).padStart(4,"0")}`,
+        name:t.name,
+        judge:{...t.judge,confidence:0.96},
+        answer:t.answer,
+        expected:t.expected
+      });
+    }
+    return cases;
+  }
+
+  function l4TeachingSimulationShow(report){
+    document.getElementById("l4-sim-report")?.remove();
+    const box=document.createElement("div");
+    box.id="l4-sim-report";
+    box.style.cssText="position:fixed;inset:14px;z-index:2147483647;overflow:auto;background:#fff;border:2px solid #222;border-radius:18px;padding:18px;font:14px/1.45 system-ui;box-shadow:0 20px 80px rgba(0,0,0,.35)";
+    const groups=Object.entries(report.byExpected).map(([k,v])=>`<div style="padding:6px 0;border-bottom:1px solid #eee">✅ <strong>${esc(k)}</strong> · ${v.pass}/${v.total} PASS</div>`).join("");
+    const failures=report.failures.slice(0,20).map(x=>`<div style="padding:6px 0;border-bottom:1px solid #fee">❌ <strong>${esc(x.id)}</strong> ${esc(x.name)}<div style="font-size:12px;color:#667">expected ${esc(x.expected)} · got ${esc(x.actual)}</div></div>`).join("");
+    box.innerHTML=`<div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><h2 style="margin:0">Langkah 4 Teaching Policy Simulation</h2><button id="l4SimClose" style="padding:8px 12px">Close</button></div><p><strong>${report.passed}/${report.total} PASS</strong> · ${report.failed} failed · ${report.durationMs} ms</p><p style="color:#667">This 1,000-case simulation validates the client teaching decision order. It does not replace live AI semantic benchmarking.</p>${groups}${failures}`;
+    document.body.appendChild(box);
+    box.querySelector("#l4SimClose")?.addEventListener("click",()=>box.remove(),{once:true});
+  }
+
+  function l4RunTeachingSimulation({count=1000,visual=true}={}){
+    const started=Date.now();
+    const cases=l4TeachingSimulationCases(count);
+    const byExpected={};
+    const failures=[];
+    let passed=0;
+    for(const c of cases){
+      const d=l4TeachingDecision(c.judge,c.answer);
+      const actual=d.issue;
+      const ok=actual===c.expected;
+      if(ok)passed++;
+      else failures.push({...c,actual});
+      if(!byExpected[c.expected])byExpected[c.expected]={total:0,pass:0};
+      byExpected[c.expected].total++;
+      if(ok)byExpected[c.expected].pass++;
+    }
+    const report={
+      version:L4_VERSION,
+      suite:"TEACHING_POLICY_SIMULATION",
+      total:cases.length,
+      passed,
+      failed:cases.length-passed,
+      durationMs:Date.now()-started,
+      byExpected,
+      failures
+    };
+    window.__KARANGAN_L4_LAST_SIM__=report;
+    if(visual)l4TeachingSimulationShow(report);
+    console.table(Object.entries(byExpected).map(([issue,v])=>({issue,pass:v.pass,total:v.total})));
+    return report;
+  }
+
   async function checkOwn(){
     const el=byId("l4Draft");
     draft=(el?.value||draft).trim();
@@ -13557,10 +13704,11 @@ window.KaranganTranslationCache = {
     const qp=new URLSearchParams(location.search);
     if(qp.get("l4debug")==="1")setInterval(l4QaDebugPanel,350);
     if(qp.get("l4qa")==="1")setTimeout(()=>l4RunAutomatedQA({visual:true}),500);
+    if(qp.get("l4sim")==="1")setTimeout(()=>l4RunTeachingSimulation({count:1000,visual:true}),500);
   }catch(_){}
 
   try{const saved=loadState();if(Number.isInteger(saved.lastTaskIndex))taskIndex=Math.max(0,Math.min(tasks.length-1,saved.lastTaskIndex));}catch(_){}
   document.addEventListener("click",l4ClickGateway,true);
   renderGrammarRain=start;
-  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v13.3.3-click-only-state-machine+atomic-transition-render-QA",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null};
+  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v13.4.0-click-only-state-machine+teaching-policy-simulation",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null,runTeachingSimulation:l4RunTeachingSimulation,lastTeachingSimulation:()=>window.__KARANGAN_L4_LAST_SIM__||null};
 })();
