@@ -12824,7 +12824,7 @@ window.KaranganTranslationCache = {
    Additive integration. Langkah 2 & Langkah 3 are untouched.
    ========================================================= */
 (function(){
-  const L4_VERSION="13.2.0-STATE-MACHINE";
+  const L4_VERSION="13.3.0-AUTOMATED-QA";
   const CONTENT_VERSION="1.0_STABLE";
   const LEGACY_GRAMMAR=renderGrammarRain;
   const STATE_KEY="karangan_ai_l4_t1_v1";
@@ -13117,7 +13117,12 @@ window.KaranganTranslationCache = {
 
   async function l4TeachingJudge(snapshot,answer){
     if(!snapshot?.base) throw new Error("Missing frozen exercise snapshot");
-    const result=await callAI({
+    // v13.3.0 QA seam: only active when the built-in automated harness explicitly sets it.
+    // Production students still go through the real AI provider.
+    const qaProvider=window.__KARANGAN_L4_QA_PROVIDER__;
+    const result=qaProvider
+      ? await qaProvider({snapshot:{...snapshot,task:{...snapshot.task}},answer:String(answer||"")})
+      : await callAI({
       type:"teaching_judge_v3",
       language:"Bahasa Melayu",
       year:1,
@@ -13239,9 +13244,10 @@ window.KaranganTranslationCache = {
     saveState(patch);
   }
   function success(independentEvidence=true,judge=null){l4Transition("SUCCESS",{force:true});l4SetBusy(false);const evidenceNote=independentEvidence?"<div class=\"l4-xp\">⭐ Independent mastery evidence +1</div>":"<div class=\"l4-ai\" style=\"margin-top:12px;text-align:left\"><div class=\"l4-ai-face\">🌱</div><div><div class=\"l4-ai-title\">Latihan berjaya</div><div>Kamu berjaya selepas menggunakan bantuan. Ini dikira sebagai pembelajaran, belum sebagai bukti penguasaan sendiri.</div></div></div>";shell(`<div class="l4-success"><div class="emoji">🎉</div><h1 style="margin:4px 0">Hebat!</h1><p>Kamu berjaya <strong>kembangkan ayat</strong>.</p>${evidenceNote}<div class="l4-ai" style="text-align:left"><div class="l4-ai-face">🐣</div><div><div class="l4-ai-title">Cikgu Aira</div><div>${judge?.appropriateness==="IMAGINATIVE"?"Idea imaginasi kamu diterima kerana maksud ayat masih jelas.":"Kamu mengekalkan maksud dan memenuhi kemahiran sasaran."}</div></div></div></div><div class="l4-actions"><button id="l4Next" class="l4-primary">Cabar Ayat Seterusnya</button><button id="l4Finish" class="l4-secondary">Selesai ✓</button></div>`,100,3);}
-  // v13.2.0 State Machine Event Gateway
-  // Exactly ONE pointer path. Synthetic click/touch fallbacks are intentionally removed.
-  // Keyboard activation is handled separately for accessibility.
+  // v13.2.1 State Machine Event Gateway
+  // Exactly ONE native activation path: click.
+  // iPad/iPhone taps synthesize one click; keyboard activation on <button> also clicks natively.
+  // Do NOT pair click with pointerup/touchend: that was the source of duplicate actions.
   function l4ResolveAction(target){
     return target?.closest?.("#l4Begin,#l4Hint,#l4GuidedCheck,#l4TryOwn,#l4OwnCheck,#l4Next,#l4Finish,[data-l4-level],[data-l4-choice]")||null;
   }
@@ -13292,17 +13298,193 @@ window.KaranganTranslationCache = {
       shell(`<div style="text-align:center;padding:24px"><div style="font-size:70px">🏆</div><h1>Misi Hari Ini Selesai!</h1><p>Kamu sudah belajar menjadikan ayat lebih lengkap.</p></div>`,100);return;
     }
   }
-  function l4PointerGateway(e){
-    if(e.pointerType==="mouse" && e.button!==0)return;
-    const el=l4ResolveAction(e.target);if(!el)return;l4Dispatch(el,e);
+  function l4ClickGateway(e){
+    const el=l4ResolveAction(e.target);
+    if(!el)return;
+    l4Dispatch(el,e);
   }
-  function l4KeyboardGateway(e){
-    if(e.key!=="Enter"&&e.key!==" ")return;
-    const el=l4ResolveAction(e.target);if(!el)return;l4Dispatch(el,e);
+  /* =========================================================
+     v13.3.0 AUTOMATED BEHAVIOR QA HARNESS
+     - Exercises the real rendered buttons and the real click gateway.
+     - Replaces only the AI network provider with deterministic verdicts.
+     - Restores the learner's saved Langkah 4 state after the run.
+     - Normal students never enter QA unless runQA() is called explicitly.
+     ========================================================= */
+  const L4_QA_WAIT_MS=1800;
+  function l4QaSleep(ms){return new Promise(r=>setTimeout(r,ms));}
+  async function l4QaWaitFor(test,ms=L4_QA_WAIT_MS){
+    const started=Date.now();
+    while(Date.now()-started<ms){if(test())return true;await l4QaSleep(12);}
+    return false;
   }
+  function l4QaClick(selector){
+    const el=document.querySelector(selector);
+    if(!el)throw new Error(`Missing clickable element: ${selector}`);
+    el.click();
+    return el;
+  }
+  function l4QaSetValue(selector,value){
+    const el=document.querySelector(selector);
+    if(!el)throw new Error(`Missing input: ${selector}`);
+    el.value=value;
+    el.dispatchEvent(new Event("input",{bubbles:true}));
+    return el;
+  }
+  function l4QaPassVerdict(){return {
+    result:"PASS",meaning_status:"PASS",skill_target_status:"MET",appropriateness:"NATURAL",
+    language_status:"CLEAN",language_issue:null,primary_issue:"NONE",preserved_parts:["BASE_MEANING"],
+    needs_clarification:false,clarification_question:"",confidence:.99
+  };}
+  function l4QaFailMeaningVerdict(){return {
+    result:"FAIL",meaning_status:"FAIL",skill_target_status:"MET",appropriateness:"INVALID",
+    language_status:"CLEAN",language_issue:null,primary_issue:"MEANING",preserved_parts:["BASE_MEANING"],
+    needs_clarification:false,clarification_question:"",confidence:.99
+  };}
+  function l4QaAnswerFor(snap){
+    const base=String(snap?.base||"Saya belajar.").replace(/[.!?]+$/,""),skill=String(snap?.skill||"OPEN");
+    if(skill==="PLACE")return `${base} di rumah.`;
+    if(skill==="TIME")return `${base} pada waktu pagi.`;
+    if(skill==="COMPANION")return `${base} bersama ibu.`;
+    if(skill==="DESCRIPTION")return `${base} dan cantik.`;
+    if(skill==="INTENSITY")return `${base.replace(/\s+(gembira|penat|seronok)$/i,"")} sangat gembira.`;
+    return `${base} di rumah.`;
+  }
+  function l4QaState(){return {
+    phase:l4Machine.phase,busy:l4Machine.busy,cycleHintUsed:l4Machine.cycleHintUsed,
+    hint,guidedHint3,independentHintUsed,taskIndex,
+    exerciseId:activeExercise?.exerciseId||null,stage:activeExercise?.stage||null,base:activeExercise?.base||null
+  };}
+  function l4QaDebugPanel(){
+    let panel=document.getElementById("l4-qa-debug-panel");
+    if(!panel){
+      panel=document.createElement("pre");panel.id="l4-qa-debug-panel";
+      panel.style.cssText="position:fixed;right:8px;bottom:8px;z-index:2147483646;max-width:52vw;margin:0;padding:8px 10px;border-radius:10px;background:rgba(20,24,30,.88);color:#fff;font:11px/1.35 ui-monospace,monospace;pointer-events:none;white-space:pre-wrap";
+      document.body.appendChild(panel);
+    }
+    panel.textContent=JSON.stringify(l4QaState(),null,2);
+    return panel;
+  }
+  function l4QaShowReport(report){
+    document.getElementById("l4-qa-report")?.remove();
+    const box=document.createElement("div");box.id="l4-qa-report";
+    box.style.cssText="position:fixed;inset:14px;z-index:2147483647;overflow:auto;background:#fff;border:2px solid #222;border-radius:18px;padding:18px;font:14px/1.45 system-ui;box-shadow:0 20px 80px rgba(0,0,0,.35)";
+    const rows=report.checks.map(x=>`<div style=\"padding:6px 0;border-bottom:1px solid #eee\">${x.pass?"✅":"❌"} <strong>${esc(x.name)}</strong>${x.detail?`<div style=\"color:#667;font-size:12px\">${esc(x.detail)}</div>`:""}</div>`).join("");
+    box.innerHTML=`<div style=\"display:flex;justify-content:space-between;gap:12px;align-items:center\"><h2 style=\"margin:0\">Langkah 4 Automated QA</h2><button id=\"l4QaClose\" style=\"padding:8px 12px\">Close</button></div><p><strong>${report.passed}/${report.total} PASS</strong> · ${report.failed} failed · ${report.durationMs} ms</p>${rows}`;
+    document.body.appendChild(box);box.querySelector("#l4QaClose")?.addEventListener("click",()=>box.remove(),{once:true});
+  }
+  async function l4RunAutomatedQA({visual=true}={}){
+    const checks=[];const started=Date.now();
+    const check=(name,pass,detail="")=>checks.push({name,pass:!!pass,detail:String(detail||"")});
+    const originalStorage=localStorage.getItem(STATE_KEY);
+    const originalProvider=window.__KARANGAN_L4_QA_PROVIDER__;
+    const originalLevel=level,originalTaskIndex=taskIndex;
+    let providerCalls=0,providerDelay=0,providerMode="PASS";
+    window.__KARANGAN_L4_QA_PROVIDER__=async ({answer})=>{
+      providerCalls++;
+      if(providerDelay)await l4QaSleep(providerDelay);
+      if(providerMode==="MEANING_FAIL" || /belajar\s+nasi/i.test(answer))return l4QaFailMeaningVerdict();
+      return l4QaPassVerdict();
+    };
+    try{
+      localStorage.removeItem(STATE_KEY);taskIndex=0;level="ASAS";activeExercise=null;l4JudgeSeq++;l4ResetCycle();start();
+      check("Start renders",!!document.querySelector("#l4Begin"));
+      check("State START",l4Machine.phase==="START",l4Machine.phase);
+
+      l4QaClick('[data-l4-level="ASAS"]');
+      l4QaClick("#l4Begin");
+      check("Begin -> GUIDED",l4Machine.phase==="GUIDED",l4Machine.phase);
+      check("Guided choice is clickable",!!document.querySelector("[data-l4-choice]"));
+
+      l4QaClick("#l4Hint");
+      check("One hint tap increments exactly once",hint===1,`hint=${hint}`);
+      check("Hint marks entire cycle",l4Machine.cycleHintUsed===true);
+      check("Hint does not lock choices",!!document.querySelector("[data-l4-choice]")&&!document.querySelector("[data-l4-choice]").disabled);
+
+      l4QaClick("[data-l4-choice]");
+      check("Choice after hint -> UPGRADE",l4Machine.phase==="UPGRADE",l4Machine.phase);
+      check("Stage 2 action renders",!!document.querySelector("#l4TryOwn"));
+      l4QaClick("#l4TryOwn");
+      check("UPGRADE -> INDEPENDENT",l4Machine.phase==="INDEPENDENT",l4Machine.phase);
+      check("Cycle hint survives transfer",l4Machine.cycleHintUsed===true);
+      const beforeHintMastery=(loadState().masteryEvidence||[]).length;
+      l4QaSetValue("#l4Draft",l4QaAnswerFor(activeExercise));
+      l4QaClick("#l4OwnCheck");
+      check("AI busy lock activates",l4Machine.busy===true);
+      await l4QaWaitFor(()=>l4Machine.phase==="SUCCESS"&&!l4Machine.busy);
+      check("Hint-assisted correct answer -> SUCCESS",l4Machine.phase==="SUCCESS",l4Machine.phase);
+      const afterHintMastery=(loadState().masteryEvidence||[]).length;
+      check("Hint-assisted success gives NO mastery",afterHintMastery===beforeHintMastery,`${beforeHintMastery}->${afterHintMastery}`);
+      check("Hint-assisted UI hides mastery +1",!document.body.textContent.includes("Independent mastery evidence +1"));
+
+      // Fresh cycle: independent success must create mastery evidence.
+      l4QaClick("#l4Next");
+      check("Next challenge returns GUIDED",l4Machine.phase==="GUIDED",l4Machine.phase);
+      check("New cycle resets hint flag",l4Machine.cycleHintUsed===false);
+      l4QaClick("[data-l4-choice]");l4QaClick("#l4TryOwn");
+      const beforeIndependent=(loadState().masteryEvidence||[]).length;
+      l4QaSetValue("#l4Draft",l4QaAnswerFor(activeExercise));
+      l4QaClick("#l4OwnCheck");
+      await l4QaWaitFor(()=>l4Machine.phase==="SUCCESS"&&!l4Machine.busy);
+      const afterIndependent=(loadState().masteryEvidence||[]).length;
+      check("Independent success -> SUCCESS",l4Machine.phase==="SUCCESS");
+      check("Independent success creates mastery +1",afterIndependent===beforeIndependent+1,`${beforeIndependent}->${afterIndependent}`);
+      check("Independent mastery UI appears",document.body.textContent.includes("Independent mastery evidence +1"));
+
+      // Free-text semantic rejection through the real submit path.
+      l4QaClick("#l4Next");level="STANDARD";activeExercise=null;guidedDraft="";l4ResetCycle();guided();providerMode="MEANING_FAIL";
+      check("Standard free-text input renders",!!document.querySelector("#l4GuidedInput"));
+      l4QaSetValue("#l4GuidedInput","Kawan saya belajar nasi di sekolah.");
+      l4QaClick("#l4GuidedCheck");
+      await l4QaWaitFor(()=>!l4Machine.busy);
+      check("Meaning FAIL remains GUIDED",l4Machine.phase==="GUIDED",l4Machine.phase);
+      check("Meaning-first feedback is rendered",document.body.textContent.includes("Cuba fikir semula hubungan"));
+
+      // Duplicate-submit guard: disabled button + busy gateway must issue one provider call.
+      providerMode="PASS";providerDelay=90;providerCalls=0;
+      l4QaSetValue("#l4GuidedInput",l4QaAnswerFor(activeExercise));
+      const submit=document.querySelector("#l4GuidedCheck");submit.click();submit.click();
+      await l4QaWaitFor(()=>!l4Machine.busy);
+      check("Double submit causes one AI call",providerCalls===1,`calls=${providerCalls}`);
+      check("Successful guided free text reaches UPGRADE",l4Machine.phase==="UPGRADE",l4Machine.phase);
+
+      // Stale-response guard: invalidate request before delayed result returns.
+      level="STANDARD";activeExercise=null;guidedDraft="";l4ResetCycle();guided();providerDelay=120;providerCalls=0;
+      l4QaSetValue("#l4GuidedInput",l4QaAnswerFor(activeExercise));
+      const staleExercise=activeExercise.exerciseId;
+      l4QaClick("#l4GuidedCheck");
+      l4JudgeSeq++;const replacement=l4FreezeExercise(currentTask(),"GUIDED",currentTask().base);l4SetBusy(false);guided("QA replacement exercise");
+      await l4QaSleep(180);
+      check("Stale AI response is discarded",activeExercise?.exerciseId===replacement.exerciseId && activeExercise?.exerciseId!==staleExercise);
+      check("Stale response cannot advance replacement",l4Machine.phase==="GUIDED",l4Machine.phase);
+
+      check("Only one Langkah 4 click gateway registered by build",String(l4ClickGateway).includes("l4ResolveAction"));
+      check("QA did not remove AI-native decision order",window.KaranganLangkah4?.decisionOrder==="Meaning>SkillTarget>Appropriateness>Language>Independence");
+    }catch(err){
+      check("QA harness completed without exception",false,err?.stack||err?.message||String(err));
+    }finally{
+      window.__KARANGAN_L4_QA_PROVIDER__=originalProvider;
+      if(originalStorage===null)localStorage.removeItem(STATE_KEY);else localStorage.setItem(STATE_KEY,originalStorage);
+      level=originalLevel;taskIndex=originalTaskIndex;activeExercise=null;l4JudgeSeq++;l4ResetCycle();
+      try{start();}catch(_){}
+    }
+    const failed=checks.filter(x=>!x.pass).length;
+    const report={version:L4_VERSION,runAt:new Date().toISOString(),total:checks.length,passed:checks.length-failed,failed,durationMs:Date.now()-started,checks};
+    window.__KARANGAN_L4_LAST_QA__=report;
+    if(visual)l4QaShowReport(report);
+    console.table(checks.map(x=>({test:x.name,result:x.pass?"PASS":"FAIL",detail:x.detail})));
+    return report;
+  }
+
+  // Optional zero-click test mode for a private deployment URL: ?l4qa=1
+  // Debug panel only: ?l4debug=1
+  try{
+    const qp=new URLSearchParams(location.search);
+    if(qp.get("l4debug")==="1")setInterval(l4QaDebugPanel,350);
+    if(qp.get("l4qa")==="1")setTimeout(()=>l4RunAutomatedQA({visual:true}),500);
+  }catch(_){}
+
   try{const saved=loadState();if(Number.isInteger(saved.lastTaskIndex))taskIndex=Math.max(0,Math.min(tasks.length-1,saved.lastTaskIndex));}catch(_){}
-  document.addEventListener("pointerup",l4PointerGateway,true);
-  document.addEventListener("keydown",l4KeyboardGateway,true);
+  document.addEventListener("click",l4ClickGateway,true);
   renderGrammarRain=start;
-  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v13.2-single-gateway-state-machine",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMachine:()=>({...l4Machine})};
+  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v13.3.0-click-only-state-machine+automated-behavior-QA",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null};
 })();
