@@ -1,0 +1,85 @@
+{
+  "version": "12.14.0",
+  "name": "Ayat Magic Ultimate UI Phase 1 + Semantic Safe Fast Path",
+  "result": "PASS",
+  "node_check": "PASS",
+  "static_checks": {
+    "l3_locked": true,
+    "l4_version": true,
+    "ipad_pointerup": true,
+    "ipad_touchend": true,
+    "semantic_api": true,
+    "safe_fast_path_signature": true,
+    "safe_fast_path_call": true,
+    "old_unsafe_call_absent": true,
+    "ui_magic": true,
+    "ids_preserved": true
+  },
+  "fast_path_regression": [
+    {
+      "base": "Ibu makan.",
+      "answer": "Ibu makan di rumah.",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "base": "Ibu makan.",
+      "answer": "Ibu makan tahi di rumah.",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "base": "Ayah minum.",
+      "answer": "Ayah minum air di rumah.",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "base": "Saya membaca buku.",
+      "answer": "Saya membaca buku di bilik.",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "base": "Saya membaca buku.",
+      "answer": "Saya membaca buku nasi di bilik.",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "base": "Saya bermain.",
+      "answer": "Saya bermain bersama kawan.",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "base": "Saya bermain.",
+      "answer": "Saya bermain nasi bersama kawan.",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    }
+  ],
+  "protected": [
+    "Langkah 2",
+    "Langkah 3 locked flow",
+    "Langkah 4 Semantic API route",
+    "iPad/Safari Semak handler",
+    "Content 1.0_STABLE"
+  ],
+  "ui_changes": [
+    "Ayat Magic visual journey",
+    "Before/After transformation",
+    "Magic Block choice cards",
+    "3-step progress meter",
+    "Cikgu Aira companion card",
+    "responsive iPad/mobile layout"
+  ],
+  "semantic_safety": "Only an exact known safe suffix can bypass AI. Extra unknown object/content forces semantic AI check."
+}
