@@ -1,0 +1,115 @@
+{
+  "version": "12.14.3",
+  "name": "Semantic Base Preservation + Skill Target Hotfix",
+  "result": "PASS",
+  "root_cause": [
+    "v12.14.2 used literal substring matching for base preservation. 'Ibu gembira' is not a literal substring of 'Ibu sangat gembira', so the app incorrectly said the base sentence was lost.",
+    "The Semantic AI request used a generic expansion target instead of the exact current Stage-3 skill."
+  ],
+  "fix": [
+    "Base preservation now uses ordered-token meaning structure, allowing modifiers such as 'sangat' to be inserted.",
+    "Semantic AI now receives the exact Stage-3 target: PLACE/TIME/COMPANION/DESCRIPTION/INTENSITY.",
+    "INTENSITY clean answers can pass locally; answers with extra unrelated additions are sent to Semantic AI.",
+    "Generic marker rejection removed so open vocabulary can reach Semantic AI."
+  ],
+  "critical_checks": {
+    "syntax": true,
+    "exact_screenshot_regression": true,
+    "clean_intensity_local_pass": true,
+    "all_skill_spot_checks": true,
+    "20_tasks_retained": true,
+    "connected_transfer_retained": true,
+    "semantic_target_is_dynamic": true,
+    "ipad_handler_retained": true
+  },
+  "regression_cases": [
+    {
+      "base": "Ibu gembira.",
+      "answer": "Ibu sangat gembira dan besar.",
+      "skill": "INTENSITY",
+      "expect_base_preserved": true,
+      "expect_local_pass": false,
+      "reason": "Base meaning preserved; extra 'dan besar' must go to semantic AI, not get false 'kekalkan ayat asal'.",
+      "actual_base_preserved": true,
+      "actual_local_pass": false,
+      "pass": true
+    },
+    {
+      "base": "Ibu gembira.",
+      "answer": "Ibu sangat gembira.",
+      "skill": "INTENSITY",
+      "expect_base_preserved": true,
+      "expect_local_pass": true,
+      "actual_base_preserved": true,
+      "actual_local_pass": true,
+      "pass": true
+    },
+    {
+      "base": "Adik gembira.",
+      "answer": "Adik amat gembira.",
+      "skill": "INTENSITY",
+      "expect_base_preserved": true,
+      "expect_local_pass": true,
+      "actual_base_preserved": true,
+      "actual_local_pass": true,
+      "pass": true
+    },
+    {
+      "base": "Saya membaca buku.",
+      "answer": "Saya membaca buku di bilik.",
+      "skill": "PLACE",
+      "expect_base_preserved": true,
+      "expect_local_pass": true,
+      "actual_base_preserved": true,
+      "actual_local_pass": true,
+      "pass": true
+    },
+    {
+      "base": "Saya bermain.",
+      "answer": "Saya bermain pada waktu petang.",
+      "skill": "TIME",
+      "expect_base_preserved": true,
+      "expect_local_pass": true,
+      "actual_base_preserved": true,
+      "actual_local_pass": true,
+      "pass": true
+    },
+    {
+      "base": "Saya bermain.",
+      "answer": "Saya bermain bersama kawan.",
+      "skill": "COMPANION",
+      "expect_base_preserved": true,
+      "expect_local_pass": true,
+      "actual_base_preserved": true,
+      "actual_local_pass": true,
+      "pass": true
+    },
+    {
+      "base": "Kelas saya bersih.",
+      "answer": "Kelas saya bersih dan cantik.",
+      "skill": "DESCRIPTION",
+      "expect_base_preserved": true,
+      "expect_local_pass": true,
+      "actual_base_preserved": true,
+      "actual_local_pass": true,
+      "pass": true
+    },
+    {
+      "base": "Ibu gembira.",
+      "answer": "Ibu sangat besar.",
+      "skill": "INTENSITY",
+      "expect_base_preserved": false,
+      "expect_local_pass": false,
+      "actual_base_preserved": false,
+      "actual_local_pass": false,
+      "pass": true
+    }
+  ],
+  "protected": [
+    "Langkah 2",
+    "Langkah 3",
+    "Connected Transfer Flow",
+    "iPad/Safari Semak handler",
+    "API v4.7.0"
+  ]
+}

@@ -12824,7 +12824,7 @@ window.KaranganTranslationCache = {
    Additive integration. Langkah 2 & Langkah 3 are untouched.
    ========================================================= */
 (function(){
-  const L4_VERSION="12.14.2";
+  const L4_VERSION="12.14.3";
   const CONTENT_VERSION="1.0_STABLE";
   const LEGACY_GRAMMAR=renderGrammarRain;
   const STATE_KEY="karangan_ai_l4_t1_v1";
@@ -12937,6 +12937,20 @@ window.KaranganTranslationCache = {
     return chosen;
   }
 
+  function l4SkillTarget(task){
+    const key=l4SkillKey(task);
+    const map={
+      PLACE:"Add one PLACE detail to the sentence.",
+      TIME:"Add one TIME detail to the sentence.",
+      COMPANION:"Add information about WHO is together with the subject.",
+      DESCRIPTION:"Add one suitable DESCRIPTION while preserving the original meaning.",
+      INTENSITY:"Strengthen the existing feeling or description using an INTENSITY expression. Preserve the original adjective/feeling.",
+      OPEN:"Add one meaningful piece of information.",
+      OPEN_DYNAMIC:"Add one meaningful piece of information."
+    };
+    return map[key]||map.OPEN;
+  }
+
   function l4IndependentSkillPrompt(task){
     const key=l4SkillKey(task);
     const map={
@@ -13000,7 +13014,35 @@ window.KaranganTranslationCache = {
     independentRender(base,message);
   }
   function independentRender(base,message=""){stage="INDEPENDENT";shell(`<div class="l4-card l4-base"><div class="l4-label">🎯 Giliran Kamu</div><p style="margin:7px 0;color:#5f6970">${l4IndependentSkillPrompt(currentTask())}</p><div class="l4-sentence">${esc(base)}</div></div>${feedback(message)}<div class="l4-card"><div class="l4-label">✍️ Ayat Magic Saya</div><textarea id="l4Draft" rows="3" class="l4-input" style="margin-top:10px" placeholder="Tulis ayat penuh kamu...">${esc(draft)}</textarea><button id="l4OwnCheck" class="l4-primary" style="margin-top:10px">✓ Semak Ayat Saya</button></div><button id="l4Hint" class="l4-secondary">🔊 Tanya Cikgu Aira</button>`,84,3);}
-  function expansionInfo(base,answer){const b=String(base||"").toLowerCase().replace(/[.!?]/g,"").trim(),a=String(answer||"").toLowerCase().replace(/[.!?]/g,"").trim();return {basePreserved:a.includes(b),added:a.length>b.length+2,hasMarker:/\b(di|bersama|dengan|pada|dan|sangat)\b/i.test(a)};}
+  function l4NormTokens(value){
+    return String(value||"")
+      .toLowerCase()
+      .replace(/[.!?,;:]/g," ")
+      .replace(/\s+/g," ")
+      .trim()
+      .split(" ")
+      .filter(Boolean);
+  }
+
+  function l4TokensInOrder(base,answer){
+    const b=l4NormTokens(base),a=l4NormTokens(answer);
+    if(!b.length||!a.length)return false;
+    let i=0;
+    for(const token of a){
+      if(token===b[i]) i++;
+      if(i===b.length) return true;
+    }
+    return false;
+  }
+
+  function expansionInfo(base,answer){
+    const b=l4NormTokens(base),a=l4NormTokens(answer);
+    return {
+      basePreserved:l4TokensInOrder(base,answer),
+      added:a.length>b.length,
+      hasMarker:/\b(di|bersama|dengan|pada|dan|sangat|amat|lebih)\b/i.test(String(answer||""))
+    };
+  }
 
   /* Semantic Engine v1
      Curriculum decides WHAT to learn. AI only interprets open language.
@@ -13016,17 +13058,28 @@ window.KaranganTranslationCache = {
 
   function l4CanPassLocally(base,answer){
     const norm=s=>String(s||"").toLowerCase().replace(/[.!?]/g,"").replace(/\s+/g," ").trim();
-    const b=norm(base),a=norm(answer);
-    if(!b||!a.startsWith(b+" "))return false;
-    const extra=a.slice(b.length).trim();
-    const safe=[
-      /^di (bilik|rumah|sekolah|taman|dapur|kelas)$/i,
-      /^pada waktu (pagi|petang)$/i,
-      /^(bersama|dengan) (kawan|adik|ibu|ayah|keluarga|guru)$/i,
-      /^dan (cantik|besar|kecil|bersih|rajin|baik|berani)$/i,
-      /^sangat (gembira|sedih|takut|penat|seronok)$/i
-    ];
-    return safe.some(rx=>rx.test(extra));
+    const a=norm(answer);
+    if(!l4TokensInOrder(base,answer))return false;
+
+    const skill=l4SkillKey(currentTask());
+    if(skill==="PLACE"){
+      return /\bdi (bilik|rumah|sekolah|taman|dapur|kelas)\b/i.test(a);
+    }
+    if(skill==="TIME"){
+      return /\bpada waktu (pagi|petang)\b/i.test(a);
+    }
+    if(skill==="COMPANION"){
+      return /\b(bersama|dengan) (kawan|adik|ibu|ayah|keluarga|guru)\b/i.test(a);
+    }
+    if(skill==="DESCRIPTION"){
+      return /\bdan (cantik|besar|kecil|bersih|rajin|baik|berani)\b/i.test(a);
+    }
+    if(skill==="INTENSITY"){
+      // Local PASS only for a clean single-focus intensity expansion.
+      // Extra conjunction/details are sent to Semantic AI instead of being blindly accepted.
+      return /\b(sangat|amat) (gembira|sedih|takut|penat|seronok)\b/i.test(a) && !/\bdan\b/i.test(a);
+    }
+    return false;
   }
 
   function l4ExtractJson(result){
@@ -13047,13 +13100,17 @@ window.KaranganTranslationCache = {
       type:"semantic_judge",
       language:"Bahasa Melayu",
       year:1,
-      learning_target:"Expand the base sentence by adding one meaningful piece of information.",
+      learning_target:l4SkillTarget(currentTask()),
       base_sentence:base,
       student_answer:answer,
       instruction:[
         "You are the semantic understanding layer for a Malaysian Year 1 Bahasa Melayu learning app.",
         "Do not require the student's words to exist in our curriculum vocabulary.",
         "Judge meaning, not model-answer matching.",
+        "The current Stage 3 skill target is mandatory. A sentence can be meaningful but still miss the current skill target.",
+        "Preserve the base meaning even when a modifier is inserted inside the original wording, for example 'Ibu gembira.' -> 'Ibu sangat gembira.' preserves the base meaning.",
+        "If the target is INTENSITY, 'Ibu sangat gembira.' satisfies the target. Do not say the base sentence was lost just because 'sangat' is inserted before 'gembira'.",
+        "If the child adds an extra unrelated phrase beyond the requested one-information expansion, judge that extra phrase semantically rather than automatically accepting it.",
         "Preserve creativity: unusual but possible answers are not wrong.",
         "IMAGINATIVE is valid when the sentence works as an imaginative context.",
         "ODD means semantically questionable but not clearly wrong; ask for clarification rather than failing.",
@@ -13099,7 +13156,8 @@ window.KaranganTranslationCache = {
     const info=expansionInfo(base,draft);
     if(!info.basePreserved){independentRender(base,"Bagus mencuba. Kekalkan ayat asal dan tambah satu maklumat.");return;}
     if(!info.added){independentRender(base,"Ayat asal sudah betul. Sekarang tambah satu maklumat lagi.");return;}
-    if(!info.hasMarker){independentRender(base,"Bagus mencuba. Tambah maklumat seperti tempat, masa, dengan siapa atau penerangan yang sesuai.");return;}
+    // Do not reject open wording merely because it lacks one of our familiar marker words.
+    // The exact Stage-3 skill target is checked below locally or by Semantic AI.
 
     // Familiar, curriculum-safe combinations can pass without spending an AI call.
     if(l4CanPassLocally(base,draft)){
@@ -13154,5 +13212,5 @@ window.KaranganTranslationCache = {
   try{const saved=loadState();if(Number.isInteger(saved.lastTaskIndex))taskIndex=Math.max(0,Math.min(tasks.length-1,saved.lastTaskIndex));}catch(_){}
   document.addEventListener("pointerup",l4OwnCheckSafe,true);document.addEventListener("touchend",l4OwnCheckSafe,true);document.addEventListener("click",l4OwnCheckSafe,true);document.addEventListener("pointerup",action,true);document.addEventListener("click",action,true);
   renderGrammarRain=start;
-  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"v1.1-safe-fast-path",connectedTransfer:"v1.1-fixed",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState};
+  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"v1.1-safe-fast-path",connectedTransfer:"v1.1-fixed",baseMeaning:"v1.1-token-order",skillTarget:"v1.0",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState};
 })();
