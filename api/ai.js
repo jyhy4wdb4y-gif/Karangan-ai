@@ -1,7 +1,7 @@
 /* =========================================================
    KARANGAN AI
    API / AI CONTROLLER
-   Version 4.4.3 Meaning-First Judge
+   Version 4.5.0 Compositional Semantic Judge
 
    Supports:
    - translate
@@ -1244,7 +1244,35 @@ PRINSIP WAJIB:
 10. language_issue hanya SATU pembetulan penting. Tulis pembetulan itu dalam Bahasa Melayu yang
     ringkas dan mesra murid Tahun 1. JANGAN gunakan bahasa Inggeris.
     Contoh: "Cuba tulis ‘di’ dengan huruf kecil."
-11. Jangan tentukan mastered, XP, level atau curriculum status.
+
+11. COMPOSITIONAL SEMANTIC CHECK — WAJIB SEBELUM MEMBETULKAN BAHASA:
+    a. Kenal pasti hubungan utama dalam ayat: SUBJECT + ACTION + OBJECT/COMPLEMENT + PLACE/TIME/COMPANION.
+    b. Semak keserasian setiap hubungan, bukan hanya perkataan terakhir atau lokasi.
+    c. Jangan "menyelamatkan" ayat yang kabur dengan menambah kata sendi, objek atau idea baharu yang murid tidak tulis.
+    d. Jangan beri contoh ayat lengkap yang memperkenalkan hubungan baharu sebagai pembetulan. Cikgu Aira mesti mengajar, bukan ghostwrite.
+    e. Jika hubungan ACTION + OBJECT/COMPLEMENT tidak jelas atau tidak sesuai dalam konteks biasa Tahun 1, gunakan ODD/INVALID dan minta murid fikir semula bahagian itu.
+    f. Imaginasi diterima apabila HUBUNGAN bahasa masih jelas. "bermain di bulan" mempunyai ACTION+PLACE yang jelas; "bermain nasi" tidak automatik menjadi bermakna hanya kerana boleh ditambah "dengan".
+    g. Jangan menganggap semua NOUN selepas kata kerja sebagai objek yang sah.
+
+12. CRITICAL REGRESSION CALIBRATION:
+    "Kawan saya bermain nasi di tandas." => INVALID atau ODD dengan target_met=false. JANGAN cadangkan "bermain dengan nasi".
+    "Kawan saya bermain dengan bola di taman." => NATURAL, target_met=true.
+    "Kawan saya bermain di tandas." => POSSIBLE/ODD mengikut konteks, tetapi hubungan ACTION+PLACE masih boleh difahami; jangan cipta objek.
+    "Saya membaca nasi di rumah." => INVALID, target_met=false.
+    "Saya makan buku di dapur." => INVALID atau ODD, target_met=false dalam konteks biasa Tahun 1; jangan ubah kepada idea baharu.
+    "Saya minum air di kelas." => NATURAL/POSSIBLE, target_met=true.
+    "Adik tidur pensel di bilik." => INVALID, target_met=false.
+    "Ayah membaca di langit." => IMAGINATIVE, target_met=true kerana ACTION+PLACE jelas.
+    "Adik belajar di hutan." => POSSIBLE, target_met=true kerana ACTION+PLACE jelas.
+
+13. FEEDBACK SAFETY:
+    Untuk ODD/INVALID akibat hubungan semantik, jangan beri ayat jawapan penuh.
+    Gunakan maklum balas pendek seperti:
+    "Bagus mencuba. Cuba fikir semula perkataan selepas ‘bermain’. Adakah perkataan itu sesuai dengan perbuatan bermain?"
+    atau soalan ringkas yang menunjuk SATU bahagian untuk difikir semula.
+    Jangan masukkan perkataan baharu yang boleh menjadi jawapan murid.
+
+14. Jangan tentukan mastered, XP, level atau curriculum status.
 
 semantic_class mesti salah satu:
 NATURAL, POSSIBLE, IMAGINATIVE, ODD, INVALID, UNKNOWN.
@@ -1750,5 +1778,5 @@ function extractResponseText(
 
 
 /* =========================================================
-   END KARANGAN AI API v4.4.3
+   END KARANGAN AI API v4.5.0
    ========================================================= */
