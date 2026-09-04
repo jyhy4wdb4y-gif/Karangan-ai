@@ -205,6 +205,23 @@ export default async function handler(
        Understands open vocabulary without changing curriculum/mastery.
        ===================================================== */
 
+    if (type === "teaching_generate_v1") {
+      const cleanBase = String(base_sentence || "").trim();
+      if (!cleanBase) {
+        return res.status(400).json({ error: "Base sentence is required." });
+      }
+
+      const example = await generateTeachingExample({
+        year,
+        language,
+        learningTarget: String(learning_target || "").trim(),
+        skillKey: String(skill_key || "").trim(),
+        baseSentence: cleanBase
+      });
+
+      return res.status(200).json(example);
+    }
+
     if (
       type === "semantic_judge" ||
       type === "teaching_judge_v2" ||
@@ -1196,6 +1213,110 @@ function cleanTranslation(
    Decision order: Meaning -> Skill Target -> Appropriateness -> Language.
    Independence/mastery remains client-owned.
    ========================================================= */
+
+
+async function generateTeachingExample({
+  year,
+  language,
+  learningTarget,
+  skillKey,
+  baseSentence
+}) {
+  const instructions = `
+Anda ialah Cikgu Aira, guru Bahasa Melayu sekolah rendah Malaysia.
+
+Tugas: hasilkan SATU contoh pengajaran untuk murid Tahun ${year || 1}.
+Ayat asas: "${baseSentence}"
+Kemahiran sasaran: ${skillKey || "OPEN"}
+Sasaran pembelajaran: ${learningTarget || "Kembangkan ayat dengan satu maklumat yang bermakna."}
+
+Peraturan wajib:
+1. Kekalkan maksud ayat asas.
+2. Tambah tepat satu jenis maklumat yang memenuhi kemahiran sasaran.
+3. Ayat mesti semula jadi, gramatis, mudah difahami dan sesuai untuk murid Tahun 1.
+4. Jangan guna nama/perkataan rawak, jargon, bahasa asing, atau perkataan yang tidak pasti.
+5. Jangan sekadar menambah perkataan; hubungan makna seluruh ayat mesti masuk akal.
+6. PLACE = tempat; TIME = masa; COMPANION = dengan siapa; DESCRIPTION = penerangan/sifat yang sesuai; INTENSITY = penguatan; OPEN = satu maklumat baharu yang sesuai.
+7. Untuk DESCRIPTION, sifat mesti benar-benar sesuai dengan benda/orang yang diterangkan.
+8. Output hanya JSON dengan medan:
+   sentence: ayat penuh yang betul
+   added_information: maklumat yang ditambah
+   skill_key: kemahiran sasaran
+   appropriateness: NATURAL atau POSSIBLE
+   explanation: penerangan sangat pendek untuk murid Tahun 1
+   confidence: 0 hingga 1
+  `.trim();
+
+  const input = `Hasilkan contoh pengajaran sekarang.`;
+
+  let result;
+  if (process.env.OPENAI_API_KEY) {
+    try {
+      result = await requestStructuredTeachingExample({ instructions, input });
+    } catch (error) {
+      console.warn("[Teaching Generate] OpenAI failed; trying Groq fallback:", error?.message || error);
+      if (!process.env.GROQ_API_KEY) throw error;
+    }
+  }
+  if (!result && process.env.GROQ_API_KEY) {
+    result = await requestGroqTeachingExample({ instructions, input });
+  }
+  if (!result) {
+    const error = new Error("No AI provider available for teaching generation.");
+    error.status = 503;
+    throw error;
+  }
+  return result;
+}
+
+async function requestStructuredTeachingExample({instructions,input}) {
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":`Bearer ${process.env.OPENAI_API_KEY}`
+    },
+    body:JSON.stringify({
+      model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+      temperature:0.15,
+      response_format:{type:"json_object"},
+      messages:[
+        {role:"system",content:instructions},
+        {role:"user",content:input}
+      ]
+    })
+  });
+  if(!response.ok){
+    const e=new Error(`OpenAI ${response.status}`); e.status=response.status; throw e;
+  }
+  const data=await response.json();
+  return JSON.parse(data?.choices?.[0]?.message?.content || "{}");
+}
+
+async function requestGroqTeachingExample({instructions,input}) {
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":`Bearer ${process.env.GROQ_API_KEY}`
+    },
+    body:JSON.stringify({
+      model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
+      temperature:0.15,
+      response_format:{type:"json_object"},
+      messages:[
+        {role:"system",content:instructions},
+        {role:"user",content:input}
+      ]
+    })
+  });
+  if(!response.ok){
+    const e=new Error(`Groq ${response.status}`); e.status=response.status; throw e;
+  }
+  const data=await response.json();
+  return JSON.parse(data?.choices?.[0]?.message?.content || "{}");
+}
+
 
 async function generateSemanticJudgment({
   year,
