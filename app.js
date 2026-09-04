@@ -12824,7 +12824,7 @@ window.KaranganTranslationCache = {
    Additive integration. Langkah 2 & Langkah 3 are untouched.
    ========================================================= */
 (function(){
-  const L4_VERSION="13.5.0-LIVE-AI-SEMANTIC-BENCHMARK";
+  const L4_VERSION="13.5.1-LIVE-BENCHMARK-RUNNER";
   const CONTENT_VERSION="1.0_STABLE";
   const LEGACY_GRAMMAR=renderGrammarRain;
   const STATE_KEY="karangan_ai_l4_t1_v1";
@@ -13385,32 +13385,62 @@ window.KaranganTranslationCache = {
     return cases;
   }
 
-  function l4LiveBenchmarkShow(report){
+  function l4LiveBenchmarkPanel(){
     document.getElementById("l4-live-bench-report")?.remove();
     const box=document.createElement("div");
     box.id="l4-live-bench-report";
     box.style.cssText="position:fixed;inset:14px;z-index:2147483647;overflow:auto;background:#fff;border:2px solid #222;border-radius:18px;padding:18px;font:14px/1.45 system-ui;box-shadow:0 20px 80px rgba(0,0,0,.35)";
-    const rows=report.results.map(x=>`<div style="padding:7px 0;border-bottom:1px solid #eee">${x.pass?"✅":"❌"} <strong>${esc(x.id)} · ${esc(x.name)}</strong><div style="font-size:12px;color:#667">${esc(x.skill)} · expected ${esc(x.expected)}${x.allow.length?` (also tolerates ${esc(x.allow.join(", "))})`:""} · got ${esc(x.actual)} · ${esc(x.answer)}</div></div>`).join("");
-    box.innerHTML=`<div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><h2 style="margin:0">Langkah 4 Live AI Semantic Benchmark</h2><button id="l4LiveBenchClose" style="padding:8px 12px">Close</button></div><p><strong>${report.passed}/${report.total} PASS</strong> · ${report.failed} failed · ${Math.round(report.accuracy*100)}% · ${report.durationMs} ms</p><p style="color:#667">Real /api/ai calls. 60 curated cases across PLACE, TIME, COMPANION, DESCRIPTION, INTENSITY and OPEN. Runs sequentially to avoid request bursts.</p>${rows}`;
+    box.innerHTML=`<div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><h2 style="margin:0">Langkah 4 Live AI Semantic Benchmark</h2><button id="l4LiveBenchClose" style="padding:8px 12px">Close</button></div><p id="l4LiveBenchSummary"><strong>Preparing 60 live AI cases…</strong></p><div style="height:12px;background:#eee;border-radius:999px;overflow:hidden;margin:10px 0 14px"><div id="l4LiveBenchBar" style="height:100%;width:0%;background:#111;transition:width .2s ease"></div></div><div id="l4LiveBenchStatus" style="padding:10px 12px;border-radius:12px;background:#f6f7f9;margin-bottom:12px">Waiting to start…</div><div id="l4LiveBenchRows"></div>`;
     document.body.appendChild(box);
     box.querySelector("#l4LiveBenchClose")?.addEventListener("click",()=>box.remove(),{once:true});
+    return box;
+  }
+
+  function l4LiveBenchmarkUpdate({done,total,lastId,status,passed,failed,error}){
+    const box=document.getElementById("l4-live-bench-report")||l4LiveBenchmarkPanel();
+    const pct=total?Math.round(done/total*100):0;
+    const bar=box.querySelector("#l4LiveBenchBar");
+    const summary=box.querySelector("#l4LiveBenchSummary");
+    const statusEl=box.querySelector("#l4LiveBenchStatus");
+    if(bar)bar.style.width=`${pct}%`;
+    if(summary)summary.innerHTML=`<strong>${done}/${total}</strong> completed · ${passed||0} pass · ${failed||0} fail`;
+    if(statusEl)statusEl.textContent=error?`API error at ${lastId}: ${error}`:`${status||"Running"}${lastId?` · ${lastId}`:""}`;
+  }
+
+  function l4LiveBenchmarkShow(report){
+    const box=document.getElementById("l4-live-bench-report")||l4LiveBenchmarkPanel();
+    const rows=report.results.map(x=>`<div style="padding:7px 0;border-bottom:1px solid #eee">${x.pass?"✅":"❌"} <strong>${esc(x.id)} · ${esc(x.name)}</strong><div style="font-size:12px;color:#667">${esc(x.skill)} · expected ${esc(x.expected)}${x.allow.length?` (also tolerates ${esc(x.allow.join(", "))})`:""} · got ${esc(x.actual)} · ${esc(x.answer)}${x.error?` · ERROR: ${esc(x.error)}`:""}</div></div>`).join("");
+    const summary=box.querySelector("#l4LiveBenchSummary");
+    const statusEl=box.querySelector("#l4LiveBenchStatus");
+    const rowsEl=box.querySelector("#l4LiveBenchRows");
+    const bar=box.querySelector("#l4LiveBenchBar");
+    if(bar)bar.style.width="100%";
+    if(summary)summary.innerHTML=`<strong>${report.passed}/${report.total} PASS</strong> · ${report.failed} failed · ${Math.round(report.accuracy*100)}% · ${report.durationMs} ms`;
+    if(statusEl)statusEl.textContent=report.failed?"Completed with failures — review the red rows below.":"Completed successfully.";
+    if(rowsEl)rowsEl.innerHTML=rows;
   }
 
   async function l4RunLiveAIBenchmark({visual=true}={}){
     if(window.__KARANGAN_L4_LIVE_BENCH_RUNNING__)return window.__KARANGAN_L4_LAST_LIVE_BENCH__||null;
     window.__KARANGAN_L4_LIVE_BENCH_RUNNING__=true;
     const started=Date.now(),cases=l4LiveBenchmarkCases(),results=[];
+    if(visual)l4LiveBenchmarkPanel();
+    l4LiveBenchmarkUpdate({done:0,total:cases.length,status:"Starting live AI benchmark",passed:0,failed:0});
     try{
       for(let i=0;i<cases.length;i++){
         const c=cases[i];
         let actual="ERROR",judge=null,error="";
+        l4LiveBenchmarkUpdate({done:i,total:cases.length,lastId:c.id,status:`Calling live AI (${i+1}/${cases.length})`,passed:results.filter(x=>x.pass).length,failed:results.filter(x=>!x.pass).length});
         try{
           judge=await l4TeachingJudge(c.snapshot,c.answer);
           actual=l4TeachingDecision(judge,c.answer).issue;
-        }catch(err){error=String(err?.message||err);}
+        }catch(err){
+          error=String(err?.message||err);
+        }
         const pass=actual===c.expected||c.allow.includes(actual);
         results.push({...c,actual,pass,error,judge});
         window.__KARANGAN_L4_LIVE_BENCH_PROGRESS__={done:i+1,total:cases.length,last:c.id};
+        l4LiveBenchmarkUpdate({done:i+1,total:cases.length,lastId:c.id,status:pass?"PASS":"FAIL",passed:results.filter(x=>x.pass).length,failed:results.filter(x=>!x.pass).length,error});
       }
     }finally{
       window.__KARANGAN_L4_LIVE_BENCH_RUNNING__=false;
@@ -13772,11 +13802,15 @@ window.KaranganTranslationCache = {
     if(qp.get("l4debug")==="1")setInterval(l4QaDebugPanel,350);
     if(qp.get("l4qa")==="1")setTimeout(()=>l4RunAutomatedQA({visual:true}),500);
     if(qp.get("l4sim")==="1")setTimeout(()=>l4RunTeachingSimulation({count:1000,visual:true}),500);
-    if(qp.get("l4live")==="1")setTimeout(()=>l4RunLiveAIBenchmark({visual:true}),700);
+    if(qp.get("l4live")==="1"){
+      const startLive=()=>setTimeout(()=>l4RunLiveAIBenchmark({visual:true}),250);
+      if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",startLive,{once:true});else startLive();
+      window.addEventListener("pageshow",()=>{if(!window.__KARANGAN_L4_LAST_LIVE_BENCH__&&!window.__KARANGAN_L4_LIVE_BENCH_RUNNING__)startLive();},{once:true});
+    }
   }catch(_){}
 
   try{const saved=loadState();if(Number.isInteger(saved.lastTaskIndex))taskIndex=Math.max(0,Math.min(tasks.length-1,saved.lastTaskIndex));}catch(_){}
   document.addEventListener("click",l4ClickGateway,true);
   renderGrammarRain=start;
-  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v13.5.0-click-only-state-machine+live-ai-semantic-benchmark",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null,runTeachingSimulation:l4RunTeachingSimulation,lastTeachingSimulation:()=>window.__KARANGAN_L4_LAST_SIM__||null,runLiveAIBenchmark:l4RunLiveAIBenchmark,lastLiveAIBenchmark:()=>window.__KARANGAN_L4_LAST_LIVE_BENCH__||null};
+  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v13.5.1-click-only-state-machine+live-ai-benchmark-runner",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null,runTeachingSimulation:l4RunTeachingSimulation,lastTeachingSimulation:()=>window.__KARANGAN_L4_LAST_SIM__||null,runLiveAIBenchmark:l4RunLiveAIBenchmark,lastLiveAIBenchmark:()=>window.__KARANGAN_L4_LAST_LIVE_BENCH__||null};
 })();
