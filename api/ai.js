@@ -1273,7 +1273,10 @@ PERATURAN KETAT:
 - "Kawan saya baik dan gila." mesti VETO untuk PEDAGOGICAL_APPROPRIATENESS; "baik" boleh dipelihara sebagai bahagian betul.
 - "Bunga itu cantik dengan rasa masin." mesti VETO.
 - Idea imaginatif boleh PASS jika jelas, sesuai untuk kanak-kanak dan masih mengekalkan maksud.
-- Jika ragu-ragu sama ada guru patut menerima jawapan, pilih CLARIFY/VETO, bukan PASS.
+- CLARIFY hanya untuk ambiguiti sebenar: sekurang-kurangnya dua tafsiran munasabah masih mungkin dan konteks tambahan murid benar-benar diperlukan.
+- Jika masalah sudah boleh dikenal pasti daripada ayat, pilih VETO, BUKAN CLARIFY.
+- Contoh: "Adik gembira dan Kelas." ialah kesalahan yang sudah diketahui: "dan kelas" tidak sesuai sebagai penerangan. Mesti VETO, bukan CLARIFY.
+- Jika ragu-ragu sama ada guru patut menerima jawapan tetapi masalahnya sudah kelihatan, pilih VETO.
 
 Output JSON sahaja:
 {
