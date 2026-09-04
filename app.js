@@ -12824,7 +12824,7 @@ window.KaranganTranslationCache = {
    Additive integration. Langkah 2 & Langkah 3 are untouched.
    ========================================================= */
 (function(){
-  const L4_VERSION="14.2.0-RESILIENT-SUBMIT-PARTIAL-CORRECTNESS";
+  const L4_VERSION="15.0.0-UNIFIED-TEACHING-ENGINE";
   const CONTENT_VERSION="1.0_STABLE";
   const LEGACY_GRAMMAR=renderGrammarRain;
   const STATE_KEY="karangan_ai_l4_t1_v1";
@@ -13141,6 +13141,96 @@ window.KaranganTranslationCache = {
     const stem=b.replace(/[.!?]+$/,"").trim();
     const joined=`${stem} ${a}`.replace(/\s+/g," ").trim();
     return /[.!?]$/.test(joined)?joined:`${joined}.`;
+  }
+
+
+  function l4ValidatedFallbackExample(snapshot){
+    const t=snapshot?.task||currentTask();
+    const base=snapshot?.base||t.base||"";
+    // Curated task model is the deterministic safety net, never a random generator.
+    if(t?.model && l4BasePreservedForPartialCredit(base,t.model)) return {
+      sentence:t.model, source:"CURATED_FALLBACK", degraded:true,
+      explanation:"Lihat bagaimana satu maklumat yang sesuai ditambah."
+    };
+    const choice=Array.isArray(t?.choices)?t.choices.find(Boolean):null;
+    if(choice) return {
+      sentence:l4JoinBase(base,choice), source:"CURATED_FALLBACK", degraded:true,
+      explanation:"Lihat bagaimana satu maklumat yang sesuai ditambah."
+    };
+    return null;
+  }
+
+  async function l4GenerateTeachingExample(snapshot){
+    if(!snapshot?.base) throw new Error("Missing frozen exercise snapshot");
+    const result=await l4WithTimeout(callAI({
+      type:"teaching_generate_v1",
+      language:"Bahasa Melayu",
+      year:1,
+      exercise_id:snapshot.exerciseId,
+      learning_target:snapshot.learningTarget,
+      skill_key:snapshot.skill,
+      base_sentence:snapshot.base
+    }),9000);
+    const sentence=String(result?.sentence||"").trim();
+    const returnedSkill=String(result?.skill_key||snapshot.skill||"").toUpperCase();
+    const app=String(result?.appropriateness||"UNKNOWN").toUpperCase();
+    const confidence=Number(result?.confidence||0);
+    if(!sentence || returnedSkill!==String(snapshot.skill||"").toUpperCase())
+      throw new Error("Teaching example skill mismatch");
+    if(!["NATURAL","POSSIBLE"].includes(app) || confidence<0.82)
+      throw new Error("Teaching example confidence/appropriateness rejected");
+    if(!l4BasePreservedForPartialCredit(snapshot.base,sentence))
+      throw new Error("Teaching example did not preserve base");
+    return {
+      sentence,
+      source:"AI",
+      degraded:false,
+      explanation:String(result?.explanation||"Kamu menambah satu maklumat yang sesuai.").trim()
+    };
+  }
+
+  async function l4ResolveTeachingExample(snapshot,studentExample=""){
+    // A student's already-accepted guided sentence is safe to show as the transformation.
+    if(studentExample && l4BasePreservedForPartialCredit(snapshot.base,studentExample)){
+      return {sentence:String(studentExample).trim(),source:"STUDENT_ACCEPTED",degraded:false,
+        explanation:"Kamu menambah maklumat yang sesuai dan mengekalkan maksud ayat."};
+    }
+    try{
+      return await l4GenerateTeachingExample(snapshot);
+    }catch(err){
+      console.warn("[L4 Unified Teaching Generate] safe curated fallback:",err);
+      const fallback=l4ValidatedFallbackExample(snapshot);
+      if(fallback)return fallback;
+      throw err;
+    }
+  }
+
+  function l4RenderUpgrade(example,snapshot){
+    const t=snapshot?.task||currentTask(),base=snapshot?.base||t.base;
+    const full=String(example?.sentence||"").trim();
+    const note=example?.source==="AI"
+      ? "Cikgu Aira memilih contoh yang mengekalkan maksud dan memenuhi kemahiran sasaran."
+      : (example?.source==="STUDENT_ACCEPTED"
+        ? "Ayat kamu mengekalkan maksud dan memenuhi kemahiran sasaran."
+        : "Contoh selamat digunakan sementara semakan AI berehat.");
+    const body=`<div class="l4-card"><div style="text-align:center"><div class="l4-spark">🪄✨</div><div class="l4-label">Ayat Magic berlaku!</div></div><div class="l4-transform" style="margin-top:16px"><div class="l4-card l4-base" style="margin:0"><div class="l4-label">🐣 Sebelum</div><div class="l4-sentence" style="font-size:21px">${esc(base)}</div></div><div class="l4-arrow">→</div><div class="l4-card l4-magic" style="margin:0"><div class="l4-label">✨ Selepas</div><div class="l4-sentence" style="font-size:22px">${esc(full)}</div></div></div><div class="l4-ai" style="margin-top:16px"><div class="l4-ai-face">🐣</div><div><div class="l4-ai-title">Cikgu Aira</div><div>${esc(note)}</div></div></div></div><button id="l4TryOwn" data-l4-action="try-own" class="l4-primary">✍️ Sekarang Cuba Sendiri</button>`;
+    activeExercise=snapshot;
+    if(!l4Transition("UPGRADE",{force:true}))return false;
+    l4SetBusy(false);shell(body,72,2);
+    return !!document.querySelector('[data-l4-action="try-own"]');
+  }
+
+  async function l4TeachMagic(snapshot,studentExample=""){
+    l4SetBusy(true);
+    try{
+      const example=await l4ResolveTeachingExample(snapshot,studentExample);
+      return l4RenderUpgrade(example,snapshot);
+    }catch(err){
+      l4SetBusy(false);
+      console.error("[L4 Unified Teaching Engine]",err);
+      guided("Cikgu Aira belum dapat menyediakan contoh yang cukup yakin. Cuba satu ayat lain dahulu.");
+      return false;
+    }
   }
 
   function upgrade(chosen,snapshot=activeExercise){
@@ -14054,7 +14144,7 @@ window.KaranganTranslationCache = {
       const localLanguageIssue=l4LanguagePrecheck(v),languageIssue=judge.language_issue||localLanguageIssue;
       if(languageIssue){guided(l4TeachingFeedback(snap.task,{...judge,primary_issue:"LANGUAGE",language_issue:languageIssue}));return;}
       recordSuccess(guidedHint3?"GUIDED_SUCCESS":"GUIDED_INDEPENDENT",snap.base,{judge,snapshot:snap});
-      upgrade(v,snap);
+      await l4TeachMagic(snap,v);
     }catch(err){
       l4SetBusy(false);
       console.warn("[L4 Guided AI Judge v3]",err);
@@ -14120,7 +14210,7 @@ window.KaranganTranslationCache = {
     if(el.dataset?.l4Choice){
       if(l4Machine.phase!=="GUIDED")return;
       const snap=activeExercise?.stage==="GUIDED"?activeExercise:l4FreezeExercise(currentTask(),"GUIDED",currentTask().base);
-      recordSuccess("GUIDED_CHOICE",snap.base,{snapshot:snap});upgrade(el.dataset.l4Choice,snap);return;
+      recordSuccess("GUIDED_CHOICE",snap.base,{snapshot:snap});l4TeachMagic(snap,l4JoinBase(snap.base,el.dataset.l4Choice));return;
     }
     if(actionId==="l4GuidedCheck"){
       if(l4Machine.phase!=="GUIDED")return;
@@ -14498,5 +14588,5 @@ window.KaranganTranslationCache = {
     return report;
   }
 
-  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v14.2.0-click-only+hybrid+adaptive+resilient-submit+partial-correctness",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMasteryStats:l4MasteryStats,getAdaptivePlan:l4AdaptivePlan,getHybridLocalVerdict:l4LocalTeachingVerdict,getBaseAlignment:l4BaseAlignment,getAIStatus:()=>({cooldown:l4AIInCooldown(),until:Number(window.__KARANGAN_L4_AI_COOLDOWN_UNTIL__||0),lastError:window.__KARANGAN_L4_AI_LAST_ERROR_TYPE__||null}),getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null,runTeachingSimulation:l4RunTeachingSimulation,lastTeachingSimulation:()=>window.__KARANGAN_L4_LAST_SIM__||null,runLiveAIBenchmark:l4RunLiveAIBenchmark,lastLiveAIBenchmark:()=>window.__KARANGAN_L4_LAST_LIVE_BENCH__||null,runTargetedSmoke:l4RunTargetedSmoke,lastTargetedSmoke:()=>window.__KARANGAN_L4_LAST_SMOKE__||null,runPredeploymentLab:l4RunPredeploymentLab,lastPredeploymentLab:()=>window.__KARANGAN_L4_LAST_PREDEPLOY_LAB__||null};
+  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v15.0.0-click-only+adaptive+unified-teaching-engine+resilient-fallback",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMasteryStats:l4MasteryStats,getAdaptivePlan:l4AdaptivePlan,getHybridLocalVerdict:l4LocalTeachingVerdict,getBaseAlignment:l4BaseAlignment,generateTeachingExample:l4GenerateTeachingExample,resolveTeachingExample:l4ResolveTeachingExample,getAIStatus:()=>({cooldown:l4AIInCooldown(),until:Number(window.__KARANGAN_L4_AI_COOLDOWN_UNTIL__||0),lastError:window.__KARANGAN_L4_AI_LAST_ERROR_TYPE__||null}),getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null,runTeachingSimulation:l4RunTeachingSimulation,lastTeachingSimulation:()=>window.__KARANGAN_L4_LAST_SIM__||null,runLiveAIBenchmark:l4RunLiveAIBenchmark,lastLiveAIBenchmark:()=>window.__KARANGAN_L4_LAST_LIVE_BENCH__||null,runTargetedSmoke:l4RunTargetedSmoke,lastTargetedSmoke:()=>window.__KARANGAN_L4_LAST_SMOKE__||null,runPredeploymentLab:l4RunPredeploymentLab,lastPredeploymentLab:()=>window.__KARANGAN_L4_LAST_PREDEPLOY_LAB__||null};
 })();
