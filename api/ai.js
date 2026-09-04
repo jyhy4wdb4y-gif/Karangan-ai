@@ -1,7 +1,7 @@
 /* =========================================================
    KARANGAN AI
    API / AI CONTROLLER
-   Version 4.7.0 Hard Semantic Relationship Gate
+   Version 4.8.0 AI-Native Teaching Engine v3
 
    Supports:
    - translate
@@ -207,7 +207,8 @@ export default async function handler(
 
     if (
       type === "semantic_judge" ||
-      type === "teaching_judge_v2"
+      type === "teaching_judge_v2" ||
+      type === "teaching_judge_v3"
     ) {
 
       const cleanBase =
@@ -1191,7 +1192,7 @@ function cleanTranslation(
 
 
 /* =========================================================
-   TEACHING ENGINE v2 — LANGKAH 4
+   AI-NATIVE TEACHING ENGINE v3 — LANGKAH 4
    Decision order: Meaning -> Skill Target -> Appropriateness -> Language.
    Independence/mastery remains client-owned.
    ========================================================= */
@@ -1205,7 +1206,7 @@ async function generateSemanticJudgment({
 }) {
 
   const instructions = `
-Anda ialah Teaching Engine v2 untuk Karangan AI, aplikasi Bahasa Melayu sekolah rendah Malaysia.
+Anda ialah AI Teacher Judge v3 untuk Karangan AI, aplikasi Bahasa Melayu sekolah rendah Malaysia. Tugas anda ialah MENILAI secara profesional, bukan sekadar memberi galakan.
 
 Konteks:
 - Tahun murid: ${year || 1}
@@ -1220,6 +1221,10 @@ IKUT URUTAN KEPUTUSAN INI. JANGAN LOMPAT:
 5. INDEPENDENCE — JANGAN tentukan mastery, XP atau independence. Itu milik aplikasi klien.
 
 PERATURAN SISTEM:
+- Ini ialah semantic judge untuk SEMUA jawapan teks bebas di Guided/Magic dan Independent Stage. Standard penilaian mesti sama di semua stage.
+- Jangan beri PASS hanya kerana murid menambah perkataan, tempat, masa, atau frasa baharu. Hubungan semantik inti mesti masuk akal dahulu.
+- Untuk kata kerja, semak keserasian kata kerja dengan objek/pelengkapnya. Frasa lokasi atau masa yang betul tidak boleh menyelamatkan hubungan kata kerja+objek yang tidak masuk akal.
+- Bezakan struktur yang sengaja kreatif daripada gabungan kata yang tidak membawa maksud. Kreativiti boleh PASS; semantic incompatibility tidak boleh PASS.
 - Jangan padankan dengan model answer.
 - Perkataan murid tidak perlu berada dalam kosa kata aplikasi.
 - Perkataan yang sah secara individu tidak bermaksud gabungannya sesuai. Contoh: “Saya membaca nasi di rumah.” gagal pada MEANING.
@@ -1254,6 +1259,7 @@ KALIBRASI KRITIKAL:
 - “Ibu makan nasi di rumah.” => meaning PASS.
 - “Saya makan buku di dapur.” => meaning FAIL, RETRY, primary_issue MEANING.
 - “Saya membaca nasi di rumah.” => meaning FAIL, RETRY, primary_issue MEANING.
+- “Kawan saya belajar nasi di sekolah.” => meaning FAIL kerana “belajar nasi” tidak membentuk hubungan yang sesuai; lokasi “di sekolah” tidak mengubah kegagalan hubungan inti. “Kawan saya belajar tentang nasi di sekolah.” pula boleh dinilai berbeza kerana “tentang nasi” mempunyai hubungan makna yang jelas.
 - “Kawan saya bermain nasi di tandas.” => meaning FAIL/UNCERTAIN, tidak boleh PASS hanya kerana ada lokasi.
 - “Ayah membaca di langit.” => meaning PASS, appropriateness IMAGINATIVE.
 - “Adik bermain di bulan.” => meaning PASS, appropriateness IMAGINATIVE.
@@ -1568,7 +1574,9 @@ function cleanSemanticJudgment(result) {
     target_met:skill_target_status==="MET",
     meaning_preserved:meaning_status==="PASS",
     semantic_class:appropriateness,
-    information_type:"UNKNOWN"
+    information_type:"UNKNOWN",
+    engine_version:"AI-NATIVE-V3",
+    provider_model:DEFAULT_MODEL
   };
 }
 
