@@ -12824,11 +12824,11 @@ window.KaranganTranslationCache = {
    Additive integration. Langkah 2 & Langkah 3 are untouched.
    ========================================================= */
 (function(){
-  const L4_VERSION="13.0.1-TEACHING-V2";
+  const L4_VERSION="13.1.0-AI-NATIVE-V3";
   const CONTENT_VERSION="1.0_STABLE";
   const LEGACY_GRAMMAR=renderGrammarRain;
   const STATE_KEY="karangan_ai_l4_t1_v1";
-  let level="ASAS", stage="START", hint=0, taskIndex=0, draft="", guidedDraft="", guidedHint3=false, independentHintUsed=false;
+  let level="ASAS", stage="START", hint=0, taskIndex=0, draft="", guidedDraft="", guidedHint3=false, independentHintUsed=false, activeExercise=null, l4JudgeSeq=0;
 
   const tasks=[
     {id:"L4-T1-001",skill:"PLACE",base:"Saya membaca buku.",q:"Di mana?",choices:["di bilik","di rumah","di sekolah"],model:"Saya membaca buku di bilik."},
@@ -13001,19 +13001,24 @@ window.KaranganTranslationCache = {
   function feedback(m){return m?`<div class="l4-ai"><div class="l4-ai-face">🐣</div><div><div class="l4-ai-title">Cikgu Aira</div><div>${esc(m)}</div></div></div>`:"";}
   function start(){stage="START";hint=0;guidedHint3=false;draft="";guidedDraft="";shell(`<div class="l4-hero"><div class="l4-spark">🪄</div><h2 style="margin:4px 0 6px">Misi Ayat Magic</h2><p style="margin:0;color:#626d74">Tukar ayat biasa menjadi ayat yang lebih bermakna dengan <strong>satu maklumat</strong>.</p></div><div class="l4-card"><div class="l4-label">Pilih cara belajar</div><div class="l4-levels" style="margin-top:12px"><button data-l4-level="ASAS" class="l4-level ${level==='ASAS'?'active':''}">🌱 Asas<br><small>Pilih bantuan</small></button><button data-l4-level="STANDARD" class="l4-level ${level==='STANDARD'?'active':''}">🌿 Standard<br><small>Tulis sendiri</small></button><button data-l4-level="LANJUTAN" class="l4-level ${level==='LANJUTAN'?'active':''}">⭐ Lanjutan<br><small>Lebih bebas</small></button></div></div><button id="l4Begin" class="l4-primary">Mula Ayat Magic →</button>`,50,1);}
   function promptFor(t){if(level!=="LANJUTAN")return t.q;if(t.skill==="PLACE")return "Tulis semula ayat penuh dan tambah satu tempat.";if(t.skill==="TIME")return "Tulis semula ayat penuh dan tambah satu masa.";if(t.skill==="COMPANION")return "Tulis semula ayat penuh dan nyatakan dengan siapa.";if(t.skill==="DESCRIPTION")return "Tulis semula ayat penuh dan tambah satu penerangan yang sesuai.";if(t.skill==="INTENSITY")return "Tulis semula ayat penuh dan kuatkan perasaan itu.";return "Tulis semula ayat penuh dan tambah satu maklumat yang sesuai.";}
-  function guided(message=""){stage="GUIDED";if(!message){hint=0;guidedHint3=false;}const t=currentTask();const meta=l4SkillMeta(t.skill);let action="";const canChoice=level==="ASAS"&&t.choices.length;
+  function guided(message=""){
+    stage="GUIDED";
+    if(!message){hint=0;guidedHint3=false;}
+    let snap=(message && activeExercise?.stage==="GUIDED")?activeExercise:null;
+    if(!snap){const t0=currentTask();snap=l4FreezeExercise(t0,"GUIDED",t0.base);}
+    const t=snap.task;const meta=l4SkillMeta(t.skill);let action="";const canChoice=level==="ASAS"&&t.choices.length;
     if(canChoice)action=`<div class="l4-chiprow">${t.choices.map(x=>`<button data-l4-choice="${esc(x)}" class="l4-chip">${esc(x)}</button>`).join("")}</div>`;
-    else {const tag=level==="STANDARD"?"input":"textarea";const close=tag==="textarea"?`</textarea>`:"";const val=tag==="input"?`value="${esc(guidedDraft)}"`:``;const inner=tag==="textarea"?esc(guidedDraft):"";action=`<${tag} id="l4GuidedInput" ${val} ${tag==="textarea"?'rows="3"':''} class="l4-input" placeholder="Tulis ayat penuh yang lebih lengkap...">${inner}${close}<button id="l4GuidedCheck" class="l4-primary" style="margin-top:10px">✓ Semak Ayat</button>`;}
-    shell(`<div class="l4-card l4-base"><div class="l4-label">🐣 Ayat Biasa</div><div class="l4-sentence">${esc(t.base)}</div><div class="l4-question"><span style="margin-right:6px">${meta[0]}</span>${esc(promptFor(t))}</div></div>${feedback(message)}<div class="l4-card"><div class="l4-label">${meta[0]} Magic Block · ${meta[1]}</div>${action}</div><button id="l4Hint" class="l4-secondary">🔊 Tanya Cikgu Aira</button>`,60,1);}
-  function joinBase(base,addition){return base.replace(/[.!?]$/,'')+" "+addition.replace(/[.!?]$/,'')+".";}
-  function upgrade(chosen){const t=currentTask();stage="UPGRADE";let full=String(chosen||"").trim();if(!/^[A-Z]/.test(full)||full.split(/\s+/).length<3)full=joinBase(t.base,full);shell(`<div class="l4-card"><div style="text-align:center"><div class="l4-spark">🪄✨</div><div class="l4-label">Ayat Magic berlaku!</div></div><div class="l4-transform" style="margin-top:16px"><div class="l4-card l4-base" style="margin:0"><div class="l4-label">🐣 Sebelum</div><div class="l4-sentence" style="font-size:21px">${esc(t.base)}</div></div><div class="l4-arrow">→</div><div class="l4-card l4-magic" style="margin:0"><div class="l4-label">✨ Selepas</div><div class="l4-sentence" style="font-size:22px">${esc(full)}</div></div></div><div class="l4-ai" style="margin-top:16px"><div class="l4-ai-face">🐣</div><div><div class="l4-ai-title">Hebat!</div><div>Kamu menambah maklumat yang membuat ayat lebih bermakna.</div></div></div></div><button id="l4TryOwn" class="l4-primary">✍️ Sekarang Cuba Sendiri</button>`,72,2);}
+    else {const tag=level==="STANDARD"?"input":"textarea";const close=tag==="textarea"?`</textarea>`:"";const val=tag==="input"?`value="${esc(guidedDraft)}"`:"";const inner=tag==="textarea"?esc(guidedDraft):"";action=`<${tag} id="l4GuidedInput" ${val} ${tag==="textarea"?'rows="3"':''} class="l4-input" placeholder="Tulis ayat penuh yang lebih lengkap...">${inner}${close}<button id="l4GuidedCheck" class="l4-primary" style="margin-top:10px">✓ Semak Ayat</button>`;}
+    shell(`<div class="l4-card l4-base"><div class="l4-label">🐣 Ayat Biasa</div><div class="l4-sentence">${esc(snap.base)}</div><div class="l4-question">🪄 ${esc(promptFor(t))}</div></div>${feedback(message)}<div class="l4-card"><div class="l4-label">${meta[0]} Magic Block · ${meta[1]}</div>${action}</div><button id="l4Hint" class="l4-secondary">🔊 Tanya Cikgu Aira</button>`,60,1);
+  }
+  function upgrade(chosen,snapshot=activeExercise){const t=snapshot?.task||currentTask();const base=snapshot?.base||t.base;activeExercise=snapshot||l4FreezeExercise(t,"GUIDED",base);stage="UPGRADE";let full=String(chosen||"").trim();if(!/^[A-Z]/.test(full)||full.split(/\s+/).length<3)full=joinBase(t.base,full);shell(`<div class="l4-card"><div style="text-align:center"><div class="l4-spark">🪄✨</div><div class="l4-label">Ayat Magic berlaku!</div></div><div class="l4-transform" style="margin-top:16px"><div class="l4-card l4-base" style="margin:0"><div class="l4-label">🐣 Sebelum</div><div class="l4-sentence" style="font-size:21px">${esc(base)}</div></div><div class="l4-arrow">→</div><div class="l4-card l4-magic" style="margin:0"><div class="l4-label">✨ Selepas</div><div class="l4-sentence" style="font-size:22px">${esc(full)}</div></div></div><div class="l4-ai" style="margin-top:16px"><div class="l4-ai-face">🐣</div><div><div class="l4-ai-title">Hebat!</div><div>Kamu menambah maklumat yang membuat ayat lebih bermakna.</div></div></div></div><button id="l4TryOwn" class="l4-primary">✍️ Sekarang Cuba Sendiri</button>`,72,2);}
   function independent(message=""){
     stage="INDEPENDENT";
     const s=loadState();
     const base=s.currentIndependentBase||pickConnectedTransferBase(currentTask());
     independentRender(base,message);
   }
-  function independentRender(base,message=""){stage="INDEPENDENT";shell(`<div class="l4-card l4-base"><div class="l4-label">🎯 Giliran Kamu</div><p style="margin:7px 0;color:#5f6970">${l4IndependentSkillPrompt(currentTask())}</p><div class="l4-sentence">${esc(base)}</div></div>${feedback(message)}<div class="l4-card"><div class="l4-label">✍️ Ayat Magic Saya</div><textarea id="l4Draft" rows="3" class="l4-input" style="margin-top:10px" placeholder="Tulis ayat penuh kamu...">${esc(draft)}</textarea><button id="l4OwnCheck" class="l4-primary" style="margin-top:10px">✓ Semak Ayat Saya</button></div><button id="l4Hint" class="l4-secondary">🔊 Tanya Cikgu Aira</button>`,84,3);}
+  function independentRender(base,message="",snapshot=null){stage="INDEPENDENT";const snap=snapshot||((activeExercise?.stage==="INDEPENDENT"&&activeExercise.base===base)?activeExercise:l4FreezeExercise(currentTask(),"INDEPENDENT",base));activeExercise=snap;shell(`<div class="l4-card l4-base"><div class="l4-label">🎯 Giliran Kamu</div><p style="margin:7px 0;color:#5f6970">${l4IndependentSkillPrompt(snap.task)}</p><div class="l4-sentence">${esc(snap.base)}</div></div>${feedback(message)}<div class="l4-card"><div class="l4-label">✍️ Ayat Magic Saya</div><textarea id="l4Draft" rows="3" class="l4-input" style="margin-top:10px" placeholder="Tulis ayat penuh kamu...">${esc(draft)}</textarea><button id="l4OwnCheck" class="l4-primary" style="margin-top:10px">✓ Semak Ayat Saya</button></div><button id="l4Hint" class="l4-secondary">🔊 Tanya Cikgu Aira</button>`,84,3);}
   function l4NormTokens(value){
     return String(value||"")
       .toLowerCase()
@@ -13063,14 +13068,33 @@ window.KaranganTranslationCache = {
     return null;
   }
 
-  async function l4TeachingJudge(base,answer){
+  function l4FreezeExercise(task,stageName,baseOverride){
+    const t={...task};
+    const base=String(baseOverride??t.base??"").trim();
+    const snap={
+      exerciseId:`${t.id||"L4"}-${stageName}-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
+      stage:stageName,
+      taskIndex,
+      task:t,
+      taskId:t.id||"",
+      skill:l4SkillKey(t),
+      base,
+      learningTarget:l4SkillTarget(t)
+    };
+    activeExercise=snap;
+    return snap;
+  }
+
+  async function l4TeachingJudge(snapshot,answer){
+    if(!snapshot?.base) throw new Error("Missing frozen exercise snapshot");
     const result=await callAI({
-      type:"teaching_judge_v2",
+      type:"teaching_judge_v3",
       language:"Bahasa Melayu",
       year:1,
-      learning_target:l4SkillTarget(currentTask()),
-      skill_key:l4SkillKey(currentTask()),
-      base_sentence:base,
+      exercise_id:snapshot.exerciseId,
+      learning_target:snapshot.learningTarget,
+      skill_key:snapshot.skill,
+      base_sentence:snapshot.base,
       student_answer:answer
     });
     const parsed=l4ExtractJson(result);
@@ -13119,52 +13143,58 @@ window.KaranganTranslationCache = {
   async function checkOwn(){
     const el=byId("l4Draft");
     draft=(el?.value||draft).trim();
-    const s=loadState(),base=s.currentIndependentBase||pickConnectedTransferBase(currentTask());
-    if(!draft){independentRender(base,"Cuba tulis ayat kamu dahulu.");return;}
-
-    /* IMPORTANT: no spelling/capitalisation/punctuation rejection here.
-       Meaning and skill must be judged first. */
+    let snap=activeExercise?.stage==="INDEPENDENT"?activeExercise:null;
+    if(!snap){const base=loadState().currentIndependentBase||pickConnectedTransferBase(currentTask());snap=l4FreezeExercise(currentTask(),"INDEPENDENT",base);}
+    if(!draft){independentRender(snap.base,"Cuba tulis ayat kamu dahulu.",snap);return;}
+    const seq=++l4JudgeSeq;
     try{
-      const judge=await l4TeachingJudge(base,draft);
+      const judge=await l4TeachingJudge(snap,draft);
+      if(seq!==l4JudgeSeq || activeExercise?.exerciseId!==snap.exerciseId) return;
       const history=Array.isArray(loadState().teachingHistory)?loadState().teachingHistory:[];
-      history.push({base,answer:draft,skill:l4SkillKey(currentTask()),...judge,at:Date.now()});
+      history.push({exerciseId:snap.exerciseId,taskId:snap.taskId,base:snap.base,answer:draft,skill:snap.skill,...judge,at:Date.now()});
       saveState({teachingHistory:history.slice(-100)});
-
-      /* Strict teaching hierarchy: finish Meaning before Skill Target. */
-      if(judge.meaning_status==="UNCERTAIN"){
-        independentRender(base,l4TeachingFeedback(currentTask(),{...judge,primary_issue:"NONE",needs_clarification:true}));return;
-      }
-      if(judge.meaning_status==="FAIL"){
-        independentRender(base,l4TeachingFeedback(currentTask(),{...judge,primary_issue:"MEANING"}));return;
-      }
-      if(judge.skill_target_status==="UNCERTAIN"){
-        independentRender(base,l4TeachingFeedback(currentTask(),{...judge,primary_issue:"NONE",needs_clarification:true}));return;
-      }
-      if(judge.skill_target_status==="NOT_MET"){
-        independentRender(base,l4TeachingFeedback(currentTask(),{...judge,primary_issue:"SKILL_TARGET"}));return;
-      }
-      if(["ODD","INVALID","UNKNOWN"].includes(judge.appropriateness) || judge.primary_issue==="APPROPRIATENESS"){
-        independentRender(base,l4TeachingFeedback(currentTask(),judge));return;
-      }
-
-      const localLanguageIssue=l4LanguagePrecheck(draft);
-      const languageIssue=judge.language_issue||localLanguageIssue;
-      if(languageIssue){
-        independentRender(base,l4TeachingFeedback(currentTask(),{...judge,primary_issue:"LANGUAGE",language_issue:languageIssue}));return;
-      }
-
+      if(judge.meaning_status==="UNCERTAIN"){independentRender(snap.base,l4TeachingFeedback(snap.task,{...judge,primary_issue:"NONE",needs_clarification:true}),snap);return;}
+      if(judge.meaning_status==="FAIL"){independentRender(snap.base,l4TeachingFeedback(snap.task,{...judge,primary_issue:"MEANING"}),snap);return;}
+      if(judge.skill_target_status==="UNCERTAIN"){independentRender(snap.base,l4TeachingFeedback(snap.task,{...judge,primary_issue:"NONE",needs_clarification:true}),snap);return;}
+      if(judge.skill_target_status==="NOT_MET"){independentRender(snap.base,l4TeachingFeedback(snap.task,{...judge,primary_issue:"SKILL_TARGET"}),snap);return;}
+      if(["ODD","INVALID","UNKNOWN"].includes(judge.appropriateness)||judge.primary_issue==="APPROPRIATENESS"){independentRender(snap.base,l4TeachingFeedback(snap.task,judge),snap);return;}
+      const localLanguageIssue=l4LanguagePrecheck(draft),languageIssue=judge.language_issue||localLanguageIssue;
+      if(languageIssue){independentRender(snap.base,l4TeachingFeedback(snap.task,{...judge,primary_issue:"LANGUAGE",language_issue:languageIssue}),snap);return;}
       const independentEvidence=!independentHintUsed;
-      recordSuccess("STAGE3_SUCCESS",base,{independentEvidence,judge});
+      recordSuccess("STAGE3_SUCCESS",snap.base,{independentEvidence,judge,snapshot:snap});
       success(independentEvidence,judge);
     }catch(err){
-      console.warn("[L4 Teaching Engine v2]",err);
-      independentRender(base,"Cikgu Aira belum dapat menyemak maksud ayat ini sekarang. Ayat kamu tidak ditanda salah. Cuba tekan Semak sekali lagi.");
+      console.warn("[L4 Teaching Engine v3]",err);
+      if(activeExercise?.exerciseId===snap.exerciseId) independentRender(snap.base,"Cikgu Aira belum dapat menyemak maksud ayat ini sekarang. Ayat kamu tidak ditanda salah. Cuba tekan Semak sekali lagi.",snap);
+    }
+  }
+
+  async function checkGuided(){
+    const snap=activeExercise?.stage==="GUIDED"?activeExercise:l4FreezeExercise(currentTask(),"GUIDED",currentTask().base);
+    const el=byId("l4GuidedInput"),v=(el?.value||guidedDraft||"").trim();guidedDraft=v;
+    if(!v){guided("Cuba tulis jawapan kamu dahulu.");return;}
+    if(v.split(/\s+/).length<3){guided("Hampir betul! Jangan tulis maklumat sahaja. Cuba lengkapkan seluruh ayat.");return;}
+    const seq=++l4JudgeSeq;
+    try{
+      const judge=await l4TeachingJudge(snap,v);
+      if(seq!==l4JudgeSeq || activeExercise?.exerciseId!==snap.exerciseId) return;
+      if(judge.meaning_status==="UNCERTAIN"||judge.skill_target_status==="UNCERTAIN"||judge.needs_clarification){guided(l4TeachingFeedback(snap.task,{...judge,primary_issue:"NONE",needs_clarification:true}));return;}
+      if(judge.meaning_status==="FAIL"){guided(l4TeachingFeedback(snap.task,{...judge,primary_issue:"MEANING"}));return;}
+      if(judge.skill_target_status==="NOT_MET"){guided(l4TeachingFeedback(snap.task,{...judge,primary_issue:"SKILL_TARGET"}));return;}
+      if(["ODD","INVALID","UNKNOWN"].includes(judge.appropriateness)||judge.primary_issue==="APPROPRIATENESS"){guided(l4TeachingFeedback(snap.task,judge));return;}
+      const localLanguageIssue=l4LanguagePrecheck(v),languageIssue=judge.language_issue||localLanguageIssue;
+      if(languageIssue){guided(l4TeachingFeedback(snap.task,{...judge,primary_issue:"LANGUAGE",language_issue:languageIssue}));return;}
+      recordSuccess(guidedHint3?"GUIDED_SUCCESS":"GUIDED_INDEPENDENT",snap.base,{judge,snapshot:snap});
+      upgrade(v,snap);
+    }catch(err){
+      console.warn("[L4 Guided AI Judge v3]",err);
+      if(activeExercise?.exerciseId===snap.exerciseId) guided("Cikgu Aira belum dapat menyemak maksud ayat ini sekarang. Jawapan kamu tidak ditanda salah. Cuba tekan Semak sekali lagi.");
     }
   }
 
   function recordSuccess(kind,base,meta={}){
     const s=loadState(),history=Array.isArray(s.history)?s.history:[];
-    const event={taskId:currentTask().id,skill:currentTask().skill,kind,level,hintUsed:hint,hint3:guidedHint3,independentHintUsed,base,at:Date.now(),...meta};
+    const snap=meta.snapshot;const event={taskId:snap?.taskId||currentTask().id,skill:snap?.skill||currentTask().skill,exerciseId:snap?.exerciseId||null,kind,level,hintUsed:hint,hint3:guidedHint3,independentHintUsed,base,at:Date.now(),...meta};
     history.push(event);
     const patch={history:history.slice(-100),lastTaskIndex:taskIndex};
     if(meta.independentEvidence===true){
@@ -13175,17 +13205,18 @@ window.KaranganTranslationCache = {
     saveState(patch);
   }
   function success(independentEvidence=true,judge=null){stage="SUCCESS";const evidenceNote=independentEvidence?"<div class=\"l4-xp\">⭐ Independent mastery evidence +1</div>":"<div class=\"l4-ai\" style=\"margin-top:12px;text-align:left\"><div class=\"l4-ai-face\">🌱</div><div><div class=\"l4-ai-title\">Latihan berjaya</div><div>Kamu berjaya selepas menggunakan bantuan. Ini dikira sebagai pembelajaran, belum sebagai bukti penguasaan sendiri.</div></div></div>";shell(`<div class="l4-success"><div class="emoji">🎉</div><h1 style="margin:4px 0">Hebat!</h1><p>Kamu berjaya <strong>kembangkan ayat</strong>.</p>${evidenceNote}<div class="l4-ai" style="text-align:left"><div class="l4-ai-face">🐣</div><div><div class="l4-ai-title">Cikgu Aira</div><div>${judge?.appropriateness==="IMAGINATIVE"?"Idea imaginasi kamu diterima kerana maksud ayat masih jelas.":"Kamu mengekalkan maksud dan memenuhi kemahiran sasaran."}</div></div></div></div><div class="l4-actions"><button id="l4Next" class="l4-primary">Cabar Ayat Seterusnya</button><button id="l4Finish" class="l4-secondary">Selesai ✓</button></div>`,100,3);}
-  function checkGuided(){const t=currentTask(),el=byId("l4GuidedInput"),v=(el?.value||guidedDraft||"").trim();guidedDraft=v;if(!v){guided("Cuba tulis jawapan kamu dahulu.");return;}if(v.split(/\s+/).length<3){guided("Hampir betul! Jangan tulis maklumat sahaja. Cuba lengkapkan seluruh ayat.");return;}if(!/^[A-Z]/.test(v)){guided("Bagus! Cuba mula ayat dengan huruf besar.");return;}if(!/[.!?]$/.test(v)){guided("Ayat kamu hampir siap. Tambah tanda noktah di hujung.");return;}const info=expansionInfo(t.base,v);if(!info.basePreserved||!info.added){guided("Kekalkan ayat asal dan tambah satu maklumat yang sesuai.");return;}recordSuccess(guidedHint3?"GUIDED_SUCCESS":"GUIDED_INDEPENDENT",t.base);upgrade(v);}
-  let last=0;function action(e){const el=e.target.closest?.("#l4Begin,#l4Hint,#l4GuidedCheck,#l4TryOwn,#l4OwnCheck,#l4Next,#l4Finish,[data-l4-level],[data-l4-choice]");if(!el)return;const now=Date.now();if(now-last<320)return;last=now;e.preventDefault();e.stopPropagation();if(el.dataset?.l4Level){level=el.dataset.l4Level;start();return;}if(el.id==="l4Begin"){guidedDraft="";guided();return;}if(el.id==="l4Hint"){hintText();return;}if(el.dataset?.l4Choice){recordSuccess("GUIDED_CHOICE",currentTask().base);upgrade(el.dataset.l4Choice);return;}if(el.id==="l4GuidedCheck"){checkGuided();return;}if(el.id==="l4TryOwn"){
+  let last=0;function action(e){const el=e.target.closest?.("#l4Begin,#l4Hint,#l4GuidedCheck,#l4TryOwn,#l4OwnCheck,#l4Next,#l4Finish,[data-l4-level],[data-l4-choice]");if(!el)return;const now=Date.now();if(now-last<320)return;last=now;e.preventDefault();e.stopPropagation();if(el.dataset?.l4Level){level=el.dataset.l4Level;start();return;}if(el.id==="l4Begin"){l4JudgeSeq++;activeExercise=null;guidedDraft="";guided();return;}if(el.id==="l4Hint"){hintText();return;}if(el.dataset?.l4Choice){const snap=activeExercise?.stage==="GUIDED"?activeExercise:l4FreezeExercise(currentTask(),"GUIDED",currentTask().base);recordSuccess("GUIDED_CHOICE",snap.base,{snapshot:snap});upgrade(el.dataset.l4Choice,snap);return;}if(el.id==="l4GuidedCheck"){checkGuided();return;}if(el.id==="l4TryOwn"){
       draft=""; independentHintUsed=false;
+      const sourceTask=activeExercise?.task||currentTask();
       saveState({currentIndependentBase:null,currentIndependentSkill:null});
-      const connectedBase=pickConnectedTransferBase(currentTask());
-      independentRender(connectedBase);
+      const connectedBase=pickConnectedTransferBase(sourceTask);
+      const snap=l4FreezeExercise(sourceTask,"INDEPENDENT",connectedBase);
+      independentRender(connectedBase,"",snap);
       return;
-    }if(el.id==="l4Next"){taskIndex=(taskIndex+1)%tasks.length;saveState({lastTaskIndex:taskIndex});draft="";guidedDraft="";guided();return;}if(el.id==="l4Finish"){try{completeMission("grammar-rain");}catch(_){}shell(`<div style="text-align:center;padding:24px"><div style="font-size:70px">🏆</div><h1>Misi Hari Ini Selesai!</h1><p>Kamu sudah belajar menjadikan ayat lebih lengkap.</p></div>`,100);return;}}
+    }if(el.id==="l4Next"){l4JudgeSeq++;activeExercise=null;taskIndex=(taskIndex+1)%tasks.length;saveState({lastTaskIndex:taskIndex,currentIndependentBase:null,currentIndependentSkill:null});draft="";guidedDraft="";guided();return;}if(el.id==="l4Finish"){try{completeMission("grammar-rain");}catch(_){}shell(`<div style="text-align:center;padding:24px"><div style="font-size:70px">🏆</div><h1>Misi Hari Ini Selesai!</h1><p>Kamu sudah belajar menjadikan ayat lebih lengkap.</p></div>`,100);return;}}
   let l4OwnCheckLast=0;function l4OwnCheckSafe(e){const target=e.target,btn=(target&&target.id==="l4OwnCheck")?target:target?.closest?.("#l4OwnCheck");if(!btn)return;const now=Date.now();if(now-l4OwnCheckLast<350){e.preventDefault();e.stopImmediatePropagation?.();return;}l4OwnCheckLast=now;try{e.preventDefault();e.stopImmediatePropagation?.();e.stopPropagation();const ta=document.getElementById("l4Draft");if(ta)draft=String(ta.value||"").trim();btn.disabled=true;btn.textContent="⏳ Sedang semak...";checkOwn();}catch(err){console.error("[L4 Semak Ayat]",err);try{btn.disabled=false;btn.textContent="✓ Semak Ayat Saya";}catch(_){}try{showToast("Cuba tekan Semak Ayat sekali lagi.");}catch(_){}}}
   try{const saved=loadState();if(Number.isInteger(saved.lastTaskIndex))taskIndex=Math.max(0,Math.min(tasks.length-1,saved.lastTaskIndex));}catch(_){}
   document.addEventListener("pointerup",l4OwnCheckSafe,true);document.addEventListener("touchend",l4OwnCheckSafe,true);document.addEventListener("click",l4OwnCheckSafe,true);document.addEventListener("pointerup",action,true);document.addEventListener("click",action,true);
   renderGrammarRain=start;
-  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"TeachingEngine-v2",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v2-same-skill",masteryEvidence:"independent-only-v2",feedbackQuality:"v2-preserve-partial-correctness",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState};
+  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState};
 })();
