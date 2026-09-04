@@ -12824,11 +12824,32 @@ window.KaranganTranslationCache = {
    Additive integration. Langkah 2 & Langkah 3 are untouched.
    ========================================================= */
 (function(){
-  const L4_VERSION="13.1.0-AI-NATIVE-V3";
+  const L4_VERSION="13.2.0-STATE-MACHINE";
   const CONTENT_VERSION="1.0_STABLE";
   const LEGACY_GRAMMAR=renderGrammarRain;
   const STATE_KEY="karangan_ai_l4_t1_v1";
   let level="ASAS", stage="START", hint=0, taskIndex=0, draft="", guidedDraft="", guidedHint3=false, independentHintUsed=false, activeExercise=null, l4JudgeSeq=0;
+  // v13.2.0: single source of truth for interaction lifecycle.
+  const l4Machine={phase:"START",busy:false,cycleHintUsed:false,lastAction:null,lastTransitionAt:0};
+  const L4_TRANSITIONS={
+    START:new Set(["START","GUIDED"]),
+    GUIDED:new Set(["GUIDED","UPGRADE"]),
+    UPGRADE:new Set(["UPGRADE","INDEPENDENT"]),
+    INDEPENDENT:new Set(["INDEPENDENT","SUCCESS"]),
+    SUCCESS:new Set(["SUCCESS","GUIDED","START"])
+  };
+  function l4Transition(next,{force=false}={}){
+    const from=l4Machine.phase;
+    if(!force && !(L4_TRANSITIONS[from]||new Set()).has(next)){
+      console.warn("[L4 State Machine] blocked transition",from,"->",next);
+      return false;
+    }
+    l4Machine.phase=next;l4Machine.lastTransitionAt=Date.now();stage=next;
+    return true;
+  }
+  function l4SetBusy(value){l4Machine.busy=!!value;}
+  function l4ResetCycle(){l4Machine.cycleHintUsed=false;independentHintUsed=false;hint=0;guidedHint3=false;l4SetBusy(false);}
+
 
   const tasks=[
     {id:"L4-T1-001",skill:"PLACE",base:"Saya membaca buku.",q:"Di mana?",choices:["di bilik","di rumah","di sekolah"],model:"Saya membaca buku di bilik."},
@@ -12980,7 +13001,16 @@ window.KaranganTranslationCache = {
   function currentTask(){const t={...tasks[taskIndex%tasks.length]};if(t.skill==="OPEN_DYNAMIC"&&!t.base)t.base=pickTransferBase();return t;}
   function pickTransferBase(){const s=loadState(),seen=Array.isArray(s.transferSeen)?s.transferSeen:[];let x=transferPool.find(v=>!seen.includes(v))||transferPool[Math.floor(Math.random()*transferPool.length)];saveState({transferSeen:[...seen.filter(v=>v!==x),x].slice(-10)});return x;}
   function speak(text){try{if(!("speechSynthesis" in window)){showToast("🔊 Peranti ini belum menyokong suara.");return;}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="zh-CN";u.rate=.9;u.pitch=1;const vs=speechSynthesis.getVoices();const zh=vs.find(v=>/^zh/i.test(v.lang));if(zh)u.voice=zh;speechSynthesis.speak(u);}catch(e){console.warn("[L4 voice]",e);}}
-  function hintText(){const t=currentTask();hint=Math.min(3,hint+1);if(stage==="INDEPENDENT") independentHintUsed=true;else if(hint===3) guidedHint3=true;const txt=(hints[t.skill]||hints.OPEN)[hint-1];speak(txt);showToast(`🔊 Cikgu Aira · Petunjuk ${hint}/3`);}
+  function hintText(){
+    if(l4Machine.busy)return;
+    const t=activeExercise?.task||currentTask();
+    hint=Math.min(3,hint+1);
+    l4Machine.cycleHintUsed=true;
+    if(l4Machine.phase==="INDEPENDENT") independentHintUsed=true;
+    else if(hint===3) guidedHint3=true;
+    const txt=(hints[t.skill]||hints.OPEN)[hint-1];
+    speak(txt);showToast(`🔊 Cikgu Aira · Petunjuk ${hint}/3`);
+  }
   function l4SkillMeta(skill){const m={PLACE:["📍","Tempat"],TIME:["🕐","Masa"],COMPANION:["👫","Dengan siapa"],DESCRIPTION:["✨","Penerangan"],INTENSITY:["💫","Lebih jelas"],OPEN:["🪄","Idea bebas"],OPEN_DYNAMIC:["🪄","Idea bebas"]};return m[skill]||m.OPEN;}
   function l4Styles(){return `<style>
     .l4-wrap{max-width:860px;margin:0 auto}.l4-hero{background:linear-gradient(135deg,#fff5df,#fffdf7);border:1px solid #ffe0a4;border-radius:28px;padding:22px;box-shadow:0 14px 34px rgba(111,76,23,.08)}
@@ -12988,21 +13018,21 @@ window.KaranganTranslationCache = {
     .l4-meter{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0}.l4-step{padding:10px;border-radius:15px;background:#f1f3f6;text-align:center;font-size:12px;font-weight:850;color:#7b858b}.l4-step.on{background:#fff0d8;color:#d96c14;box-shadow:inset 0 0 0 1px #ffd092}
     .l4-card{border-radius:24px;padding:20px;margin:14px 0;border:1px solid #e8e9ef;background:#fff;box-shadow:0 10px 26px rgba(42,55,70,.06)}.l4-base{background:linear-gradient(135deg,#f5f6ff,#f9f8ff);border-color:#e5e2ff}.l4-magic{background:linear-gradient(135deg,#effcf4,#f6fff9);border-color:#cdebd8}
     .l4-label{font-size:12px;font-weight:950;letter-spacing:.08em;color:#707a82;text-transform:uppercase}.l4-sentence{font-size:clamp(22px,4vw,30px);font-weight:950;line-height:1.35;margin-top:8px;color:#26343c}.l4-question{margin-top:12px;font-weight:900;color:#4b5660}
-    .l4-chiprow{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin:12px 0}.l4-chip{border:2px solid #e6e8ed;background:white;border-radius:18px;padding:15px 12px;font-weight:900;box-shadow:0 5px 12px rgba(34,42,48,.04)}.l4-chip:active{transform:scale(.985)}
+    .l4-chiprow{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin:12px 0}.l4-chip{touch-action:manipulation;pointer-events:auto;-webkit-tap-highlight-color:transparent;border:2px solid #e6e8ed;background:white;border-radius:18px;padding:15px 12px;font-weight:900;box-shadow:0 5px 12px rgba(34,42,48,.04)}.l4-chip:active{transform:scale(.985)}
     .l4-ai{display:flex;gap:11px;align-items:flex-start;background:#fff8e9;border:1px solid #ffd18a;border-radius:20px;padding:15px;margin:12px 0}.l4-ai-face{font-size:27px}.l4-ai-title{font-weight:950;margin-bottom:3px}
     .l4-input{width:100%;box-sizing:border-box;padding:16px 17px;border-radius:18px;border:2px solid #e4e6eb;background:#fff;font-size:18px;line-height:1.45;outline:none}.l4-input:focus{border-color:#ffb04a;box-shadow:0 0 0 4px rgba(255,176,74,.15)}
-    .l4-primary{width:100%;border:0;border-radius:18px;padding:16px;font-size:17px;font-weight:950;background:linear-gradient(90deg,#ff9e3d,#ff7845);color:#fff;box-shadow:0 9px 18px rgba(255,126,63,.22)}.l4-secondary{width:100%;border:0;border-radius:18px;padding:14px;font-size:16px;font-weight:900;background:#eef0f3;color:#334047}
-    .l4-levels{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.l4-level{border:2px solid #e5e7eb;border-radius:18px;padding:13px 8px;background:#fff;font-weight:900}.l4-level.active{border-color:#ffad49;background:#fff4df;color:#ce681b}
+    .l4-primary{touch-action:manipulation;pointer-events:auto;-webkit-tap-highlight-color:transparent;width:100%;border:0;border-radius:18px;padding:16px;font-size:17px;font-weight:950;background:linear-gradient(90deg,#ff9e3d,#ff7845);color:#fff;box-shadow:0 9px 18px rgba(255,126,63,.22)}.l4-secondary{touch-action:manipulation;pointer-events:auto;-webkit-tap-highlight-color:transparent;width:100%;border:0;border-radius:18px;padding:14px;font-size:16px;font-weight:900;background:#eef0f3;color:#334047}
+    .l4-levels{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.l4-level{touch-action:manipulation;pointer-events:auto;-webkit-tap-highlight-color:transparent;border:2px solid #e5e7eb;border-radius:18px;padding:13px 8px;background:#fff;font-weight:900}.l4-level.active{border-color:#ffad49;background:#fff4df;color:#ce681b}
     .l4-transform{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center}.l4-arrow{font-size:34px}.l4-spark{font-size:54px;animation:l4pop .65s ease both}@keyframes l4pop{0%{transform:scale(.65) rotate(-12deg);opacity:0}70%{transform:scale(1.12) rotate(4deg)}100%{transform:scale(1);opacity:1}}
     .l4-success{text-align:center;padding:24px 8px}.l4-success .emoji{font-size:76px}.l4-xp{display:inline-block;margin:12px 0;padding:10px 18px;border-radius:999px;background:#fff3d2;font-size:28px;font-weight:950;color:#9b6512}.l4-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.l4-version{margin-top:18px;color:#92999d;font-size:12px;text-align:center}
     @media(max-width:620px){.l4-transform{grid-template-columns:1fr}.l4-arrow{transform:rotate(90deg)}.l4-levels,.l4-actions{grid-template-columns:1fr}.l4-card{padding:17px}}
   </style>`;}
   function shell(body,progress=60,active=1){openModuleScreen(`${l4Styles()}<div class="l4-wrap"><div class="l4-kicker">LANGKAH 4 · TAHUN 1</div><div class="l4-title">✨ Kembangkan Ayat</div><p class="l4-sub">Tambah satu maklumat yang menjadikan ayat lebih bermakna.</p><div class="l4-meter"><div class="l4-step ${active>=1?'on':''}">1 · Faham</div><div class="l4-step ${active>=2?'on':''}">2 · Magic</div><div class="l4-step ${active>=3?'on':''}">3 · Cuba Sendiri</div></div>${body}<div class="l4-version">v${L4_VERSION} · Content ${CONTENT_VERSION}</div></div>`,progress);}
   function feedback(m){return m?`<div class="l4-ai"><div class="l4-ai-face">🐣</div><div><div class="l4-ai-title">Cikgu Aira</div><div>${esc(m)}</div></div></div>`:"";}
-  function start(){stage="START";hint=0;guidedHint3=false;draft="";guidedDraft="";shell(`<div class="l4-hero"><div class="l4-spark">🪄</div><h2 style="margin:4px 0 6px">Misi Ayat Magic</h2><p style="margin:0;color:#626d74">Tukar ayat biasa menjadi ayat yang lebih bermakna dengan <strong>satu maklumat</strong>.</p></div><div class="l4-card"><div class="l4-label">Pilih cara belajar</div><div class="l4-levels" style="margin-top:12px"><button data-l4-level="ASAS" class="l4-level ${level==='ASAS'?'active':''}">🌱 Asas<br><small>Pilih bantuan</small></button><button data-l4-level="STANDARD" class="l4-level ${level==='STANDARD'?'active':''}">🌿 Standard<br><small>Tulis sendiri</small></button><button data-l4-level="LANJUTAN" class="l4-level ${level==='LANJUTAN'?'active':''}">⭐ Lanjutan<br><small>Lebih bebas</small></button></div></div><button id="l4Begin" class="l4-primary">Mula Ayat Magic →</button>`,50,1);}
+  function start(){l4Transition("START",{force:true});l4ResetCycle();draft="";guidedDraft="";shell(`<div class="l4-hero"><div class="l4-spark">🪄</div><h2 style="margin:4px 0 6px">Misi Ayat Magic</h2><p style="margin:0;color:#626d74">Tukar ayat biasa menjadi ayat yang lebih bermakna dengan <strong>satu maklumat</strong>.</p></div><div class="l4-card"><div class="l4-label">Pilih cara belajar</div><div class="l4-levels" style="margin-top:12px"><button data-l4-level="ASAS" class="l4-level ${level==='ASAS'?'active':''}">🌱 Asas<br><small>Pilih bantuan</small></button><button data-l4-level="STANDARD" class="l4-level ${level==='STANDARD'?'active':''}">🌿 Standard<br><small>Tulis sendiri</small></button><button data-l4-level="LANJUTAN" class="l4-level ${level==='LANJUTAN'?'active':''}">⭐ Lanjutan<br><small>Lebih bebas</small></button></div></div><button id="l4Begin" class="l4-primary">Mula Ayat Magic →</button>`,50,1);}
   function promptFor(t){if(level!=="LANJUTAN")return t.q;if(t.skill==="PLACE")return "Tulis semula ayat penuh dan tambah satu tempat.";if(t.skill==="TIME")return "Tulis semula ayat penuh dan tambah satu masa.";if(t.skill==="COMPANION")return "Tulis semula ayat penuh dan nyatakan dengan siapa.";if(t.skill==="DESCRIPTION")return "Tulis semula ayat penuh dan tambah satu penerangan yang sesuai.";if(t.skill==="INTENSITY")return "Tulis semula ayat penuh dan kuatkan perasaan itu.";return "Tulis semula ayat penuh dan tambah satu maklumat yang sesuai.";}
   function guided(message=""){
-    stage="GUIDED";
+    l4Transition("GUIDED",{force:true});
     if(!message){hint=0;guidedHint3=false;}
     let snap=(message && activeExercise?.stage==="GUIDED")?activeExercise:null;
     if(!snap){const t0=currentTask();snap=l4FreezeExercise(t0,"GUIDED",t0.base);}
@@ -13011,14 +13041,14 @@ window.KaranganTranslationCache = {
     else {const tag=level==="STANDARD"?"input":"textarea";const close=tag==="textarea"?`</textarea>`:"";const val=tag==="input"?`value="${esc(guidedDraft)}"`:"";const inner=tag==="textarea"?esc(guidedDraft):"";action=`<${tag} id="l4GuidedInput" ${val} ${tag==="textarea"?'rows="3"':''} class="l4-input" placeholder="Tulis ayat penuh yang lebih lengkap...">${inner}${close}<button id="l4GuidedCheck" class="l4-primary" style="margin-top:10px">✓ Semak Ayat</button>`;}
     shell(`<div class="l4-card l4-base"><div class="l4-label">🐣 Ayat Biasa</div><div class="l4-sentence">${esc(snap.base)}</div><div class="l4-question">🪄 ${esc(promptFor(t))}</div></div>${feedback(message)}<div class="l4-card"><div class="l4-label">${meta[0]} Magic Block · ${meta[1]}</div>${action}</div><button id="l4Hint" class="l4-secondary">🔊 Tanya Cikgu Aira</button>`,60,1);
   }
-  function upgrade(chosen,snapshot=activeExercise){const t=snapshot?.task||currentTask();const base=snapshot?.base||t.base;activeExercise=snapshot||l4FreezeExercise(t,"GUIDED",base);stage="UPGRADE";let full=String(chosen||"").trim();if(!/^[A-Z]/.test(full)||full.split(/\s+/).length<3)full=joinBase(t.base,full);shell(`<div class="l4-card"><div style="text-align:center"><div class="l4-spark">🪄✨</div><div class="l4-label">Ayat Magic berlaku!</div></div><div class="l4-transform" style="margin-top:16px"><div class="l4-card l4-base" style="margin:0"><div class="l4-label">🐣 Sebelum</div><div class="l4-sentence" style="font-size:21px">${esc(base)}</div></div><div class="l4-arrow">→</div><div class="l4-card l4-magic" style="margin:0"><div class="l4-label">✨ Selepas</div><div class="l4-sentence" style="font-size:22px">${esc(full)}</div></div></div><div class="l4-ai" style="margin-top:16px"><div class="l4-ai-face">🐣</div><div><div class="l4-ai-title">Hebat!</div><div>Kamu menambah maklumat yang membuat ayat lebih bermakna.</div></div></div></div><button id="l4TryOwn" class="l4-primary">✍️ Sekarang Cuba Sendiri</button>`,72,2);}
+  function upgrade(chosen,snapshot=activeExercise){const t=snapshot?.task||currentTask();const base=snapshot?.base||t.base;activeExercise=snapshot||l4FreezeExercise(t,"GUIDED",base);l4Transition("UPGRADE",{force:true});let full=String(chosen||"").trim();if(!/^[A-Z]/.test(full)||full.split(/\s+/).length<3)full=joinBase(t.base,full);shell(`<div class="l4-card"><div style="text-align:center"><div class="l4-spark">🪄✨</div><div class="l4-label">Ayat Magic berlaku!</div></div><div class="l4-transform" style="margin-top:16px"><div class="l4-card l4-base" style="margin:0"><div class="l4-label">🐣 Sebelum</div><div class="l4-sentence" style="font-size:21px">${esc(base)}</div></div><div class="l4-arrow">→</div><div class="l4-card l4-magic" style="margin:0"><div class="l4-label">✨ Selepas</div><div class="l4-sentence" style="font-size:22px">${esc(full)}</div></div></div><div class="l4-ai" style="margin-top:16px"><div class="l4-ai-face">🐣</div><div><div class="l4-ai-title">Hebat!</div><div>Kamu menambah maklumat yang membuat ayat lebih bermakna.</div></div></div></div><button id="l4TryOwn" class="l4-primary">✍️ Sekarang Cuba Sendiri</button>`,72,2);}
   function independent(message=""){
-    stage="INDEPENDENT";
+    l4Transition("INDEPENDENT",{force:true});
     const s=loadState();
     const base=s.currentIndependentBase||pickConnectedTransferBase(currentTask());
     independentRender(base,message);
   }
-  function independentRender(base,message="",snapshot=null){stage="INDEPENDENT";const snap=snapshot||((activeExercise?.stage==="INDEPENDENT"&&activeExercise.base===base)?activeExercise:l4FreezeExercise(currentTask(),"INDEPENDENT",base));activeExercise=snap;shell(`<div class="l4-card l4-base"><div class="l4-label">🎯 Giliran Kamu</div><p style="margin:7px 0;color:#5f6970">${l4IndependentSkillPrompt(snap.task)}</p><div class="l4-sentence">${esc(snap.base)}</div></div>${feedback(message)}<div class="l4-card"><div class="l4-label">✍️ Ayat Magic Saya</div><textarea id="l4Draft" rows="3" class="l4-input" style="margin-top:10px" placeholder="Tulis ayat penuh kamu...">${esc(draft)}</textarea><button id="l4OwnCheck" class="l4-primary" style="margin-top:10px">✓ Semak Ayat Saya</button></div><button id="l4Hint" class="l4-secondary">🔊 Tanya Cikgu Aira</button>`,84,3);}
+  function independentRender(base,message="",snapshot=null){l4Transition("INDEPENDENT",{force:true});const snap=snapshot||((activeExercise?.stage==="INDEPENDENT"&&activeExercise.base===base)?activeExercise:l4FreezeExercise(currentTask(),"INDEPENDENT",base));activeExercise=snap;shell(`<div class="l4-card l4-base"><div class="l4-label">🎯 Giliran Kamu</div><p style="margin:7px 0;color:#5f6970">${l4IndependentSkillPrompt(snap.task)}</p><div class="l4-sentence">${esc(snap.base)}</div></div>${feedback(message)}<div class="l4-card"><div class="l4-label">✍️ Ayat Magic Saya</div><textarea id="l4Draft" rows="3" class="l4-input" style="margin-top:10px" placeholder="Tulis ayat penuh kamu...">${esc(draft)}</textarea><button id="l4OwnCheck" class="l4-primary" style="margin-top:10px">✓ Semak Ayat Saya</button></div><button id="l4Hint" class="l4-secondary">🔊 Tanya Cikgu Aira</button>`,84,3);}
   function l4NormTokens(value){
     return String(value||"")
       .toLowerCase()
@@ -13146,9 +13176,10 @@ window.KaranganTranslationCache = {
     let snap=activeExercise?.stage==="INDEPENDENT"?activeExercise:null;
     if(!snap){const base=loadState().currentIndependentBase||pickConnectedTransferBase(currentTask());snap=l4FreezeExercise(currentTask(),"INDEPENDENT",base);}
     if(!draft){independentRender(snap.base,"Cuba tulis ayat kamu dahulu.",snap);return;}
-    const seq=++l4JudgeSeq;
+    const seq=++l4JudgeSeq;l4SetBusy(true);
     try{
       const judge=await l4TeachingJudge(snap,draft);
+      l4SetBusy(false);
       if(seq!==l4JudgeSeq || activeExercise?.exerciseId!==snap.exerciseId) return;
       const history=Array.isArray(loadState().teachingHistory)?loadState().teachingHistory:[];
       history.push({exerciseId:snap.exerciseId,taskId:snap.taskId,base:snap.base,answer:draft,skill:snap.skill,...judge,at:Date.now()});
@@ -13160,10 +13191,11 @@ window.KaranganTranslationCache = {
       if(["ODD","INVALID","UNKNOWN"].includes(judge.appropriateness)||judge.primary_issue==="APPROPRIATENESS"){independentRender(snap.base,l4TeachingFeedback(snap.task,judge),snap);return;}
       const localLanguageIssue=l4LanguagePrecheck(draft),languageIssue=judge.language_issue||localLanguageIssue;
       if(languageIssue){independentRender(snap.base,l4TeachingFeedback(snap.task,{...judge,primary_issue:"LANGUAGE",language_issue:languageIssue}),snap);return;}
-      const independentEvidence=!independentHintUsed;
+      const independentEvidence=!l4Machine.cycleHintUsed && !independentHintUsed;
       recordSuccess("STAGE3_SUCCESS",snap.base,{independentEvidence,judge,snapshot:snap});
       success(independentEvidence,judge);
     }catch(err){
+      l4SetBusy(false);
       console.warn("[L4 Teaching Engine v3]",err);
       if(activeExercise?.exerciseId===snap.exerciseId) independentRender(snap.base,"Cikgu Aira belum dapat menyemak maksud ayat ini sekarang. Ayat kamu tidak ditanda salah. Cuba tekan Semak sekali lagi.",snap);
     }
@@ -13174,9 +13206,10 @@ window.KaranganTranslationCache = {
     const el=byId("l4GuidedInput"),v=(el?.value||guidedDraft||"").trim();guidedDraft=v;
     if(!v){guided("Cuba tulis jawapan kamu dahulu.");return;}
     if(v.split(/\s+/).length<3){guided("Hampir betul! Jangan tulis maklumat sahaja. Cuba lengkapkan seluruh ayat.");return;}
-    const seq=++l4JudgeSeq;
+    const seq=++l4JudgeSeq;l4SetBusy(true);
     try{
       const judge=await l4TeachingJudge(snap,v);
+      l4SetBusy(false);
       if(seq!==l4JudgeSeq || activeExercise?.exerciseId!==snap.exerciseId) return;
       if(judge.meaning_status==="UNCERTAIN"||judge.skill_target_status==="UNCERTAIN"||judge.needs_clarification){guided(l4TeachingFeedback(snap.task,{...judge,primary_issue:"NONE",needs_clarification:true}));return;}
       if(judge.meaning_status==="FAIL"){guided(l4TeachingFeedback(snap.task,{...judge,primary_issue:"MEANING"}));return;}
@@ -13187,6 +13220,7 @@ window.KaranganTranslationCache = {
       recordSuccess(guidedHint3?"GUIDED_SUCCESS":"GUIDED_INDEPENDENT",snap.base,{judge,snapshot:snap});
       upgrade(v,snap);
     }catch(err){
+      l4SetBusy(false);
       console.warn("[L4 Guided AI Judge v3]",err);
       if(activeExercise?.exerciseId===snap.exerciseId) guided("Cikgu Aira belum dapat menyemak maksud ayat ini sekarang. Jawapan kamu tidak ditanda salah. Cuba tekan Semak sekali lagi.");
     }
@@ -13204,19 +13238,71 @@ window.KaranganTranslationCache = {
     }
     saveState(patch);
   }
-  function success(independentEvidence=true,judge=null){stage="SUCCESS";const evidenceNote=independentEvidence?"<div class=\"l4-xp\">⭐ Independent mastery evidence +1</div>":"<div class=\"l4-ai\" style=\"margin-top:12px;text-align:left\"><div class=\"l4-ai-face\">🌱</div><div><div class=\"l4-ai-title\">Latihan berjaya</div><div>Kamu berjaya selepas menggunakan bantuan. Ini dikira sebagai pembelajaran, belum sebagai bukti penguasaan sendiri.</div></div></div>";shell(`<div class="l4-success"><div class="emoji">🎉</div><h1 style="margin:4px 0">Hebat!</h1><p>Kamu berjaya <strong>kembangkan ayat</strong>.</p>${evidenceNote}<div class="l4-ai" style="text-align:left"><div class="l4-ai-face">🐣</div><div><div class="l4-ai-title">Cikgu Aira</div><div>${judge?.appropriateness==="IMAGINATIVE"?"Idea imaginasi kamu diterima kerana maksud ayat masih jelas.":"Kamu mengekalkan maksud dan memenuhi kemahiran sasaran."}</div></div></div></div><div class="l4-actions"><button id="l4Next" class="l4-primary">Cabar Ayat Seterusnya</button><button id="l4Finish" class="l4-secondary">Selesai ✓</button></div>`,100,3);}
-  let last=0;function action(e){const el=e.target.closest?.("#l4Begin,#l4Hint,#l4GuidedCheck,#l4TryOwn,#l4OwnCheck,#l4Next,#l4Finish,[data-l4-level],[data-l4-choice]");if(!el)return;const now=Date.now();if(now-last<320)return;last=now;e.preventDefault();e.stopPropagation();if(el.dataset?.l4Level){level=el.dataset.l4Level;start();return;}if(el.id==="l4Begin"){l4JudgeSeq++;activeExercise=null;guidedDraft="";guided();return;}if(el.id==="l4Hint"){hintText();return;}if(el.dataset?.l4Choice){const snap=activeExercise?.stage==="GUIDED"?activeExercise:l4FreezeExercise(currentTask(),"GUIDED",currentTask().base);recordSuccess("GUIDED_CHOICE",snap.base,{snapshot:snap});upgrade(el.dataset.l4Choice,snap);return;}if(el.id==="l4GuidedCheck"){checkGuided();return;}if(el.id==="l4TryOwn"){
-      draft=""; independentHintUsed=false;
+  function success(independentEvidence=true,judge=null){l4Transition("SUCCESS",{force:true});l4SetBusy(false);const evidenceNote=independentEvidence?"<div class=\"l4-xp\">⭐ Independent mastery evidence +1</div>":"<div class=\"l4-ai\" style=\"margin-top:12px;text-align:left\"><div class=\"l4-ai-face\">🌱</div><div><div class=\"l4-ai-title\">Latihan berjaya</div><div>Kamu berjaya selepas menggunakan bantuan. Ini dikira sebagai pembelajaran, belum sebagai bukti penguasaan sendiri.</div></div></div>";shell(`<div class="l4-success"><div class="emoji">🎉</div><h1 style="margin:4px 0">Hebat!</h1><p>Kamu berjaya <strong>kembangkan ayat</strong>.</p>${evidenceNote}<div class="l4-ai" style="text-align:left"><div class="l4-ai-face">🐣</div><div><div class="l4-ai-title">Cikgu Aira</div><div>${judge?.appropriateness==="IMAGINATIVE"?"Idea imaginasi kamu diterima kerana maksud ayat masih jelas.":"Kamu mengekalkan maksud dan memenuhi kemahiran sasaran."}</div></div></div></div><div class="l4-actions"><button id="l4Next" class="l4-primary">Cabar Ayat Seterusnya</button><button id="l4Finish" class="l4-secondary">Selesai ✓</button></div>`,100,3);}
+  // v13.2.0 State Machine Event Gateway
+  // Exactly ONE pointer path. Synthetic click/touch fallbacks are intentionally removed.
+  // Keyboard activation is handled separately for accessibility.
+  function l4ResolveAction(target){
+    return target?.closest?.("#l4Begin,#l4Hint,#l4GuidedCheck,#l4TryOwn,#l4OwnCheck,#l4Next,#l4Finish,[data-l4-level],[data-l4-choice]")||null;
+  }
+  function l4Dispatch(el,e){
+    if(!el)return;
+    if(l4Machine.busy && !["l4Finish"].includes(el.id))return;
+    e?.preventDefault?.();e?.stopPropagation?.();e?.stopImmediatePropagation?.();
+    l4Machine.lastAction=el.id||el.dataset?.l4Choice||el.dataset?.l4Level||"unknown";
+    if(el.dataset?.l4Level){level=el.dataset.l4Level;start();return;}
+    if(el.id==="l4Begin"){
+      l4JudgeSeq++;activeExercise=null;guidedDraft="";l4ResetCycle();guided();return;
+    }
+    if(el.id==="l4Hint"){hintText();return;}
+    if(el.dataset?.l4Choice){
+      if(l4Machine.phase!=="GUIDED")return;
+      const snap=activeExercise?.stage==="GUIDED"?activeExercise:l4FreezeExercise(currentTask(),"GUIDED",currentTask().base);
+      recordSuccess("GUIDED_CHOICE",snap.base,{snapshot:snap});upgrade(el.dataset.l4Choice,snap);return;
+    }
+    if(el.id==="l4GuidedCheck"){
+      if(l4Machine.phase!=="GUIDED")return;
+      el.disabled=true;el.textContent="⏳ Sedang semak...";checkGuided();return;
+    }
+    if(el.id==="l4TryOwn"){
+      if(l4Machine.phase!=="UPGRADE")return;
+      draft="";
+      // IMPORTANT: cycleHintUsed is NOT reset here. Help used in Stage 1/2
+      // disqualifies independent mastery for this whole learning cycle.
       const sourceTask=activeExercise?.task||currentTask();
       saveState({currentIndependentBase:null,currentIndependentSkill:null});
       const connectedBase=pickConnectedTransferBase(sourceTask);
       const snap=l4FreezeExercise(sourceTask,"INDEPENDENT",connectedBase);
-      independentRender(connectedBase,"",snap);
-      return;
-    }if(el.id==="l4Next"){l4JudgeSeq++;activeExercise=null;taskIndex=(taskIndex+1)%tasks.length;saveState({lastTaskIndex:taskIndex,currentIndependentBase:null,currentIndependentSkill:null});draft="";guidedDraft="";guided();return;}if(el.id==="l4Finish"){try{completeMission("grammar-rain");}catch(_){}shell(`<div style="text-align:center;padding:24px"><div style="font-size:70px">🏆</div><h1>Misi Hari Ini Selesai!</h1><p>Kamu sudah belajar menjadikan ayat lebih lengkap.</p></div>`,100);return;}}
-  let l4OwnCheckLast=0;function l4OwnCheckSafe(e){const target=e.target,btn=(target&&target.id==="l4OwnCheck")?target:target?.closest?.("#l4OwnCheck");if(!btn)return;const now=Date.now();if(now-l4OwnCheckLast<350){e.preventDefault();e.stopImmediatePropagation?.();return;}l4OwnCheckLast=now;try{e.preventDefault();e.stopImmediatePropagation?.();e.stopPropagation();const ta=document.getElementById("l4Draft");if(ta)draft=String(ta.value||"").trim();btn.disabled=true;btn.textContent="⏳ Sedang semak...";checkOwn();}catch(err){console.error("[L4 Semak Ayat]",err);try{btn.disabled=false;btn.textContent="✓ Semak Ayat Saya";}catch(_){}try{showToast("Cuba tekan Semak Ayat sekali lagi.");}catch(_){}}}
+      independentRender(connectedBase,"",snap);return;
+    }
+    if(el.id==="l4OwnCheck"){
+      if(l4Machine.phase!=="INDEPENDENT")return;
+      const ta=document.getElementById("l4Draft");if(ta)draft=String(ta.value||"").trim();
+      el.disabled=true;el.textContent="⏳ Sedang semak...";checkOwn();return;
+    }
+    if(el.id==="l4Next"){
+      if(l4Machine.phase!=="SUCCESS")return;
+      l4JudgeSeq++;activeExercise=null;taskIndex=(taskIndex+1)%tasks.length;
+      saveState({lastTaskIndex:taskIndex,currentIndependentBase:null,currentIndependentSkill:null});
+      draft="";guidedDraft="";l4ResetCycle();guided();return;
+    }
+    if(el.id==="l4Finish"){
+      try{completeMission("grammar-rain");}catch(_){}
+      l4Transition("SUCCESS",{force:true});
+      shell(`<div style="text-align:center;padding:24px"><div style="font-size:70px">🏆</div><h1>Misi Hari Ini Selesai!</h1><p>Kamu sudah belajar menjadikan ayat lebih lengkap.</p></div>`,100);return;
+    }
+  }
+  function l4PointerGateway(e){
+    if(e.pointerType==="mouse" && e.button!==0)return;
+    const el=l4ResolveAction(e.target);if(!el)return;l4Dispatch(el,e);
+  }
+  function l4KeyboardGateway(e){
+    if(e.key!=="Enter"&&e.key!==" ")return;
+    const el=l4ResolveAction(e.target);if(!el)return;l4Dispatch(el,e);
+  }
   try{const saved=loadState();if(Number.isInteger(saved.lastTaskIndex))taskIndex=Math.max(0,Math.min(tasks.length-1,saved.lastTaskIndex));}catch(_){}
-  document.addEventListener("pointerup",l4OwnCheckSafe,true);document.addEventListener("touchend",l4OwnCheckSafe,true);document.addEventListener("click",l4OwnCheckSafe,true);document.addEventListener("pointerup",action,true);document.addEventListener("click",action,true);
+  document.addEventListener("pointerup",l4PointerGateway,true);
+  document.addEventListener("keydown",l4KeyboardGateway,true);
   renderGrammarRain=start;
-  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState};
+  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v13.2-single-gateway-state-machine",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMachine:()=>({...l4Machine})};
 })();
