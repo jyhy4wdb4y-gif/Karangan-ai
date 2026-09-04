@@ -12824,7 +12824,7 @@ window.KaranganTranslationCache = {
    Additive integration. Langkah 2 & Langkah 3 are untouched.
    ========================================================= */
 (function(){
-  const L4_VERSION="12.14.3";
+  const L4_VERSION="12.14.4";
   const CONTENT_VERSION="1.0_STABLE";
   const LEGACY_GRAMMAR=renderGrammarRain;
   const STATE_KEY="karangan_ai_l4_t1_v1";
@@ -13137,8 +13137,38 @@ window.KaranganTranslationCache = {
     };
   }
 
+  function l4ChildRetryFeedback(task,answer,judge){
+    const key=l4SkillKey(task);
+    const map={
+      PLACE:"Bagus mencuba! Cuba fikir semula tempat yang kamu tambah. Adakah tempat itu sesuai dengan maksud ayat?",
+      TIME:"Bagus mencuba! Cuba fikir semula masa yang kamu tambah. Adakah masa itu sesuai dengan ayat?",
+      COMPANION:"Bagus mencuba! Cuba fikir semula siapa yang kamu tambah. Adakah orang itu sesuai dengan maksud ayat?",
+      DESCRIPTION:"Bagus mencuba! Cuba fikir semula perkataan penerangan yang kamu tambah. Adakah perkataan itu sesuai untuk menerangkan benda atau orang dalam ayat?",
+      INTENSITY:"Bagus mencuba! Cuba kuatkan perasaan atau penerangan dalam ayat tanpa mengubah maksud asal.",
+      OPEN:"Bagus mencuba! Cuba fikir semula maklumat baharu yang kamu tambah. Adakah maklumat itu sesuai dengan maksud ayat?",
+      OPEN_DYNAMIC:"Bagus mencuba! Cuba fikir semula maklumat baharu yang kamu tambah. Adakah maklumat itu sesuai dengan maksud ayat?"
+    };
+    return map[key]||map.OPEN;
+  }
+
+  function l4ChildClarificationFeedback(task,judge){
+    const q=String(judge?.clarification_question||"").trim();
+    if(q && !/[A-Za-z]{4,}\s+[A-Za-z]{4,}/.test(q)) return q;
+    const key=l4SkillKey(task);
+    const map={
+      PLACE:"Idea kamu menarik. Tempat itu memang satu tempat dalam cerita kamu?",
+      TIME:"Idea kamu menarik. Masa itu memang masa yang kamu maksudkan?",
+      COMPANION:"Idea kamu menarik. Orang itu memang orang yang bersama dalam ayat kamu?",
+      DESCRIPTION:"Idea kamu menarik. Perkataan itu memang kamu gunakan untuk menerangkan ayat ini?",
+      INTENSITY:"Idea kamu menarik. Kamu mahu menunjukkan perasaan itu menjadi lebih kuat?",
+      OPEN:"Idea kamu menarik. Boleh jelaskan sedikit maksud maklumat yang kamu tambah?",
+      OPEN_DYNAMIC:"Idea kamu menarik. Boleh jelaskan sedikit maksud maklumat yang kamu tambah?"
+    };
+    return map[key]||map.OPEN;
+  }
+
   function l4SemanticFeedback(j){
-    if(j.language_issue) return `Bagus! Idea kamu boleh difahami. Cuba baiki satu perkara: ${j.language_issue}`;
+    if(j.language_issue) return `Bagus! Idea kamu boleh difahami. Cuba baiki satu perkara sahaja: ${j.language_issue}`;
     if(j.semantic_class==="IMAGINATIVE") return "Wah, imaginasi kamu hebat! Ayat ini boleh digunakan dalam cerita imaginasi.";
     if(j.semantic_class==="POSSIBLE") return "Bagus! Maklumat itu mungkin dan ayat kamu boleh difahami.";
     return "";
@@ -13186,12 +13216,11 @@ window.KaranganTranslationCache = {
       }
 
       if(judge.needs_clarification || ["ODD","UNKNOWN"].includes(judge.semantic_class) || judge.confidence<0.65){
-        const q=judge.clarification_question || "Idea kamu menarik. Boleh cuba pilih maklumat yang lebih jelas supaya Cikgu Aira faham maksud kamu?";
-        independentRender(base,q);
+        independentRender(base,l4ChildClarificationFeedback(currentTask(),judge));
         return;
       }
 
-      independentRender(base,"Bagus mencuba. Maklumat yang ditambah belum sesuai dengan maksud ayat. Cuba satu idea lain.");
+      independentRender(base,l4ChildRetryFeedback(currentTask(),draft,judge));
     }catch(err){
       console.warn("[L4 Semantic Engine]",err);
       // Never mark an unfamiliar child answer wrong merely because AI/network is unavailable.
@@ -13212,5 +13241,5 @@ window.KaranganTranslationCache = {
   try{const saved=loadState();if(Number.isInteger(saved.lastTaskIndex))taskIndex=Math.max(0,Math.min(tasks.length-1,saved.lastTaskIndex));}catch(_){}
   document.addEventListener("pointerup",l4OwnCheckSafe,true);document.addEventListener("touchend",l4OwnCheckSafe,true);document.addEventListener("click",l4OwnCheckSafe,true);document.addEventListener("pointerup",action,true);document.addEventListener("click",action,true);
   renderGrammarRain=start;
-  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"v1.1-safe-fast-path",connectedTransfer:"v1.1-fixed",baseMeaning:"v1.1-token-order",skillTarget:"v1.0",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState};
+  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"v1.1-safe-fast-path",connectedTransfer:"v1.1-fixed",baseMeaning:"v1.1-token-order",skillTarget:"v1.0",feedbackQuality:"v1.0-child-friendly",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState};
 })();
