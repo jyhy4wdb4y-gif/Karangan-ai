@@ -12824,7 +12824,7 @@ window.KaranganTranslationCache = {
    Additive integration. Langkah 2 & Langkah 3 are untouched.
    ========================================================= */
 (function(){
-  const L4_VERSION="13.6.1-BENCHMARK-CONTRACT-CALIBRATED";
+  const L4_VERSION="13.6.2-TARGETED-SMOKE";
   const CONTENT_VERSION="1.0_STABLE";
   const LEGACY_GRAMMAR=renderGrammarRain;
   const STATE_KEY="karangan_ai_l4_t1_v1";
@@ -13395,6 +13395,132 @@ window.KaranganTranslationCache = {
     return cases;
   }
 
+
+  function l4TargetedSmokeCases(){
+    return [
+      {
+        id:"SMOKE-01",
+        name:"DESCRIPTION appropriateness",
+        skill:"DESCRIPTION",
+        snapshot:{exerciseId:"SMOKE-DESCRIPTION-01",learningTarget:"Tambah penerangan",skill:"DESCRIPTION",base:"Bunga itu cantik.",task:{skill:"DESCRIPTION",base:"Bunga itu cantik."}},
+        answer:"Bunga itu cantik dengan rasa masin.",
+        expected:"APPROPRIATENESS",
+        allow:["MEANING","UNCERTAIN"]
+      },
+      {
+        id:"SMOKE-02",
+        name:"INTENSITY target missing",
+        skill:"INTENSITY",
+        snapshot:{exerciseId:"SMOKE-INTENSITY-01",learningTarget:"Kuatkan perasaan atau penerangan",skill:"INTENSITY",base:"Ali gembira.",task:{skill:"INTENSITY",base:"Ali gembira."}},
+        answer:"Ali gembira di sekolah.",
+        expected:"SKILL_TARGET",
+        allow:[]
+      },
+      {
+        id:"SMOKE-03",
+        name:"INTENSITY odd extra phrase",
+        skill:"INTENSITY",
+        snapshot:{exerciseId:"SMOKE-INTENSITY-02",learningTarget:"Kuatkan perasaan atau penerangan",skill:"INTENSITY",base:"Ali gembira.",task:{skill:"INTENSITY",base:"Ali gembira."}},
+        answer:"Ali sangat gembira dengan batu marah.",
+        expected:"APPROPRIATENESS",
+        allow:["MEANING","UNCERTAIN"]
+      }
+    ];
+  }
+
+  function l4SmokePanel(){
+    document.getElementById("l4-smoke-report")?.remove();
+    const box=document.createElement("div");
+    box.id="l4-smoke-report";
+    box.style.cssText="position:fixed;inset:14px;z-index:2147483647;overflow:auto;background:#fff;border:2px solid #222;border-radius:18px;padding:18px;font:14px/1.45 system-ui;box-shadow:0 20px 80px rgba(0,0,0,.35)";
+    box.innerHTML=`<div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><h2 style="margin:0">Langkah 4 Targeted AI Smoke Test</h2><button id="l4SmokeClose" style="padding:8px 12px">Close</button></div><p id="l4SmokeSummary"><strong>Preparing 3 targeted cases…</strong></p><div id="l4SmokeStatus" style="padding:10px 12px;border-radius:12px;background:#f6f7f9;margin:10px 0 12px">Waiting to start…</div><div id="l4SmokeRows"></div>`;
+    document.body.appendChild(box);
+    box.querySelector("#l4SmokeClose")?.addEventListener("click",()=>box.remove(),{once:true});
+    return box;
+  }
+
+  function l4SmokeRender(results,{stopped=false,stopReason=""}={}){
+    const box=document.getElementById("l4-smoke-report")||l4SmokePanel();
+    const semantic=results.filter(x=>x.kind==="SEMANTIC");
+    const passed=semantic.filter(x=>x.pass).length;
+    const failed=semantic.length-passed;
+    const apiErrors=results.filter(x=>x.kind==="API_ERROR").length;
+    const rows=results.map(x=>{
+      const icon=x.kind==="API_ERROR"?"⚠️":(x.pass?"✅":"❌");
+      const actual=x.actual==="NONE"?"ACCEPT":x.actual;
+      const detail=x.kind==="API_ERROR"
+        ?`API ${esc(x.errorType||"ERROR")} · test stopped to avoid wasting quota`
+        :`expected ${esc(x.expected)} · got ${esc(actual)}`;
+      return `<div style="padding:9px 0;border-bottom:1px solid #eee">${icon} <strong>${esc(x.id)} · ${esc(x.name)}</strong><div style="font-size:12px;color:#667">${detail}<br>${esc(x.answer)}</div></div>`;
+    }).join("");
+    box.querySelector("#l4SmokeSummary").innerHTML=`<strong>${passed}/${semantic.length||0} semantic pass</strong> · ${failed} fail · ${apiErrors} API error · ${results.length}/3 attempted`;
+    box.querySelector("#l4SmokeStatus").textContent=stopped
+      ?`Stopped early: ${stopReason||"API limit detected"}. No more requests were sent.`
+      :(results.length===3?"Completed.":"Running…");
+    box.querySelector("#l4SmokeRows").innerHTML=rows;
+  }
+
+  async function l4RunTargetedSmoke({visual=true,judgeFn=l4TeachingJudge,sleepFn=l4Sleep}={}){
+    if(window.__KARANGAN_L4_SMOKE_RUNNING__)return window.__KARANGAN_L4_LAST_SMOKE__||null;
+    window.__KARANGAN_L4_SMOKE_RUNNING__=true;
+    const started=Date.now(),cases=l4TargetedSmokeCases(),results=[];
+    if(visual)l4SmokePanel();
+    let stopped=false,stopReason="";
+    try{
+      for(let i=0;i<cases.length;i++){
+        const c=cases[i];
+        if(visual){
+          const status=document.querySelector("#l4SmokeStatus");
+          if(status)status.textContent=`Checking ${c.id} (${i+1}/3)…`;
+        }
+
+        // Production smoke is deliberately minimal:
+        // one real request per case; any API error stops the run immediately.
+        let judge;
+        try{
+          judge=await judgeFn(c.snapshot,c.answer);
+        }catch(err){
+          const errorType=l4ClassifyAIError(err);
+          results.push({...c,kind:"API_ERROR",actual:"API_ERROR",pass:null,errorType,error:String(err?.message||err),judge:null});
+          stopped=true;
+          stopReason=`${errorType}: ${String(err?.message||err)}`;
+          if(visual)l4SmokeRender(results,{stopped,stopReason});
+          break;
+        }
+
+        const actual=l4TeachingDecision(judge,c.answer).issue;
+        const pass=l4BenchmarkPass(actual,c.expected,c.allow);
+        results.push({...c,kind:"SEMANTIC",actual,pass,errorType:null,error:"",judge});
+        if(visual)l4SmokeRender(results);
+
+        // Keep calls sparse. Only two gaps maximum because there are only 3 cases.
+        if(i<cases.length-1)await sleepFn(10000);
+      }
+    }finally{
+      window.__KARANGAN_L4_SMOKE_RUNNING__=false;
+    }
+
+    const semantic=results.filter(x=>x.kind==="SEMANTIC");
+    const report={
+      version:L4_VERSION,
+      suite:"TARGETED_PRODUCTION_SMOKE",
+      totalPlanned:cases.length,
+      attempted:results.length,
+      semanticTotal:semantic.length,
+      passed:semantic.filter(x=>x.pass).length,
+      failed:semantic.filter(x=>!x.pass).length,
+      apiErrors:results.filter(x=>x.kind==="API_ERROR").length,
+      stopped,
+      stopReason,
+      durationMs:Date.now()-started,
+      results
+    };
+    window.__KARANGAN_L4_LAST_SMOKE__=report;
+    if(visual)l4SmokeRender(results,{stopped,stopReason});
+    console.table(results.map(x=>({id:x.id,kind:x.kind,expected:x.expected,actual:x.actual,pass:x.pass,errorType:x.errorType})));
+    return report;
+  }
+
   function l4LiveBenchmarkPanel(){
     document.getElementById("l4-live-bench-report")?.remove();
     const box=document.createElement("div");
@@ -13876,6 +14002,11 @@ window.KaranganTranslationCache = {
     if(qp.get("l4debug")==="1")setInterval(l4QaDebugPanel,350);
     if(qp.get("l4qa")==="1")setTimeout(()=>l4RunAutomatedQA({visual:true}),500);
     if(qp.get("l4sim")==="1")setTimeout(()=>l4RunTeachingSimulation({count:1000,visual:true}),500);
+    if(qp.get("l4smoke")==="1"){
+      const startSmoke=()=>setTimeout(()=>l4RunTargetedSmoke({visual:true}),250);
+      if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",startSmoke,{once:true});else startSmoke();
+    }
+    // Full 60-case live benchmark is retained only as an internal diagnostic.
     if(qp.get("l4live")==="1"){
       const startLive=()=>setTimeout(()=>l4RunLiveAIBenchmark({visual:true}),250);
       if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",startLive,{once:true});else startLive();
@@ -13993,5 +14124,5 @@ window.KaranganTranslationCache = {
     return report;
   }
 
-  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v13.6.1-click-only-state-machine+benchmark-contract-calibrated",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null,runTeachingSimulation:l4RunTeachingSimulation,lastTeachingSimulation:()=>window.__KARANGAN_L4_LAST_SIM__||null,runLiveAIBenchmark:l4RunLiveAIBenchmark,lastLiveAIBenchmark:()=>window.__KARANGAN_L4_LAST_LIVE_BENCH__||null,runPredeploymentLab:l4RunPredeploymentLab,lastPredeploymentLab:()=>window.__KARANGAN_L4_LAST_PREDEPLOY_LAB__||null};
+  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v13.6.2-click-only-state-machine+targeted-production-smoke",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null,runTeachingSimulation:l4RunTeachingSimulation,lastTeachingSimulation:()=>window.__KARANGAN_L4_LAST_SIM__||null,runLiveAIBenchmark:l4RunLiveAIBenchmark,lastLiveAIBenchmark:()=>window.__KARANGAN_L4_LAST_LIVE_BENCH__||null,runTargetedSmoke:l4RunTargetedSmoke,lastTargetedSmoke:()=>window.__KARANGAN_L4_LAST_SMOKE__||null,runPredeploymentLab:l4RunPredeploymentLab,lastPredeploymentLab:()=>window.__KARANGAN_L4_LAST_PREDEPLOY_LAB__||null};
 })();
