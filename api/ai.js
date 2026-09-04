@@ -206,7 +206,8 @@ export default async function handler(
        ===================================================== */
 
     if (
-      type === "semantic_judge"
+      type === "semantic_judge" ||
+      type === "teaching_judge_v2"
     ) {
 
       const cleanBase =
@@ -1190,7 +1191,9 @@ function cleanTranslation(
 
 
 /* =========================================================
-   SEMANTIC JUDGE ENGINE v1
+   TEACHING ENGINE v2 — LANGKAH 4
+   Decision order: Meaning -> Skill Target -> Appropriateness -> Language.
+   Independence/mastery remains client-owned.
    ========================================================= */
 
 async function generateSemanticJudgment({
@@ -1202,153 +1205,60 @@ async function generateSemanticJudgment({
 }) {
 
   const instructions = `
-Anda ialah Semantic Judge untuk Karangan AI,
-aplikasi Bahasa Melayu sekolah rendah Malaysia.
-
-Tugas anda BUKAN menentukan kurikulum atau mastery.
-Tugas anda hanya memahami maksud ayat murid.
+Anda ialah Teaching Engine v2 untuk Karangan AI, aplikasi Bahasa Melayu sekolah rendah Malaysia.
 
 Konteks:
 - Tahun murid: ${year || 1}
 - Bahasa: ${language || "Bahasa Melayu"}
-- Sasaran pembelajaran:
-  ${learningTarget || "Kembangkan ayat dengan satu maklumat yang bermakna."}
+- Sasaran kemahiran: ${learningTarget || "Kembangkan ayat dengan satu maklumat yang bermakna."}
 
-PRINSIP WAJIB:
-1. Jangan padankan jawapan dengan model answer.
-2. Perkataan murid TIDAK perlu wujud dalam kosa kata Karangan AI.
-3. GUNAKAN PRINSIP MEANING-FIRST. Soalan utama ialah:
-   "Adakah ayat murid membentuk maksud Bahasa Melayu yang boleh difahami?"
-   Jangan tanya dahulu sama ada situasi itu biasa atau lazim.
-4. Jika struktur semantik betul dan maklumat tambahan boleh difahami, target_met=true.
-   Tempat TIDAK perlu menjadi tempat belajar/membaca/bermain yang biasa.
-5. Bezakan kategori berikut:
-   NATURAL = biasa dan jelas dalam dunia sebenar.
-   POSSIBLE = kurang biasa tetapi masih boleh berlaku atau mudah dibayangkan dalam dunia sebenar.
-   IMAGINATIVE = makna bahasa jelas tetapi situasi lebih sesuai dalam cerita/fantasi/imaginasi.
-   ODD = maksud mungkin ada tetapi benar-benar kabur dan memerlukan penjelasan murid.
-   INVALID = gabungan perkataan gagal membentuk hubungan semantik yang diminta.
-   UNKNOWN = perkataan/nama tidak cukup dikenali untuk dinilai dengan yakin.
-6. Contoh kalibrasi WAJIB:
-   "Adik belajar di sekolah." => NATURAL, target_met=true.
-   "Adik belajar di hutan." => POSSIBLE, target_met=true.
-   "Ayah membaca di pusat hiburan." => POSSIBLE, target_met=true.
-   "Ayah membaca di langit." => IMAGINATIVE, target_met=true.
-   "Adik bermain di bulan." => IMAGINATIVE, target_met=true.
-   "Saya membaca di kapal angkasa." => IMAGINATIVE atau POSSIBLE mengikut konteks, target_met=true.
-   "Ayah membaca di rajin." => INVALID, target_met=false.
-   "Ayah membaca di cantik." => INVALID, target_met=false.
-7. Jangan menolak ayat hanya kerana lokasi/keadaan tidak lazim untuk aktiviti itu.
-8. Jika nama tempat/perkataan tidak dikenali, gunakan UNKNOWN dan minta penjelasan; jangan mereka-reka.
-9. Jangan menghukum kreativiti murid.
-10. language_issue hanya SATU pembetulan penting. Tulis pembetulan itu dalam Bahasa Melayu yang
-    ringkas dan mesra murid Tahun 1. JANGAN gunakan bahasa Inggeris.
-    Contoh: "Cuba tulis ‘di’ dengan huruf kecil."
+IKUT URUTAN KEPUTUSAN INI. JANGAN LOMPAT:
+1. MEANING — Adakah maksud keseluruhan ayat boleh difahami dan hubungan inti seperti ACTION+OBJECT/COMPLEMENT masuk akal?
+2. SKILL TARGET — Jika meaning lulus, adakah murid benar-benar menunjukkan kemahiran sasaran semasa? Ayat boleh bermakna tetapi masih tidak memenuhi sasaran.
+3. APPROPRIATENESS — Jika sasaran dipenuhi, bezakan NATURAL, POSSIBLE, IMAGINATIVE, ODD, INVALID, UNKNOWN. Kreativiti yang jelas dari segi bahasa tidak boleh dihukum hanya kerana luar biasa.
+4. LANGUAGE — Hanya selepas meaning/skill/appropriateness lulus, pilih SATU isu bahasa paling penting jika ada.
+5. INDEPENDENCE — JANGAN tentukan mastery, XP atau independence. Itu milik aplikasi klien.
 
-11. COMPOSITIONAL SEMANTIC CHECK — WAJIB SEBELUM MEMBETULKAN BAHASA:
-    a. Kenal pasti hubungan utama dalam ayat: SUBJECT + ACTION + OBJECT/COMPLEMENT + PLACE/TIME/COMPANION.
-    b. Semak keserasian setiap hubungan, bukan hanya perkataan terakhir atau lokasi.
-    c. Jangan "menyelamatkan" ayat yang kabur dengan menambah kata sendi, objek atau idea baharu yang murid tidak tulis.
-    d. Jangan beri contoh ayat lengkap yang memperkenalkan hubungan baharu sebagai pembetulan. Cikgu Aira mesti mengajar, bukan ghostwrite.
-    e. Jika hubungan ACTION + OBJECT/COMPLEMENT tidak jelas atau tidak sesuai dalam konteks biasa Tahun 1, gunakan ODD/INVALID dan minta murid fikir semula bahagian itu.
-    f. Imaginasi diterima apabila HUBUNGAN bahasa masih jelas. "bermain di bulan" mempunyai ACTION+PLACE yang jelas; "bermain nasi" tidak automatik menjadi bermakna hanya kerana boleh ditambah "dengan".
-    g. Jangan menganggap semua NOUN selepas kata kerja sebagai objek yang sah.
+PERATURAN SISTEM:
+- Jangan padankan dengan model answer.
+- Perkataan murid tidak perlu berada dalam kosa kata aplikasi.
+- Perkataan yang sah secara individu tidak bermaksud gabungannya sesuai. Contoh: “Saya membaca nasi di rumah.” gagal pada MEANING.
+- Lokasi imaginatif yang sah tidak boleh menyelamatkan hubungan inti yang salah. “Saya mengemas tahi di langit.” tetap gagal pada MEANING.
+- “Ayah membaca di langit.” boleh IMAGINATIVE dan lulus jika skill PLACE dipenuhi.
+- “Adik belajar di hutan.” boleh POSSIBLE dan lulus.
+- Jawapan kreatif tetapi boleh difahami mesti diterima sebagai POSSIBLE/IMAGINATIVE, bukan ditolak kerana tidak biasa.
+- Jika sebahagian jawapan betul, preserve bahagian itu melalui preserved_parts. Jangan buang semua usaha murid.
+- preserved_parts hanya boleh menggunakan: BASE_MEANING, SKILL_TARGET, CREATIVE_IDEA, LANGUAGE_FORM.
+- Jika meaning gagal, primary_issue=MEANING walaupun tanda baca/huruf besar juga salah.
+- Jika meaning lulus tetapi skill tidak dipenuhi, primary_issue=SKILL_TARGET.
+- Jika meaning+skill lulus tetapi kesesuaian benar-benar bermasalah, primary_issue=APPROPRIATENESS.
+- Jika semua di atas lulus tetapi ada satu pembetulan bahasa penting, primary_issue=LANGUAGE.
+- Jika semuanya lulus, primary_issue=NONE dan result=PASS.
+- ODD/UNKNOWN boleh menghasilkan CLARIFY apabila makna mungkin wujud tetapi tidak cukup yakin.
+- Jangan ghostwrite. Jangan beri satu ayat jawapan baharu. language_issue/clarification_question mesti pendek dan mesra murid Tahun 1.
 
-12. CRITICAL REGRESSION CALIBRATION:
-    "Kawan saya bermain nasi di tandas." => INVALID atau ODD dengan target_met=false. JANGAN cadangkan "bermain dengan nasi".
-    "Kawan saya bermain dengan bola di taman." => NATURAL, target_met=true.
-    "Kawan saya bermain di tandas." => POSSIBLE/ODD mengikut konteks, tetapi hubungan ACTION+PLACE masih boleh difahami; jangan cipta objek.
-    "Saya membaca nasi di rumah." => INVALID, target_met=false.
-    "Saya makan buku di dapur." => INVALID atau ODD, target_met=false dalam konteks biasa Tahun 1; jangan ubah kepada idea baharu.
-    "Saya minum air di kelas." => NATURAL/POSSIBLE, target_met=true.
-    "Adik tidur pensel di bilik." => INVALID, target_met=false.
-    "Ayah membaca di langit." => IMAGINATIVE, target_met=true kerana ACTION+PLACE jelas.
-    "Adik belajar di hutan." => POSSIBLE, target_met=true kerana ACTION+PLACE jelas.
+OUTPUT WAJIB:
+result: PASS, RETRY, atau CLARIFY
+meaning_status: PASS, FAIL, atau UNCERTAIN
+skill_target_status: MET, NOT_MET, atau UNCERTAIN
+appropriateness: NATURAL, POSSIBLE, IMAGINATIVE, ODD, INVALID, atau UNKNOWN
+language_status: CLEAN atau MINOR_ISSUE
+language_issue: string pendek atau null
+primary_issue: MEANING, SKILL_TARGET, APPROPRIATENESS, LANGUAGE, atau NONE
+preserved_parts: array daripada BASE_MEANING, SKILL_TARGET, CREATIVE_IDEA, LANGUAGE_FORM
+needs_clarification: boolean
+clarification_question: string
+confidence: 0 hingga 1
 
-13. ERROR PRIORITY GATE — HARD RULE:
-    Sebelum memilih main_issue, nilai semua isu yang ditemui dan pilih HANYA isu berkeutamaan tertinggi:
-    PRIORITY 1 = CORE_MEANING / SEMANTIC_RELATIONSHIP
-    PRIORITY 2 = TASK_TARGET
-    PRIORITY 3 = GRAMMAR / WORD_FORM
-    PRIORITY 4 = SPELLING
-    PRIORITY 5 = CAPITALISATION / PUNCTUATION
-
-    Jika PRIORITY 1 gagal:
-    - result mesti RETRY.
-    - main_issue mesti isu makna/semantic relationship.
-    - JANGAN pilih titik, huruf besar, ejaan atau tatabahasa sebagai main_issue walaupun kesalahan itu juga wujud.
-    - target_met=false jika hubungan utama yang diperlukan tidak bermakna.
-    - feedback mesti fokus pada SATU hubungan makna yang perlu difikir semula.
-    - jangan beri jawapan penuh dan jangan cipta idea baharu.
-
-    MULTI-ERROR CALIBRATION:
-    "Saya mengemas tahi di langit" => RETRY; main_issue=SEMANTIC_RELATIONSHIP. Jangan tegur titik dahulu.
-    "Saya mengemas tahi di langit." => RETRY; main_issue=SEMANTIC_RELATIONSHIP.
-    "saya mengemas tahi di langit" => RETRY; main_issue=SEMANTIC_RELATIONSHIP walaupun huruf besar dan titik salah.
-    "Saya mengemas bilik di rumah" => makna boleh diterima; barulah punctuation boleh menjadi main_issue.
-    "saya mengemas bilik di rumah." => makna boleh diterima; capitalisation boleh menjadi main_issue.
-    "Saya mengemas bilik di rumah." => boleh diterima jika target dipenuhi.
-
-    Pecahkan ayat secara setempat:
-    - "mengemas + tahi" = hubungan ACTION + OBJECT/COMPLEMENT yang bermasalah dalam konteks biasa Tahun 1.
-    - "di langit" boleh dianggap IMAGINATIVE secara berasingan.
-    - Kehadiran unsur imaginatif yang sah TIDAK boleh menutup hubungan semantik lain yang gagal.
-
-14. HARD SEMANTIC RELATIONSHIP GATE — RELEASE BLOCKER:
-    Sebelum keputusan akhir PASS/CORRECT, semak semula hubungan inti ACTION + OBJECT/COMPLEMENT.
-    Gate ini berasingan daripada PLACE/TIME/IMAGINATION dan punctuation.
-
-    - Jika objek/complement ditambah selepas kata kerja, hubungan maknanya mesti jelas dan sesuai.
-    - Lokasi yang sah TIDAK boleh menyelamatkan objek yang tidak sesuai.
-    - Struktur tatabahasa lengkap TIDAK bermaksud hubungan semantik betul.
-    - Jangan lulus hanya kerana semua perkataan ialah perkataan Bahasa Melayu yang sah.
-    - Jika core relationship gagal, keputusan akhir TIDAK BOLEH PASS walaupun lokasi NATURAL/POSSIBLE/IMAGINATIVE.
-    - Imaginasi diterima hanya apabila hubungan bahasa yang diuji masih jelas.
-
-    HARD NEGATIVE CALIBRATION — mesti RETRY:
-    "Ibu makan tahi di rumah." => SEMANTIC_RELATIONSHIP, target_met=false.
-    "Saya makan tahi di rumah." => SEMANTIC_RELATIONSHIP, target_met=false.
-    "Saya makan buku di dapur." => SEMANTIC_RELATIONSHIP, target_met=false.
-    "Saya membaca nasi di rumah." => SEMANTIC_RELATIONSHIP, target_met=false.
-    "Saya minum pensel di kelas." => SEMANTIC_RELATIONSHIP, target_met=false.
-    "Saya mengemas tahi di langit." => SEMANTIC_RELATIONSHIP, target_met=false.
-    "Adik tidur pensel di bilik." => SEMANTIC_RELATIONSHIP, target_met=false.
-    "Kawan saya bermain nasi di tandas." => SEMANTIC_RELATIONSHIP, target_met=false.
-
-    HARD POSITIVE CALIBRATION:
-    "Ibu makan nasi di rumah." => NATURAL/POSSIBLE, target_met=true.
-    "Saya membaca buku di rumah." => NATURAL, target_met=true.
-    "Saya minum air di kelas." => NATURAL/POSSIBLE, target_met=true.
-    "Saya mengemas bilik di rumah." => NATURAL, target_met=true.
-    "Kawan saya bermain dengan bola di taman." => NATURAL, target_met=true.
-
-    CREATIVE LOCATION CALIBRATION:
-    "Adik belajar di hutan." => POSSIBLE, target_met=true.
-    "Ayah membaca di langit." => IMAGINATIVE, target_met=true.
-    "Adik bermain di bulan." => IMAGINATIVE, target_met=true.
-
-    FINAL SELF-CHECK SEBELUM JSON:
-    1. Sudah semak ACTION + OBJECT/COMPLEMENT?
-    2. Jika hubungan inti gagal, result=RETRY dan main_issue=SEMANTIC_RELATIONSHIP?
-    3. Adakah PLACE/IMAGINATION tersilap menutup hubungan inti yang gagal?
-    4. Feedback hanya SATU masalah dan tidak ghostwrite?
-
-15. FEEDBACK SAFETY:
-    Untuk ODD/INVALID akibat hubungan semantik, jangan beri ayat jawapan penuh.
-    Gunakan maklum balas pendek seperti:
-    "Bagus mencuba. Cuba fikir semula perkataan selepas ‘bermain’. Adakah perkataan itu sesuai dengan perbuatan bermain?"
-    atau soalan ringkas yang menunjuk SATU bahagian untuk difikir semula.
-    Jangan masukkan perkataan baharu yang boleh menjadi jawapan murid.
-
-16. Jangan tentukan mastered, XP, level atau curriculum status.
-
-semantic_class mesti salah satu:
-NATURAL, POSSIBLE, IMAGINATIVE, ODD, INVALID, UNKNOWN.
-
-information_type boleh seperti:
-PLACE, TIME, COMPANION, DESCRIPTION, ACTION_DETAIL, OTHER, UNKNOWN.
-
-confidence ialah nombor 0 hingga 1.
+KALIBRASI KRITIKAL:
+- “Ibu makan nasi di rumah.” => meaning PASS.
+- “Saya makan buku di dapur.” => meaning FAIL, RETRY, primary_issue MEANING.
+- “Saya membaca nasi di rumah.” => meaning FAIL, RETRY, primary_issue MEANING.
+- “Kawan saya bermain nasi di tandas.” => meaning FAIL/UNCERTAIN, tidak boleh PASS hanya kerana ada lokasi.
+- “Ayah membaca di langit.” => meaning PASS, appropriateness IMAGINATIVE.
+- “Adik bermain di bulan.” => meaning PASS, appropriateness IMAGINATIVE.
+- “Bilik saya bersih dan unik.” => jangan gagal hanya kerana “unik” mungkin tiada dalam kamus aplikasi; nilai gabungan makna.
+- Jika jawapan bermakna tetapi diminta PLACE dan murid hanya menambah TIME, skill_target_status=NOT_MET.
   `.trim();
 
   const input = `
@@ -1424,41 +1334,30 @@ async function requestStructuredSemanticJudgment({
                 schema: {
                   type: "object",
                   properties: {
-                    target_met: { type: "boolean" },
-                    meaning_preserved: { type: "boolean" },
-                    information_type: { type: "string" },
-                    semantic_class: {
-                      type: "string",
-                      enum: [
-                        "NATURAL",
-                        "POSSIBLE",
-                        "IMAGINATIVE",
-                        "ODD",
-                        "INVALID",
-                        "UNKNOWN"
-                      ]
+                    result: { type: "string", enum: ["PASS", "RETRY", "CLARIFY"] },
+                    meaning_status: { type: "string", enum: ["PASS", "FAIL", "UNCERTAIN"] },
+                    skill_target_status: { type: "string", enum: ["MET", "NOT_MET", "UNCERTAIN"] },
+                    appropriateness: { type: "string", enum: ["NATURAL", "POSSIBLE", "IMAGINATIVE", "ODD", "INVALID", "UNKNOWN"] },
+                    language_status: { type: "string", enum: ["CLEAN", "MINOR_ISSUE"] },
+                    language_issue: { type: ["string", "null"] },
+                    primary_issue: { type: "string", enum: ["MEANING", "SKILL_TARGET", "APPROPRIATENESS", "LANGUAGE", "NONE"] },
+                    preserved_parts: {
+                      type: "array",
+                      items: { type: "string", enum: ["BASE_MEANING", "SKILL_TARGET", "CREATIVE_IDEA", "LANGUAGE_FORM"] }
                     },
-                    language_issue: {
-                      type: ["string", "null"]
-                    },
-                    needs_clarification: {
-                      type: "boolean"
-                    },
-                    clarification_question: {
-                      type: "string"
-                    },
-                    confidence: {
-                      type: "number",
-                      minimum: 0,
-                      maximum: 1
-                    }
+                    needs_clarification: { type: "boolean" },
+                    clarification_question: { type: "string" },
+                    confidence: { type: "number", minimum: 0, maximum: 1 }
                   },
                   required: [
-                    "target_met",
-                    "meaning_preserved",
-                    "information_type",
-                    "semantic_class",
+                    "result",
+                    "meaning_status",
+                    "skill_target_status",
+                    "appropriateness",
+                    "language_status",
                     "language_issue",
+                    "primary_issue",
+                    "preserved_parts",
                     "needs_clarification",
                     "clarification_question",
                     "confidence"
@@ -1603,63 +1502,73 @@ async function requestGroqSemanticJudgment({
 
 
 function cleanSemanticJudgment(result) {
+  const allowedAppropriateness=new Set(["NATURAL","POSSIBLE","IMAGINATIVE","ODD","INVALID","UNKNOWN"]);
+  const allowedPrimary=new Set(["MEANING","SKILL_TARGET","APPROPRIATENESS","LANGUAGE","NONE"]);
+  const allowedPreserved=new Set(["BASE_MEANING","SKILL_TARGET","CREATIVE_IDEA","LANGUAGE_FORM"]);
+  const norm=(v,allowed,fallback)=>{const x=String(v||fallback).toUpperCase();return allowed.has(x)?x:fallback;};
+  const resultSet=new Set(["PASS","RETRY","CLARIFY"]), meaningSet=new Set(["PASS","FAIL","UNCERTAIN"]), skillSet=new Set(["MET","NOT_MET","UNCERTAIN"]), languageSet=new Set(["CLEAN","MINOR_ISSUE"]);
+  const confidenceRaw=Number(result?.confidence);
+  const confidence=Number.isFinite(confidenceRaw)?Math.max(0,Math.min(1,confidenceRaw)):0;
+  const meaning_status=norm(result?.meaning_status,meaningSet,"UNCERTAIN");
+  const skill_target_status=norm(result?.skill_target_status,skillSet,"UNCERTAIN");
+  const appropriateness=norm(result?.appropriateness||result?.semantic_class,allowedAppropriateness,"UNKNOWN");
+  const language_status=norm(result?.language_status,languageSet,result?.language_issue?"MINOR_ISSUE":"CLEAN");
+  const language_issue=result?.language_issue?String(result.language_issue).trim():null;
+  let primary_issue="NONE";
+  let finalResult="PASS";
 
-  const allowed =
-    new Set([
-      "NATURAL",
-      "POSSIBLE",
-      "IMAGINATIVE",
-      "ODD",
-      "INVALID",
-      "UNKNOWN"
-    ]);
-
-  let semanticClass =
-    String(
-      result?.semantic_class || "UNKNOWN"
-    ).toUpperCase();
-
-  if (!allowed.has(semanticClass)) {
-    semanticClass = "UNKNOWN";
+  // Canonical Teaching Engine v2 hierarchy. Lower layers can never override
+  // an earlier layer, and model-provided result/primary_issue are normalized
+  // into one internally consistent contract.
+  if(meaning_status==="UNCERTAIN"){
+    finalResult="CLARIFY";
+  }
+  else if(meaning_status==="FAIL"){
+    primary_issue="MEANING";finalResult="RETRY";
+  }
+  else if(skill_target_status==="UNCERTAIN"){
+    finalResult="CLARIFY";
+  }
+  else if(skill_target_status==="NOT_MET"){
+    primary_issue="SKILL_TARGET";finalResult="RETRY";
+  }
+  else if(["ODD","UNKNOWN"].includes(appropriateness)){
+    finalResult="CLARIFY";
+  }
+  else if(appropriateness==="INVALID"){
+    primary_issue="APPROPRIATENESS";finalResult="RETRY";
+  }
+  else if(language_status==="MINOR_ISSUE"){
+    primary_issue="LANGUAGE";finalResult="RETRY";
   }
 
-  const confidenceRaw =
-    Number(result?.confidence);
+  const needs_clarification=finalResult==="CLARIFY";
+  let clarification_question=String(result?.clarification_question||"").trim();
+  if(needs_clarification && !clarification_question){
+    clarification_question="Boleh jelaskan maksud ayat kamu sedikit lagi?";
+  }
+  if(!needs_clarification){
+    clarification_question="";
+  }
 
-  const confidence =
-    Number.isFinite(confidenceRaw)
-      ? Math.max(0, Math.min(1, confidenceRaw))
-      : 0;
-
+  const preserved=Array.isArray(result?.preserved_parts)?result.preserved_parts.map(x=>String(x).toUpperCase()).filter(x=>allowedPreserved.has(x)):[];
   return {
-    target_met:
-      result?.target_met === true,
-
-    meaning_preserved:
-      result?.meaning_preserved !== false,
-
-    information_type:
-      String(
-        result?.information_type || "UNKNOWN"
-      ).toUpperCase(),
-
-    semantic_class:
-      semanticClass,
-
-    language_issue:
-      result?.language_issue
-        ? String(result.language_issue).trim()
-        : null,
-
-    needs_clarification:
-      result?.needs_clarification === true,
-
-    clarification_question:
-      String(
-        result?.clarification_question || ""
-      ).trim(),
-
-    confidence
+    result:finalResult,
+    meaning_status,
+    skill_target_status,
+    appropriateness,
+    language_status,
+    language_issue,
+    primary_issue,
+    preserved_parts:[...new Set(preserved)],
+    needs_clarification,
+    clarification_question,
+    confidence,
+    // Backward-compatible aliases for older clients.
+    target_met:skill_target_status==="MET",
+    meaning_preserved:meaning_status==="PASS",
+    semantic_class:appropriateness,
+    information_type:"UNKNOWN"
   };
 }
 
