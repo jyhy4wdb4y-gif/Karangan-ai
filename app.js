@@ -12824,7 +12824,7 @@ window.KaranganTranslationCache = {
    Additive integration. Langkah 2 & Langkah 3 are untouched.
    ========================================================= */
 (function(){
-  const L4_VERSION="13.3.1-QA-HARNESS-HARDENED";
+  const L4_VERSION="13.3.2-SEMANTIC-ACTION-QA";
   const CONTENT_VERSION="1.0_STABLE";
   const LEGACY_GRAMMAR=renderGrammarRain;
   const STATE_KEY="karangan_ai_l4_t1_v1";
@@ -13029,7 +13029,7 @@ window.KaranganTranslationCache = {
   </style>`;}
   function shell(body,progress=60,active=1){openModuleScreen(`${l4Styles()}<div class="l4-wrap"><div class="l4-kicker">LANGKAH 4 · TAHUN 1</div><div class="l4-title">✨ Kembangkan Ayat</div><p class="l4-sub">Tambah satu maklumat yang menjadikan ayat lebih bermakna.</p><div class="l4-meter"><div class="l4-step ${active>=1?'on':''}">1 · Faham</div><div class="l4-step ${active>=2?'on':''}">2 · Magic</div><div class="l4-step ${active>=3?'on':''}">3 · Cuba Sendiri</div></div>${body}<div class="l4-version">v${L4_VERSION} · Content ${CONTENT_VERSION}</div></div>`,progress);}
   function feedback(m){return m?`<div class="l4-ai"><div class="l4-ai-face">🐣</div><div><div class="l4-ai-title">Cikgu Aira</div><div>${esc(m)}</div></div></div>`:"";}
-  function start(){l4Transition("START",{force:true});l4ResetCycle();draft="";guidedDraft="";shell(`<div class="l4-hero"><div class="l4-spark">🪄</div><h2 style="margin:4px 0 6px">Misi Ayat Magic</h2><p style="margin:0;color:#626d74">Tukar ayat biasa menjadi ayat yang lebih bermakna dengan <strong>satu maklumat</strong>.</p></div><div class="l4-card"><div class="l4-label">Pilih cara belajar</div><div class="l4-levels" style="margin-top:12px"><button data-l4-level="ASAS" class="l4-level ${level==='ASAS'?'active':''}">🌱 Asas<br><small>Pilih bantuan</small></button><button data-l4-level="STANDARD" class="l4-level ${level==='STANDARD'?'active':''}">🌿 Standard<br><small>Tulis sendiri</small></button><button data-l4-level="LANJUTAN" class="l4-level ${level==='LANJUTAN'?'active':''}">⭐ Lanjutan<br><small>Lebih bebas</small></button></div></div><button id="l4Begin" class="l4-primary">Mula Ayat Magic →</button>`,50,1);}
+  function start(){l4Transition("START",{force:true});l4ResetCycle();draft="";guidedDraft="";shell(`<div class="l4-hero"><div class="l4-spark">🪄</div><h2 style="margin:4px 0 6px">Misi Ayat Magic</h2><p style="margin:0;color:#626d74">Tukar ayat biasa menjadi ayat yang lebih bermakna dengan <strong>satu maklumat</strong>.</p></div><div class="l4-card"><div class="l4-label">Pilih cara belajar</div><div class="l4-levels" style="margin-top:12px"><button data-l4-level="ASAS" class="l4-level ${level==='ASAS'?'active':''}">🌱 Asas<br><small>Pilih bantuan</small></button><button data-l4-level="STANDARD" class="l4-level ${level==='STANDARD'?'active':''}">🌿 Standard<br><small>Tulis sendiri</small></button><button data-l4-level="LANJUTAN" class="l4-level ${level==='LANJUTAN'?'active':''}">⭐ Lanjutan<br><small>Lebih bebas</small></button></div></div><button id="l4Begin" data-l4-action="begin" class="l4-primary">Mula Ayat Magic →</button>`,50,1);}
   function promptFor(t){if(level!=="LANJUTAN")return t.q;if(t.skill==="PLACE")return "Tulis semula ayat penuh dan tambah satu tempat.";if(t.skill==="TIME")return "Tulis semula ayat penuh dan tambah satu masa.";if(t.skill==="COMPANION")return "Tulis semula ayat penuh dan nyatakan dengan siapa.";if(t.skill==="DESCRIPTION")return "Tulis semula ayat penuh dan tambah satu penerangan yang sesuai.";if(t.skill==="INTENSITY")return "Tulis semula ayat penuh dan kuatkan perasaan itu.";return "Tulis semula ayat penuh dan tambah satu maklumat yang sesuai.";}
   function guided(message=""){
     l4Transition("GUIDED",{force:true});
@@ -13038,17 +13038,17 @@ window.KaranganTranslationCache = {
     if(!snap){const t0=currentTask();snap=l4FreezeExercise(t0,"GUIDED",t0.base);}
     const t=snap.task;const meta=l4SkillMeta(t.skill);let action="";const canChoice=level==="ASAS"&&t.choices.length;
     if(canChoice)action=`<div class="l4-chiprow">${t.choices.map(x=>`<button data-l4-choice="${esc(x)}" class="l4-chip">${esc(x)}</button>`).join("")}</div>`;
-    else {const tag=level==="STANDARD"?"input":"textarea";const close=tag==="textarea"?`</textarea>`:"";const val=tag==="input"?`value="${esc(guidedDraft)}"`:"";const inner=tag==="textarea"?esc(guidedDraft):"";action=`<${tag} id="l4GuidedInput" ${val} ${tag==="textarea"?'rows="3"':''} class="l4-input" placeholder="Tulis ayat penuh yang lebih lengkap...">${inner}${close}<button id="l4GuidedCheck" class="l4-primary" style="margin-top:10px">✓ Semak Ayat</button>`;}
-    shell(`<div class="l4-card l4-base"><div class="l4-label">🐣 Ayat Biasa</div><div class="l4-sentence">${esc(snap.base)}</div><div class="l4-question">🪄 ${esc(promptFor(t))}</div></div>${feedback(message)}<div class="l4-card"><div class="l4-label">${meta[0]} Magic Block · ${meta[1]}</div>${action}</div><button id="l4Hint" class="l4-secondary">🔊 Tanya Cikgu Aira</button>`,60,1);
+    else {const tag=level==="STANDARD"?"input":"textarea";const close=tag==="textarea"?`</textarea>`:"";const val=tag==="input"?`value="${esc(guidedDraft)}"`:"";const inner=tag==="textarea"?esc(guidedDraft):"";action=`<${tag} id="l4GuidedInput" ${val} ${tag==="textarea"?'rows="3"':''} class="l4-input" placeholder="Tulis ayat penuh yang lebih lengkap...">${inner}${close}<button id="l4GuidedCheck" data-l4-action="guided-check" class="l4-primary" style="margin-top:10px">✓ Semak Ayat</button>`;}
+    shell(`<div class="l4-card l4-base"><div class="l4-label">🐣 Ayat Biasa</div><div class="l4-sentence">${esc(snap.base)}</div><div class="l4-question">🪄 ${esc(promptFor(t))}</div></div>${feedback(message)}<div class="l4-card"><div class="l4-label">${meta[0]} Magic Block · ${meta[1]}</div>${action}</div><button id="l4Hint" data-l4-action="hint" class="l4-secondary">🔊 Tanya Cikgu Aira</button>`,60,1);
   }
-  function upgrade(chosen,snapshot=activeExercise){const t=snapshot?.task||currentTask();const base=snapshot?.base||t.base;activeExercise=snapshot||l4FreezeExercise(t,"GUIDED",base);l4Transition("UPGRADE",{force:true});let full=String(chosen||"").trim();if(!/^[A-Z]/.test(full)||full.split(/\s+/).length<3)full=joinBase(t.base,full);shell(`<div class="l4-card"><div style="text-align:center"><div class="l4-spark">🪄✨</div><div class="l4-label">Ayat Magic berlaku!</div></div><div class="l4-transform" style="margin-top:16px"><div class="l4-card l4-base" style="margin:0"><div class="l4-label">🐣 Sebelum</div><div class="l4-sentence" style="font-size:21px">${esc(base)}</div></div><div class="l4-arrow">→</div><div class="l4-card l4-magic" style="margin:0"><div class="l4-label">✨ Selepas</div><div class="l4-sentence" style="font-size:22px">${esc(full)}</div></div></div><div class="l4-ai" style="margin-top:16px"><div class="l4-ai-face">🐣</div><div><div class="l4-ai-title">Hebat!</div><div>Kamu menambah maklumat yang membuat ayat lebih bermakna.</div></div></div></div><button id="l4TryOwn" class="l4-primary">✍️ Sekarang Cuba Sendiri</button>`,72,2);}
+  function upgrade(chosen,snapshot=activeExercise){const t=snapshot?.task||currentTask();const base=snapshot?.base||t.base;activeExercise=snapshot||l4FreezeExercise(t,"GUIDED",base);l4Transition("UPGRADE",{force:true});let full=String(chosen||"").trim();if(!/^[A-Z]/.test(full)||full.split(/\s+/).length<3)full=joinBase(t.base,full);shell(`<div class="l4-card"><div style="text-align:center"><div class="l4-spark">🪄✨</div><div class="l4-label">Ayat Magic berlaku!</div></div><div class="l4-transform" style="margin-top:16px"><div class="l4-card l4-base" style="margin:0"><div class="l4-label">🐣 Sebelum</div><div class="l4-sentence" style="font-size:21px">${esc(base)}</div></div><div class="l4-arrow">→</div><div class="l4-card l4-magic" style="margin:0"><div class="l4-label">✨ Selepas</div><div class="l4-sentence" style="font-size:22px">${esc(full)}</div></div></div><div class="l4-ai" style="margin-top:16px"><div class="l4-ai-face">🐣</div><div><div class="l4-ai-title">Hebat!</div><div>Kamu menambah maklumat yang membuat ayat lebih bermakna.</div></div></div></div><button id="l4TryOwn" data-l4-action="try-own" class="l4-primary">✍️ Sekarang Cuba Sendiri</button>`,72,2);}
   function independent(message=""){
     l4Transition("INDEPENDENT",{force:true});
     const s=loadState();
     const base=s.currentIndependentBase||pickConnectedTransferBase(currentTask());
     independentRender(base,message);
   }
-  function independentRender(base,message="",snapshot=null){l4Transition("INDEPENDENT",{force:true});const snap=snapshot||((activeExercise?.stage==="INDEPENDENT"&&activeExercise.base===base)?activeExercise:l4FreezeExercise(currentTask(),"INDEPENDENT",base));activeExercise=snap;shell(`<div class="l4-card l4-base"><div class="l4-label">🎯 Giliran Kamu</div><p style="margin:7px 0;color:#5f6970">${l4IndependentSkillPrompt(snap.task)}</p><div class="l4-sentence">${esc(snap.base)}</div></div>${feedback(message)}<div class="l4-card"><div class="l4-label">✍️ Ayat Magic Saya</div><textarea id="l4Draft" rows="3" class="l4-input" style="margin-top:10px" placeholder="Tulis ayat penuh kamu...">${esc(draft)}</textarea><button id="l4OwnCheck" class="l4-primary" style="margin-top:10px">✓ Semak Ayat Saya</button></div><button id="l4Hint" class="l4-secondary">🔊 Tanya Cikgu Aira</button>`,84,3);}
+  function independentRender(base,message="",snapshot=null){l4Transition("INDEPENDENT",{force:true});const snap=snapshot||((activeExercise?.stage==="INDEPENDENT"&&activeExercise.base===base)?activeExercise:l4FreezeExercise(currentTask(),"INDEPENDENT",base));activeExercise=snap;shell(`<div class="l4-card l4-base"><div class="l4-label">🎯 Giliran Kamu</div><p style="margin:7px 0;color:#5f6970">${l4IndependentSkillPrompt(snap.task)}</p><div class="l4-sentence">${esc(snap.base)}</div></div>${feedback(message)}<div class="l4-card"><div class="l4-label">✍️ Ayat Magic Saya</div><textarea id="l4Draft" rows="3" class="l4-input" style="margin-top:10px" placeholder="Tulis ayat penuh kamu...">${esc(draft)}</textarea><button id="l4OwnCheck" data-l4-action="own-check" class="l4-primary" style="margin-top:10px">✓ Semak Ayat Saya</button></div><button id="l4Hint" data-l4-action="hint" class="l4-secondary">🔊 Tanya Cikgu Aira</button>`,84,3);}
   function l4NormTokens(value){
     return String(value||"")
       .toLowerCase()
@@ -13243,34 +13243,39 @@ window.KaranganTranslationCache = {
     }
     saveState(patch);
   }
-  function success(independentEvidence=true,judge=null){l4Transition("SUCCESS",{force:true});l4SetBusy(false);const evidenceNote=independentEvidence?"<div class=\"l4-xp\">⭐ Independent mastery evidence +1</div>":"<div class=\"l4-ai\" style=\"margin-top:12px;text-align:left\"><div class=\"l4-ai-face\">🌱</div><div><div class=\"l4-ai-title\">Latihan berjaya</div><div>Kamu berjaya selepas menggunakan bantuan. Ini dikira sebagai pembelajaran, belum sebagai bukti penguasaan sendiri.</div></div></div>";shell(`<div class="l4-success"><div class="emoji">🎉</div><h1 style="margin:4px 0">Hebat!</h1><p>Kamu berjaya <strong>kembangkan ayat</strong>.</p>${evidenceNote}<div class="l4-ai" style="text-align:left"><div class="l4-ai-face">🐣</div><div><div class="l4-ai-title">Cikgu Aira</div><div>${judge?.appropriateness==="IMAGINATIVE"?"Idea imaginasi kamu diterima kerana maksud ayat masih jelas.":"Kamu mengekalkan maksud dan memenuhi kemahiran sasaran."}</div></div></div></div><div class="l4-actions"><button id="l4Next" class="l4-primary">Cabar Ayat Seterusnya</button><button id="l4Finish" class="l4-secondary">Selesai ✓</button></div>`,100,3);}
+  function success(independentEvidence=true,judge=null){l4Transition("SUCCESS",{force:true});l4SetBusy(false);const evidenceNote=independentEvidence?"<div class=\"l4-xp\">⭐ Independent mastery evidence +1</div>":"<div class=\"l4-ai\" style=\"margin-top:12px;text-align:left\"><div class=\"l4-ai-face\">🌱</div><div><div class=\"l4-ai-title\">Latihan berjaya</div><div>Kamu berjaya selepas menggunakan bantuan. Ini dikira sebagai pembelajaran, belum sebagai bukti penguasaan sendiri.</div></div></div>";shell(`<div class="l4-success"><div class="emoji">🎉</div><h1 style="margin:4px 0">Hebat!</h1><p>Kamu berjaya <strong>kembangkan ayat</strong>.</p>${evidenceNote}<div class="l4-ai" style="text-align:left"><div class="l4-ai-face">🐣</div><div><div class="l4-ai-title">Cikgu Aira</div><div>${judge?.appropriateness==="IMAGINATIVE"?"Idea imaginasi kamu diterima kerana maksud ayat masih jelas.":"Kamu mengekalkan maksud dan memenuhi kemahiran sasaran."}</div></div></div></div><div class="l4-actions"><button id="l4Next" data-l4-action="next" class="l4-primary">Cabar Ayat Seterusnya</button><button id="l4Finish" data-l4-action="finish" class="l4-secondary">Selesai ✓</button></div>`,100,3);}
   // v13.2.1 State Machine Event Gateway
   // Exactly ONE native activation path: click.
   // iPad/iPhone taps synthesize one click; keyboard activation on <button> also clicks natively.
   // Do NOT pair click with pointerup/touchend: that was the source of duplicate actions.
   function l4ResolveAction(target){
-    return target?.closest?.("#l4Begin,#l4Hint,#l4GuidedCheck,#l4TryOwn,#l4OwnCheck,#l4Next,#l4Finish,[data-l4-level],[data-l4-choice]")||null;
+    return target?.closest?.("[data-l4-action],[data-l4-level],[data-l4-choice],#l4Begin,#l4Hint,#l4GuidedCheck,#l4TryOwn,#l4OwnCheck,#l4Next,#l4Finish")||null;
   }
   function l4Dispatch(el,e){
     if(!el)return;
-    if(l4Machine.busy && !["l4Finish"].includes(el.id))return;
+    const semanticAction=el.dataset?.l4Action||"";
+    const actionId=el.id||({
+      "begin":"l4Begin","hint":"l4Hint","guided-check":"l4GuidedCheck",
+      "try-own":"l4TryOwn","own-check":"l4OwnCheck","next":"l4Next","finish":"l4Finish"
+    }[semanticAction]||"");
+    if(l4Machine.busy && !["l4Finish"].includes(actionId))return;
     e?.preventDefault?.();e?.stopPropagation?.();e?.stopImmediatePropagation?.();
-    l4Machine.lastAction=el.id||el.dataset?.l4Choice||el.dataset?.l4Level||"unknown";
+    l4Machine.lastAction=actionId||el.dataset?.l4Choice||el.dataset?.l4Level||"unknown";
     if(el.dataset?.l4Level){level=el.dataset.l4Level;start();return;}
-    if(el.id==="l4Begin"){
+    if(actionId==="l4Begin"){
       l4JudgeSeq++;activeExercise=null;guidedDraft="";l4ResetCycle();guided();return;
     }
-    if(el.id==="l4Hint"){hintText();return;}
+    if(actionId==="l4Hint"){hintText();return;}
     if(el.dataset?.l4Choice){
       if(l4Machine.phase!=="GUIDED")return;
       const snap=activeExercise?.stage==="GUIDED"?activeExercise:l4FreezeExercise(currentTask(),"GUIDED",currentTask().base);
       recordSuccess("GUIDED_CHOICE",snap.base,{snapshot:snap});upgrade(el.dataset.l4Choice,snap);return;
     }
-    if(el.id==="l4GuidedCheck"){
+    if(actionId==="l4GuidedCheck"){
       if(l4Machine.phase!=="GUIDED")return;
       el.disabled=true;el.textContent="⏳ Sedang semak...";checkGuided();return;
     }
-    if(el.id==="l4TryOwn"){
+    if(actionId==="l4TryOwn"){
       if(l4Machine.phase!=="UPGRADE")return;
       draft="";
       // IMPORTANT: cycleHintUsed is NOT reset here. Help used in Stage 1/2
@@ -13281,18 +13286,18 @@ window.KaranganTranslationCache = {
       const snap=l4FreezeExercise(sourceTask,"INDEPENDENT",connectedBase);
       independentRender(connectedBase,"",snap);return;
     }
-    if(el.id==="l4OwnCheck"){
+    if(actionId==="l4OwnCheck"){
       if(l4Machine.phase!=="INDEPENDENT")return;
       const ta=document.getElementById("l4Draft");if(ta)draft=String(ta.value||"").trim();
       el.disabled=true;el.textContent="⏳ Sedang semak...";checkOwn();return;
     }
-    if(el.id==="l4Next"){
+    if(actionId==="l4Next"){
       if(l4Machine.phase!=="SUCCESS")return;
       l4JudgeSeq++;activeExercise=null;taskIndex=(taskIndex+1)%tasks.length;
       saveState({lastTaskIndex:taskIndex,currentIndependentBase:null,currentIndependentSkill:null});
       draft="";guidedDraft="";l4ResetCycle();guided();return;
     }
-    if(el.id==="l4Finish"){
+    if(actionId==="l4Finish"){
       try{completeMission("grammar-rain");}catch(_){}
       l4Transition("SUCCESS",{force:true});
       shell(`<div style="text-align:center;padding:24px"><div style="font-size:70px">🏆</div><h1>Misi Hari Ini Selesai!</h1><p>Kamu sudah belajar menjadikan ayat lebih lengkap.</p></div>`,100);return;
@@ -13304,7 +13309,7 @@ window.KaranganTranslationCache = {
     l4Dispatch(el,e);
   }
   /* =========================================================
-     v13.3.1 AUTOMATED BEHAVIOR QA HARNESS
+     v13.3.2 AUTOMATED BEHAVIOR QA HARNESS
      - Exercises the real rendered buttons and the real click gateway.
      - Replaces only the AI network provider with deterministic verdicts.
      - Restores the learner's saved Langkah 4 state after the run.
@@ -13322,6 +13327,28 @@ window.KaranganTranslationCache = {
     if(!el)throw new Error(`Missing clickable element: ${selector}`);
     el.click();
     return el;
+  }
+  function l4QaAction(name){
+    const semantic=document.querySelector(`[data-l4-action="${name}"]`);
+    if(semantic)return semantic;
+    const legacy={
+      "begin":"#l4Begin","hint":"#l4Hint","guided-check":"#l4GuidedCheck",
+      "try-own":"#l4TryOwn","own-check":"#l4OwnCheck","next":"#l4Next","finish":"#l4Finish"
+    }[name];
+    return legacy?document.querySelector(legacy):null;
+  }
+  function l4QaClickAction(name){
+    const el=l4QaAction(name);
+    if(!el)throw new Error(`Missing semantic action: ${name}`);
+    el.click();
+    return el;
+  }
+  function l4QaDomEvidence(){
+    const root=document.getElementById("moduleContent");
+    const buttons=[...(root?.querySelectorAll("button")||[])].map(b=>({
+      id:b.id||"",action:b.dataset?.l4Action||"",text:String(b.textContent||"").trim().slice(0,70)
+    }));
+    return JSON.stringify({phase:l4Machine.phase,buttons,htmlTail:String(root?.innerHTML||"").slice(-500)});
   }
   function l4QaSetValue(selector,value){
     const el=document.querySelector(selector);
@@ -13387,31 +13414,31 @@ window.KaranganTranslationCache = {
     };
     try{
       localStorage.removeItem(STATE_KEY);taskIndex=0;level="ASAS";activeExercise=null;l4JudgeSeq++;l4ResetCycle();start();
-      check("Start renders",!!document.querySelector("#l4Begin"));
+      check("Start renders",!!l4QaAction("begin"));
       check("State START",l4Machine.phase==="START",l4Machine.phase);
 
       l4QaClick('[data-l4-level="ASAS"]');
-      l4QaClick("#l4Begin");
+      l4QaClickAction("begin");
       check("Begin -> GUIDED",l4Machine.phase==="GUIDED",l4Machine.phase);
       check("Guided choice is clickable",!!document.querySelector("[data-l4-choice]"));
 
-      l4QaClick("#l4Hint");
+      l4QaClickAction("hint");
       check("One hint tap increments exactly once",hint===1,`hint=${hint}`);
       check("Hint marks entire cycle",l4Machine.cycleHintUsed===true);
       check("Hint does not lock choices",!!document.querySelector("[data-l4-choice]")&&!document.querySelector("[data-l4-choice]").disabled);
 
       l4QaClick("[data-l4-choice]");
       check("Choice after hint -> UPGRADE",l4Machine.phase==="UPGRADE",l4Machine.phase);
-      const stage2Ready=await l4QaWaitFor(()=>!!document.querySelector("#l4TryOwn"));
-      check("Stage 2 action renders",stage2Ready,stage2Ready?"#l4TryOwn ready":"phase="+l4Machine.phase+"; module="+String(document.getElementById("moduleContent")?.textContent||"").trim().slice(0,180));
+      const stage2Ready=await l4QaWaitFor(()=>!!l4QaAction("try-own"));
+      check("Stage 2 action renders",stage2Ready,stage2Ready?"try-own ready":l4QaDomEvidence());
       if(!stage2Ready)throw new Error("Stage 2 render contract failed after UPGRADE");
-      l4QaClick("#l4TryOwn");
-      const independentReady=await l4QaWaitFor(()=>l4Machine.phase==="INDEPENDENT"&&!!document.querySelector("#l4OwnCheck"));
+      l4QaClickAction("try-own");
+      const independentReady=await l4QaWaitFor(()=>l4Machine.phase==="INDEPENDENT"&&!!l4QaAction("own-check"));
       check("UPGRADE -> INDEPENDENT",independentReady,l4Machine.phase);
       check("Cycle hint survives transfer",l4Machine.cycleHintUsed===true);
       const beforeHintMastery=(loadState().masteryEvidence||[]).length;
       l4QaSetValue("#l4Draft",l4QaAnswerFor(activeExercise));
-      l4QaClick("#l4OwnCheck");
+      l4QaClickAction("own-check");
       check("AI busy lock activates",l4Machine.busy===true);
       await l4QaWaitFor(()=>l4Machine.phase==="SUCCESS"&&!l4Machine.busy);
       check("Hint-assisted correct answer -> SUCCESS",l4Machine.phase==="SUCCESS",l4Machine.phase);
@@ -13420,16 +13447,16 @@ window.KaranganTranslationCache = {
       check("Hint-assisted UI hides mastery +1",!document.body.textContent.includes("Independent mastery evidence +1"));
 
       // Fresh cycle: independent success must create mastery evidence.
-      l4QaClick("#l4Next");
+      l4QaClickAction("next");
       check("Next challenge returns GUIDED",l4Machine.phase==="GUIDED",l4Machine.phase);
       check("New cycle resets hint flag",l4Machine.cycleHintUsed===false);
       l4QaClick("[data-l4-choice]");
-      await l4QaWaitFor(()=>!!document.querySelector("#l4TryOwn"));
-      l4QaClick("#l4TryOwn");
-      await l4QaWaitFor(()=>l4Machine.phase==="INDEPENDENT"&&!!document.querySelector("#l4OwnCheck"));
+      await l4QaWaitFor(()=>!!l4QaAction("try-own"));
+      l4QaClickAction("try-own");
+      await l4QaWaitFor(()=>l4Machine.phase==="INDEPENDENT"&&!!l4QaAction("own-check"));
       const beforeIndependent=(loadState().masteryEvidence||[]).length;
       l4QaSetValue("#l4Draft",l4QaAnswerFor(activeExercise));
-      l4QaClick("#l4OwnCheck");
+      l4QaClickAction("own-check");
       await l4QaWaitFor(()=>l4Machine.phase==="SUCCESS"&&!l4Machine.busy);
       const afterIndependent=(loadState().masteryEvidence||[]).length;
       check("Independent success -> SUCCESS",l4Machine.phase==="SUCCESS");
@@ -13437,10 +13464,10 @@ window.KaranganTranslationCache = {
       check("Independent mastery UI appears",document.body.textContent.includes("Independent mastery evidence +1"));
 
       // Free-text semantic rejection through the real submit path.
-      l4QaClick("#l4Next");level="STANDARD";activeExercise=null;guidedDraft="";l4ResetCycle();guided();providerMode="MEANING_FAIL";
+      l4QaClickAction("next");level="STANDARD";activeExercise=null;guidedDraft="";l4ResetCycle();guided();providerMode="MEANING_FAIL";
       check("Standard free-text input renders",!!document.querySelector("#l4GuidedInput"));
       l4QaSetValue("#l4GuidedInput","Kawan saya belajar nasi di sekolah.");
-      l4QaClick("#l4GuidedCheck");
+      l4QaClickAction("guided-check");
       await l4QaWaitFor(()=>!l4Machine.busy);
       check("Meaning FAIL remains GUIDED",l4Machine.phase==="GUIDED",l4Machine.phase);
       check("Meaning-first feedback is rendered",document.body.textContent.includes("Cuba fikir semula hubungan"));
@@ -13457,7 +13484,7 @@ window.KaranganTranslationCache = {
       level="STANDARD";activeExercise=null;guidedDraft="";l4ResetCycle();guided();providerDelay=120;providerCalls=0;
       l4QaSetValue("#l4GuidedInput",l4QaAnswerFor(activeExercise));
       const staleExercise=activeExercise.exerciseId;
-      l4QaClick("#l4GuidedCheck");
+      l4QaClickAction("guided-check");
       l4JudgeSeq++;const replacement=l4FreezeExercise(currentTask(),"GUIDED",currentTask().base);l4SetBusy(false);guided("QA replacement exercise");
       await l4QaSleep(180);
       check("Stale AI response is discarded",activeExercise?.exerciseId===replacement.exerciseId && activeExercise?.exerciseId!==staleExercise);
@@ -13492,5 +13519,5 @@ window.KaranganTranslationCache = {
   try{const saved=loadState();if(Number.isInteger(saved.lastTaskIndex))taskIndex=Math.max(0,Math.min(tasks.length-1,saved.lastTaskIndex));}catch(_){}
   document.addEventListener("click",l4ClickGateway,true);
   renderGrammarRain=start;
-  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v13.3.1-click-only-state-machine+automated-behavior-QA",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null};
+  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v13.3.2-click-only-state-machine+semantic-action-QA",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null};
 })();
