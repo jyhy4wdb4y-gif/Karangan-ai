@@ -12824,11 +12824,11 @@ window.KaranganTranslationCache = {
    Additive integration. Langkah 2 & Langkah 3 are untouched.
    ========================================================= */
 (function(){
-  const L4_VERSION="12.14.4";
+  const L4_VERSION="13.0.1-TEACHING-V2";
   const CONTENT_VERSION="1.0_STABLE";
   const LEGACY_GRAMMAR=renderGrammarRain;
   const STATE_KEY="karangan_ai_l4_t1_v1";
-  let level="ASAS", stage="START", hint=0, taskIndex=0, draft="", guidedDraft="", guidedHint3=false;
+  let level="ASAS", stage="START", hint=0, taskIndex=0, draft="", guidedDraft="", guidedHint3=false, independentHintUsed=false;
 
   const tasks=[
     {id:"L4-T1-001",skill:"PLACE",base:"Saya membaca buku.",q:"Di mana?",choices:["di bilik","di rumah","di sekolah"],model:"Saya membaca buku di bilik."},
@@ -12980,7 +12980,7 @@ window.KaranganTranslationCache = {
   function currentTask(){const t={...tasks[taskIndex%tasks.length]};if(t.skill==="OPEN_DYNAMIC"&&!t.base)t.base=pickTransferBase();return t;}
   function pickTransferBase(){const s=loadState(),seen=Array.isArray(s.transferSeen)?s.transferSeen:[];let x=transferPool.find(v=>!seen.includes(v))||transferPool[Math.floor(Math.random()*transferPool.length)];saveState({transferSeen:[...seen.filter(v=>v!==x),x].slice(-10)});return x;}
   function speak(text){try{if(!("speechSynthesis" in window)){showToast("🔊 Peranti ini belum menyokong suara.");return;}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="zh-CN";u.rate=.9;u.pitch=1;const vs=speechSynthesis.getVoices();const zh=vs.find(v=>/^zh/i.test(v.lang));if(zh)u.voice=zh;speechSynthesis.speak(u);}catch(e){console.warn("[L4 voice]",e);}}
-  function hintText(){const t=currentTask();hint=Math.min(3,hint+1);if(hint===3)guidedHint3=true;const txt=(hints[t.skill]||hints.OPEN)[hint-1];speak(txt);showToast(`🔊 Cikgu Aira · Petunjuk ${hint}/3`);}
+  function hintText(){const t=currentTask();hint=Math.min(3,hint+1);if(stage==="INDEPENDENT") independentHintUsed=true;else if(hint===3) guidedHint3=true;const txt=(hints[t.skill]||hints.OPEN)[hint-1];speak(txt);showToast(`🔊 Cikgu Aira · Petunjuk ${hint}/3`);}
   function l4SkillMeta(skill){const m={PLACE:["📍","Tempat"],TIME:["🕐","Masa"],COMPANION:["👫","Dengan siapa"],DESCRIPTION:["✨","Penerangan"],INTENSITY:["💫","Lebih jelas"],OPEN:["🪄","Idea bebas"],OPEN_DYNAMIC:["🪄","Idea bebas"]};return m[skill]||m.OPEN;}
   function l4Styles(){return `<style>
     .l4-wrap{max-width:860px;margin:0 auto}.l4-hero{background:linear-gradient(135deg,#fff5df,#fffdf7);border:1px solid #ffe0a4;border-radius:28px;padding:22px;box-shadow:0 14px 34px rgba(111,76,23,.08)}
@@ -13044,47 +13044,15 @@ window.KaranganTranslationCache = {
     };
   }
 
-  /* Semantic Engine v1
-     Curriculum decides WHAT to learn. AI only interprets open language.
-     AI never writes mastery directly. Unknown/unusual wording is not auto-wrong. */
-  const L4_SEMANTIC_CLASSES=new Set(["NATURAL","POSSIBLE","IMAGINATIVE","ODD","INVALID","UNKNOWN"]);
-  const L4_LOCAL_PATTERNS=[
-    /\bdi (bilik|rumah|sekolah|taman|dapur|kelas)\b/i,
-    /\bpada waktu (pagi|petang)\b/i,
-    /\b(bersama|dengan) (kawan|adik|ibu|ayah|keluarga|guru)\b/i,
-    /\bdan (cantik|besar|kecil|bersih|rajin|baik|berani)\b/i,
-    /\bsangat (gembira|sedih|takut|penat|seronok)\b/i
-  ];
-
-  function l4CanPassLocally(base,answer){
-    const norm=s=>String(s||"").toLowerCase().replace(/[.!?]/g,"").replace(/\s+/g," ").trim();
-    const a=norm(answer);
-    if(!l4TokensInOrder(base,answer))return false;
-
-    const skill=l4SkillKey(currentTask());
-    if(skill==="PLACE"){
-      return /\bdi (bilik|rumah|sekolah|taman|dapur|kelas)\b/i.test(a);
-    }
-    if(skill==="TIME"){
-      return /\bpada waktu (pagi|petang)\b/i.test(a);
-    }
-    if(skill==="COMPANION"){
-      return /\b(bersama|dengan) (kawan|adik|ibu|ayah|keluarga|guru)\b/i.test(a);
-    }
-    if(skill==="DESCRIPTION"){
-      return /\bdan (cantik|besar|kecil|bersih|rajin|baik|berani)\b/i.test(a);
-    }
-    if(skill==="INTENSITY"){
-      // Local PASS only for a clean single-focus intensity expansion.
-      // Extra conjunction/details are sent to Semantic AI instead of being blindly accepted.
-      return /\b(sangat|amat) (gembira|sedih|takut|penat|seronok)\b/i.test(a) && !/\bdan\b/i.test(a);
-    }
-    return false;
-  }
+  /* Teaching Engine v2
+     Decision order is fixed:
+     Meaning -> Skill Target -> Appropriateness -> Language -> Independence.
+     The AI interprets language; the client owns learning state and mastery evidence. */
+  const L4_APPROPRIATENESS=new Set(["NATURAL","POSSIBLE","IMAGINATIVE","ODD","INVALID","UNKNOWN"]);
 
   function l4ExtractJson(result){
     if(result && typeof result==="object" && !Array.isArray(result)){
-      if(result.semantic_class || result.target_met!==undefined) return result;
+      if(result.meaning_status || result.primary_issue || result.semantic_class) return result;
     }
     const raw=String(extractAIText(result)||"").trim();
     if(!raw) return null;
@@ -13095,151 +13063,129 @@ window.KaranganTranslationCache = {
     return null;
   }
 
-  async function l4SemanticJudge(base,answer){
-    const payload={
-      type:"semantic_judge",
+  async function l4TeachingJudge(base,answer){
+    const result=await callAI({
+      type:"teaching_judge_v2",
       language:"Bahasa Melayu",
       year:1,
       learning_target:l4SkillTarget(currentTask()),
+      skill_key:l4SkillKey(currentTask()),
       base_sentence:base,
-      student_answer:answer,
-      instruction:[
-        "You are the semantic understanding layer for a Malaysian Year 1 Bahasa Melayu learning app.",
-        "Do not require the student's words to exist in our curriculum vocabulary.",
-        "Judge meaning, not model-answer matching.",
-        "The current Stage 3 skill target is mandatory. A sentence can be meaningful but still miss the current skill target.",
-        "Preserve the base meaning even when a modifier is inserted inside the original wording, for example 'Ibu gembira.' -> 'Ibu sangat gembira.' preserves the base meaning.",
-        "If the target is INTENSITY, 'Ibu sangat gembira.' satisfies the target. Do not say the base sentence was lost just because 'sangat' is inserted before 'gembira'.",
-        "If the child adds an extra unrelated phrase beyond the requested one-information expansion, judge that extra phrase semantically rather than automatically accepting it.",
-        "Preserve creativity: unusual but possible answers are not wrong.",
-        "IMAGINATIVE is valid when the sentence works as an imaginative context.",
-        "ODD means semantically questionable but not clearly wrong; ask for clarification rather than failing.",
-        "INVALID only when the added information does not make semantic sense or does not satisfy the expansion task.",
-        "Return JSON only with: target_met, meaning_preserved, information_type, semantic_class, language_issue, needs_clarification, clarification_question, confidence.",
-        "semantic_class must be NATURAL, POSSIBLE, IMAGINATIVE, ODD, INVALID, or UNKNOWN.",
-        "language_issue must be null or one short important correction only."
-      ].join(" ")
-    };
-    const result=await callAI(payload);
+      student_answer:answer
+    });
     const parsed=l4ExtractJson(result);
-    if(!parsed) throw new Error("Semantic AI returned no valid JSON");
-    let cls=String(parsed.semantic_class||"UNKNOWN").toUpperCase();
-    if(!L4_SEMANTIC_CLASSES.has(cls)) cls="UNKNOWN";
+    if(!parsed) throw new Error("Teaching Engine v2 returned no valid JSON");
+    let app=String(parsed.appropriateness||parsed.semantic_class||"UNKNOWN").toUpperCase();
+    if(!L4_APPROPRIATENESS.has(app)) app="UNKNOWN";
     return {
-      target_met:parsed.target_met===true,
-      meaning_preserved:parsed.meaning_preserved!==false,
-      information_type:String(parsed.information_type||"UNKNOWN").toUpperCase(),
-      semantic_class:cls,
-      language_issue:parsed.language_issue ? String(parsed.language_issue) : null,
+      result:String(parsed.result||"").toUpperCase(),
+      meaning_status:String(parsed.meaning_status||(parsed.meaning_preserved===false?"FAIL":"PASS")).toUpperCase(),
+      skill_target_status:String(parsed.skill_target_status||(parsed.target_met===true?"MET":"NOT_MET")).toUpperCase(),
+      appropriateness:app,
+      language_status:String(parsed.language_status||(parsed.language_issue?"MINOR_ISSUE":"CLEAN")).toUpperCase(),
+      language_issue:parsed.language_issue ? String(parsed.language_issue).trim() : null,
+      primary_issue:String(parsed.primary_issue||"NONE").toUpperCase(),
+      preserved_parts:Array.isArray(parsed.preserved_parts)?parsed.preserved_parts.map(x=>String(x).toUpperCase()):[],
       needs_clarification:parsed.needs_clarification===true,
-      clarification_question:parsed.clarification_question ? String(parsed.clarification_question) : "",
-      confidence:Number(parsed.confidence||0)
+      clarification_question:String(parsed.clarification_question||"").trim(),
+      confidence:Math.max(0,Math.min(1,Number(parsed.confidence||0)))
     };
   }
 
-  function l4ChildRetryFeedback(task,answer,judge){
+  function l4TeachingFeedback(task,j){
     const key=l4SkillKey(task);
-    const map={
-      PLACE:"Bagus mencuba! Cuba fikir semula tempat yang kamu tambah. Adakah tempat itu sesuai dengan maksud ayat?",
-      TIME:"Bagus mencuba! Cuba fikir semula masa yang kamu tambah. Adakah masa itu sesuai dengan ayat?",
-      COMPANION:"Bagus mencuba! Cuba fikir semula siapa yang kamu tambah. Adakah orang itu sesuai dengan maksud ayat?",
-      DESCRIPTION:"Bagus mencuba! Cuba fikir semula perkataan penerangan yang kamu tambah. Adakah perkataan itu sesuai untuk menerangkan benda atau orang dalam ayat?",
-      INTENSITY:"Bagus mencuba! Cuba kuatkan perasaan atau penerangan dalam ayat tanpa mengubah maksud asal.",
-      OPEN:"Bagus mencuba! Cuba fikir semula maklumat baharu yang kamu tambah. Adakah maklumat itu sesuai dengan maksud ayat?",
-      OPEN_DYNAMIC:"Bagus mencuba! Cuba fikir semula maklumat baharu yang kamu tambah. Adakah maklumat itu sesuai dengan maksud ayat?"
-    };
-    return map[key]||map.OPEN;
+    const preserved=j.preserved_parts||[];
+    const praise=preserved.includes("BASE_MEANING")?"Bagus, kamu mengekalkan maksud ayat asal. ":"Bagus mencuba! ";
+    if(j.primary_issue==="MEANING") return praise+"Cuba fikir semula hubungan antara perbuatan dan maklumat yang kamu tambah. Adakah gabungan itu membawa maksud yang sesuai?";
+    if(j.primary_issue==="SKILL_TARGET") {
+      const map={PLACE:"Kamu sudah membina ayat yang boleh difahami. Sekarang tambah maklumat tempat.",TIME:"Kamu sudah membina ayat yang boleh difahami. Sekarang tambah maklumat masa.",COMPANION:"Kamu sudah membina ayat yang boleh difahami. Sekarang tambah maklumat dengan siapa.",DESCRIPTION:"Kamu sudah membina ayat yang boleh difahami. Sekarang tambah satu penerangan yang sesuai.",INTENSITY:"Kamu sudah mengekalkan maksud ayat. Sekarang kuatkan perasaan atau penerangan itu.",OPEN:"Ayat kamu boleh difahami. Sekarang tambah satu maklumat baharu yang bermakna.",OPEN_DYNAMIC:"Ayat kamu boleh difahami. Sekarang tambah satu maklumat baharu yang bermakna."};
+      return map[key]||map.OPEN;
+    }
+    if(j.primary_issue==="APPROPRIATENESS") return praise+"Idea kamu menarik. Cuba fikir sama ada maklumat itu sesuai dengan maksud seluruh ayat.";
+    if(j.primary_issue==="LANGUAGE" && j.language_issue) return "Idea kamu sudah boleh difahami. Baiki satu perkara sahaja: "+j.language_issue;
+    if(j.needs_clarification || j.appropriateness==="ODD" || j.appropriateness==="UNKNOWN" || j.confidence<0.65){
+      return j.clarification_question || "Idea kamu menarik. Boleh jelaskan sedikit maksud maklumat yang kamu tambah?";
+    }
+    return "Bagus mencuba! Cuba semak semula satu bahagian ayat kamu.";
   }
 
-  function l4ChildClarificationFeedback(task,judge){
-    const q=String(judge?.clarification_question||"").trim();
-    if(q && !/[A-Za-z]{4,}\s+[A-Za-z]{4,}/.test(q)) return q;
-    const key=l4SkillKey(task);
-    const map={
-      PLACE:"Idea kamu menarik. Tempat itu memang satu tempat dalam cerita kamu?",
-      TIME:"Idea kamu menarik. Masa itu memang masa yang kamu maksudkan?",
-      COMPANION:"Idea kamu menarik. Orang itu memang orang yang bersama dalam ayat kamu?",
-      DESCRIPTION:"Idea kamu menarik. Perkataan itu memang kamu gunakan untuk menerangkan ayat ini?",
-      INTENSITY:"Idea kamu menarik. Kamu mahu menunjukkan perasaan itu menjadi lebih kuat?",
-      OPEN:"Idea kamu menarik. Boleh jelaskan sedikit maksud maklumat yang kamu tambah?",
-      OPEN_DYNAMIC:"Idea kamu menarik. Boleh jelaskan sedikit maksud maklumat yang kamu tambah?"
-    };
-    return map[key]||map.OPEN;
-  }
-
-  function l4SemanticFeedback(j){
-    if(j.language_issue) return `Bagus! Idea kamu boleh difahami. Cuba baiki satu perkara sahaja: ${j.language_issue}`;
-    if(j.semantic_class==="IMAGINATIVE") return "Wah, imaginasi kamu hebat! Ayat ini boleh digunakan dalam cerita imaginasi.";
-    if(j.semantic_class==="POSSIBLE") return "Bagus! Maklumat itu mungkin dan ayat kamu boleh difahami.";
-    return "";
+  function l4LanguagePrecheck(answer){
+    const issues=[];
+    if(!/^[A-Z]/.test(answer)) issues.push("Cuba mula ayat dengan huruf besar.");
+    if(!/[.!?]$/.test(answer)) issues.push("Cuba letakkan tanda noktah di hujung ayat.");
+    return issues[0]||null;
   }
 
   async function checkOwn(){
     const el=byId("l4Draft");
     draft=(el?.value||draft).trim();
     const s=loadState(),base=s.currentIndependentBase||pickConnectedTransferBase(currentTask());
-
     if(!draft){independentRender(base,"Cuba tulis ayat kamu dahulu.");return;}
-    if(!/^[A-Z]/.test(draft)){independentRender(base,"Bagus! Cuba mula ayat dengan huruf besar.");return;}
-    if(!/[.!?]$/.test(draft)){independentRender(base,"Ayat kamu hampir siap. Tambah tanda noktah di hujung.");return;}
 
-    const info=expansionInfo(base,draft);
-    if(!info.basePreserved){independentRender(base,"Bagus mencuba. Kekalkan ayat asal dan tambah satu maklumat.");return;}
-    if(!info.added){independentRender(base,"Ayat asal sudah betul. Sekarang tambah satu maklumat lagi.");return;}
-    // Do not reject open wording merely because it lacks one of our familiar marker words.
-    // The exact Stage-3 skill target is checked below locally or by Semantic AI.
-
-    // Familiar, curriculum-safe combinations can pass without spending an AI call.
-    if(l4CanPassLocally(base,draft)){
-      recordSuccess("INDEPENDENT_LOCAL",base);
-      success();
-      return;
-    }
-
-    // Open / unfamiliar language: activate the language model through the existing /api/ai route.
+    /* IMPORTANT: no spelling/capitalisation/punctuation rejection here.
+       Meaning and skill must be judged first. */
     try{
-      const judge=await l4SemanticJudge(base,draft);
-      const history=Array.isArray(loadState().semanticHistory)?loadState().semanticHistory:[];
-      history.push({base,answer:draft,...judge,at:Date.now()});
-      saveState({semanticHistory:history.slice(-50)});
+      const judge=await l4TeachingJudge(base,draft);
+      const history=Array.isArray(loadState().teachingHistory)?loadState().teachingHistory:[];
+      history.push({base,answer:draft,skill:l4SkillKey(currentTask()),...judge,at:Date.now()});
+      saveState({teachingHistory:history.slice(-100)});
 
-      if(judge.language_issue){
-        independentRender(base,l4SemanticFeedback(judge));
-        return;
+      /* Strict teaching hierarchy: finish Meaning before Skill Target. */
+      if(judge.meaning_status==="UNCERTAIN"){
+        independentRender(base,l4TeachingFeedback(currentTask(),{...judge,primary_issue:"NONE",needs_clarification:true}));return;
+      }
+      if(judge.meaning_status==="FAIL"){
+        independentRender(base,l4TeachingFeedback(currentTask(),{...judge,primary_issue:"MEANING"}));return;
+      }
+      if(judge.skill_target_status==="UNCERTAIN"){
+        independentRender(base,l4TeachingFeedback(currentTask(),{...judge,primary_issue:"NONE",needs_clarification:true}));return;
+      }
+      if(judge.skill_target_status==="NOT_MET"){
+        independentRender(base,l4TeachingFeedback(currentTask(),{...judge,primary_issue:"SKILL_TARGET"}));return;
+      }
+      if(["ODD","INVALID","UNKNOWN"].includes(judge.appropriateness) || judge.primary_issue==="APPROPRIATENESS"){
+        independentRender(base,l4TeachingFeedback(currentTask(),judge));return;
       }
 
-      if(judge.target_met && judge.meaning_preserved &&
-         ["NATURAL","POSSIBLE","IMAGINATIVE"].includes(judge.semantic_class)){
-        recordSuccess("INDEPENDENT_AI_"+judge.semantic_class,base);
-        success();
-        return;
+      const localLanguageIssue=l4LanguagePrecheck(draft);
+      const languageIssue=judge.language_issue||localLanguageIssue;
+      if(languageIssue){
+        independentRender(base,l4TeachingFeedback(currentTask(),{...judge,primary_issue:"LANGUAGE",language_issue:languageIssue}));return;
       }
 
-      if(judge.needs_clarification || ["ODD","UNKNOWN"].includes(judge.semantic_class) || judge.confidence<0.65){
-        independentRender(base,l4ChildClarificationFeedback(currentTask(),judge));
-        return;
-      }
-
-      independentRender(base,l4ChildRetryFeedback(currentTask(),draft,judge));
+      const independentEvidence=!independentHintUsed;
+      recordSuccess("STAGE3_SUCCESS",base,{independentEvidence,judge});
+      success(independentEvidence,judge);
     }catch(err){
-      console.warn("[L4 Semantic Engine]",err);
-      // Never mark an unfamiliar child answer wrong merely because AI/network is unavailable.
+      console.warn("[L4 Teaching Engine v2]",err);
       independentRender(base,"Cikgu Aira belum dapat menyemak maksud ayat ini sekarang. Ayat kamu tidak ditanda salah. Cuba tekan Semak sekali lagi.");
     }
   }
-  function recordSuccess(kind,base){const s=loadState(),history=Array.isArray(s.history)?s.history:[];history.push({taskId:currentTask().id,skill:currentTask().skill,kind,level,hintUsed:hint,hint3:guidedHint3,base,at:Date.now()});saveState({history:history.slice(-100),lastTaskIndex:taskIndex});}
-  function success(){stage="SUCCESS";shell(`<div class="l4-success"><div class="emoji">🎉</div><h1 style="margin:4px 0">Hebat!</h1><p>Kamu berjaya <strong>kembangkan ayat sendiri</strong>.</p><div class="l4-xp">⭐ +10 XP</div><div class="l4-ai" style="text-align:left"><div class="l4-ai-face">🐣</div><div><div class="l4-ai-title">Cikgu Aira</div><div>Saya bangga kerana kamu cuba sendiri.</div></div></div></div><div class="l4-actions"><button id="l4Next" class="l4-primary">Cabar Ayat Seterusnya</button><button id="l4Finish" class="l4-secondary">Selesai ✓</button></div>`,100,3);}
+
+  function recordSuccess(kind,base,meta={}){
+    const s=loadState(),history=Array.isArray(s.history)?s.history:[];
+    const event={taskId:currentTask().id,skill:currentTask().skill,kind,level,hintUsed:hint,hint3:guidedHint3,independentHintUsed,base,at:Date.now(),...meta};
+    history.push(event);
+    const patch={history:history.slice(-100),lastTaskIndex:taskIndex};
+    if(meta.independentEvidence===true){
+      const mastery=Array.isArray(s.masteryEvidence)?s.masteryEvidence:[];
+      mastery.push({taskId:event.taskId,skill:event.skill,base,answer:draft,at:event.at,source:"TEACHING_ENGINE_V2_STAGE3"});
+      patch.masteryEvidence=mastery.slice(-100);
+    }
+    saveState(patch);
+  }
+  function success(independentEvidence=true,judge=null){stage="SUCCESS";const evidenceNote=independentEvidence?"<div class=\"l4-xp\">⭐ Independent mastery evidence +1</div>":"<div class=\"l4-ai\" style=\"margin-top:12px;text-align:left\"><div class=\"l4-ai-face\">🌱</div><div><div class=\"l4-ai-title\">Latihan berjaya</div><div>Kamu berjaya selepas menggunakan bantuan. Ini dikira sebagai pembelajaran, belum sebagai bukti penguasaan sendiri.</div></div></div>";shell(`<div class="l4-success"><div class="emoji">🎉</div><h1 style="margin:4px 0">Hebat!</h1><p>Kamu berjaya <strong>kembangkan ayat</strong>.</p>${evidenceNote}<div class="l4-ai" style="text-align:left"><div class="l4-ai-face">🐣</div><div><div class="l4-ai-title">Cikgu Aira</div><div>${judge?.appropriateness==="IMAGINATIVE"?"Idea imaginasi kamu diterima kerana maksud ayat masih jelas.":"Kamu mengekalkan maksud dan memenuhi kemahiran sasaran."}</div></div></div></div><div class="l4-actions"><button id="l4Next" class="l4-primary">Cabar Ayat Seterusnya</button><button id="l4Finish" class="l4-secondary">Selesai ✓</button></div>`,100,3);}
   function checkGuided(){const t=currentTask(),el=byId("l4GuidedInput"),v=(el?.value||guidedDraft||"").trim();guidedDraft=v;if(!v){guided("Cuba tulis jawapan kamu dahulu.");return;}if(v.split(/\s+/).length<3){guided("Hampir betul! Jangan tulis maklumat sahaja. Cuba lengkapkan seluruh ayat.");return;}if(!/^[A-Z]/.test(v)){guided("Bagus! Cuba mula ayat dengan huruf besar.");return;}if(!/[.!?]$/.test(v)){guided("Ayat kamu hampir siap. Tambah tanda noktah di hujung.");return;}const info=expansionInfo(t.base,v);if(!info.basePreserved||!info.added){guided("Kekalkan ayat asal dan tambah satu maklumat yang sesuai.");return;}recordSuccess(guidedHint3?"GUIDED_SUCCESS":"GUIDED_INDEPENDENT",t.base);upgrade(v);}
   let last=0;function action(e){const el=e.target.closest?.("#l4Begin,#l4Hint,#l4GuidedCheck,#l4TryOwn,#l4OwnCheck,#l4Next,#l4Finish,[data-l4-level],[data-l4-choice]");if(!el)return;const now=Date.now();if(now-last<320)return;last=now;e.preventDefault();e.stopPropagation();if(el.dataset?.l4Level){level=el.dataset.l4Level;start();return;}if(el.id==="l4Begin"){guidedDraft="";guided();return;}if(el.id==="l4Hint"){hintText();return;}if(el.dataset?.l4Choice){recordSuccess("GUIDED_CHOICE",currentTask().base);upgrade(el.dataset.l4Choice);return;}if(el.id==="l4GuidedCheck"){checkGuided();return;}if(el.id==="l4TryOwn"){
-      draft="";
+      draft=""; independentHintUsed=false;
       saveState({currentIndependentBase:null,currentIndependentSkill:null});
       const connectedBase=pickConnectedTransferBase(currentTask());
       independentRender(connectedBase);
       return;
-    }if(el.id==="l4OwnCheck"){checkOwn();return;}if(el.id==="l4Next"){taskIndex=(taskIndex+1)%tasks.length;saveState({lastTaskIndex:taskIndex});draft="";guidedDraft="";guided();return;}if(el.id==="l4Finish"){try{completeMission("grammar-rain");}catch(_){}shell(`<div style="text-align:center;padding:24px"><div style="font-size:70px">🏆</div><h1>Misi Hari Ini Selesai!</h1><p>Kamu sudah belajar menjadikan ayat lebih lengkap.</p></div>`,100);return;}}
-  let l4OwnCheckLast=0;function l4OwnCheckSafe(e){const target=e.target,btn=(target&&target.id==="l4OwnCheck")?target:target?.closest?.("#l4OwnCheck");if(!btn)return;const now=Date.now();if(now-l4OwnCheckLast<350)return;l4OwnCheckLast=now;try{e.preventDefault();e.stopPropagation();const ta=document.getElementById("l4Draft");if(ta)draft=String(ta.value||"").trim();btn.disabled=true;btn.textContent="⏳ Sedang semak...";checkOwn();}catch(err){console.error("[L4 Semak Ayat]",err);try{btn.disabled=false;btn.textContent="✓ Semak Ayat Saya";}catch(_){}try{showToast("Cuba tekan Semak Ayat sekali lagi.");}catch(_){}}}
+    }if(el.id==="l4Next"){taskIndex=(taskIndex+1)%tasks.length;saveState({lastTaskIndex:taskIndex});draft="";guidedDraft="";guided();return;}if(el.id==="l4Finish"){try{completeMission("grammar-rain");}catch(_){}shell(`<div style="text-align:center;padding:24px"><div style="font-size:70px">🏆</div><h1>Misi Hari Ini Selesai!</h1><p>Kamu sudah belajar menjadikan ayat lebih lengkap.</p></div>`,100);return;}}
+  let l4OwnCheckLast=0;function l4OwnCheckSafe(e){const target=e.target,btn=(target&&target.id==="l4OwnCheck")?target:target?.closest?.("#l4OwnCheck");if(!btn)return;const now=Date.now();if(now-l4OwnCheckLast<350){e.preventDefault();e.stopImmediatePropagation?.();return;}l4OwnCheckLast=now;try{e.preventDefault();e.stopImmediatePropagation?.();e.stopPropagation();const ta=document.getElementById("l4Draft");if(ta)draft=String(ta.value||"").trim();btn.disabled=true;btn.textContent="⏳ Sedang semak...";checkOwn();}catch(err){console.error("[L4 Semak Ayat]",err);try{btn.disabled=false;btn.textContent="✓ Semak Ayat Saya";}catch(_){}try{showToast("Cuba tekan Semak Ayat sekali lagi.");}catch(_){}}}
   try{const saved=loadState();if(Number.isInteger(saved.lastTaskIndex))taskIndex=Math.max(0,Math.min(tasks.length-1,saved.lastTaskIndex));}catch(_){}
   document.addEventListener("pointerup",l4OwnCheckSafe,true);document.addEventListener("touchend",l4OwnCheckSafe,true);document.addEventListener("click",l4OwnCheckSafe,true);document.addEventListener("pointerup",action,true);document.addEventListener("click",action,true);
   renderGrammarRain=start;
-  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"v1.1-safe-fast-path",connectedTransfer:"v1.1-fixed",baseMeaning:"v1.1-token-order",skillTarget:"v1.0",feedbackQuality:"v1.0-child-friendly",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState};
+  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"TeachingEngine-v2",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v2-same-skill",masteryEvidence:"independent-only-v2",feedbackQuality:"v2-preserve-partial-correctness",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState};
 })();
