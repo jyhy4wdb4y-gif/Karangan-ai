@@ -1,7 +1,7 @@
 /* =========================================================
    KARANGAN AI
    API / AI CONTROLLER
-   Version 4.5.0 Compositional Semantic Judge
+   Version 4.6.0 Meaning-Priority Semantic Judge
 
    Supports:
    - translate
@@ -1265,14 +1265,43 @@ PRINSIP WAJIB:
     "Ayah membaca di langit." => IMAGINATIVE, target_met=true kerana ACTION+PLACE jelas.
     "Adik belajar di hutan." => POSSIBLE, target_met=true kerana ACTION+PLACE jelas.
 
-13. FEEDBACK SAFETY:
+13. ERROR PRIORITY GATE — HARD RULE:
+    Sebelum memilih main_issue, nilai semua isu yang ditemui dan pilih HANYA isu berkeutamaan tertinggi:
+    PRIORITY 1 = CORE_MEANING / SEMANTIC_RELATIONSHIP
+    PRIORITY 2 = TASK_TARGET
+    PRIORITY 3 = GRAMMAR / WORD_FORM
+    PRIORITY 4 = SPELLING
+    PRIORITY 5 = CAPITALISATION / PUNCTUATION
+
+    Jika PRIORITY 1 gagal:
+    - result mesti RETRY.
+    - main_issue mesti isu makna/semantic relationship.
+    - JANGAN pilih titik, huruf besar, ejaan atau tatabahasa sebagai main_issue walaupun kesalahan itu juga wujud.
+    - target_met=false jika hubungan utama yang diperlukan tidak bermakna.
+    - feedback mesti fokus pada SATU hubungan makna yang perlu difikir semula.
+    - jangan beri jawapan penuh dan jangan cipta idea baharu.
+
+    MULTI-ERROR CALIBRATION:
+    "Saya mengemas tahi di langit" => RETRY; main_issue=SEMANTIC_RELATIONSHIP. Jangan tegur titik dahulu.
+    "Saya mengemas tahi di langit." => RETRY; main_issue=SEMANTIC_RELATIONSHIP.
+    "saya mengemas tahi di langit" => RETRY; main_issue=SEMANTIC_RELATIONSHIP walaupun huruf besar dan titik salah.
+    "Saya mengemas bilik di rumah" => makna boleh diterima; barulah punctuation boleh menjadi main_issue.
+    "saya mengemas bilik di rumah." => makna boleh diterima; capitalisation boleh menjadi main_issue.
+    "Saya mengemas bilik di rumah." => boleh diterima jika target dipenuhi.
+
+    Pecahkan ayat secara setempat:
+    - "mengemas + tahi" = hubungan ACTION + OBJECT/COMPLEMENT yang bermasalah dalam konteks biasa Tahun 1.
+    - "di langit" boleh dianggap IMAGINATIVE secara berasingan.
+    - Kehadiran unsur imaginatif yang sah TIDAK boleh menutup hubungan semantik lain yang gagal.
+
+14. FEEDBACK SAFETY:
     Untuk ODD/INVALID akibat hubungan semantik, jangan beri ayat jawapan penuh.
     Gunakan maklum balas pendek seperti:
     "Bagus mencuba. Cuba fikir semula perkataan selepas ‘bermain’. Adakah perkataan itu sesuai dengan perbuatan bermain?"
     atau soalan ringkas yang menunjuk SATU bahagian untuk difikir semula.
     Jangan masukkan perkataan baharu yang boleh menjadi jawapan murid.
 
-14. Jangan tentukan mastered, XP, level atau curriculum status.
+15. Jangan tentukan mastered, XP, level atau curriculum status.
 
 semantic_class mesti salah satu:
 NATURAL, POSSIBLE, IMAGINATIVE, ODD, INVALID, UNKNOWN.
@@ -1778,5 +1807,5 @@ function extractResponseText(
 
 
 /* =========================================================
-   END KARANGAN AI API v4.5.0
+   END KARANGAN AI API v4.6.0
    ========================================================= */
