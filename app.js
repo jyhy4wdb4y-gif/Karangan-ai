@@ -12824,7 +12824,7 @@ window.KaranganTranslationCache = {
    Additive integration. Langkah 2 & Langkah 3 are untouched.
    ========================================================= */
 (function(){
-  const L4_VERSION="13.5.1-LIVE-BENCHMARK-RUNNER";
+  const L4_VERSION="13.6.0-PREDEPLOYMENT-TEST-LAB";
   const CONTENT_VERSION="1.0_STABLE";
   const LEGACY_GRAMMAR=renderGrammarRain;
   const STATE_KEY="karangan_ai_l4_t1_v1";
@@ -13409,15 +13409,60 @@ window.KaranganTranslationCache = {
 
   function l4LiveBenchmarkShow(report){
     const box=document.getElementById("l4-live-bench-report")||l4LiveBenchmarkPanel();
-    const rows=report.results.map(x=>`<div style="padding:7px 0;border-bottom:1px solid #eee">${x.pass?"✅":"❌"} <strong>${esc(x.id)} · ${esc(x.name)}</strong><div style="font-size:12px;color:#667">${esc(x.skill)} · expected ${esc(x.expected)}${x.allow.length?` (also tolerates ${esc(x.allow.join(", "))})`:""} · got ${esc(x.actual)} · ${esc(x.answer)}${x.error?` · ERROR: ${esc(x.error)}`:""}</div></div>`).join("");
+    const rows=report.results.map(x=>{
+      const icon=x.kind==="API_ERROR"?"⚠️":(x.pass?"✅":"❌");
+      const label=x.kind==="API_ERROR"?`API ${esc(x.errorType||"ERROR")} · excluded from semantic score`:`expected ${esc(x.expected)}${x.allow.length?` (also tolerates ${esc(x.allow.join(", "))})`:""} · got ${esc(x.actual)}`;
+      return `<div style="padding:7px 0;border-bottom:1px solid #eee">${icon} <strong>${esc(x.id)} · ${esc(x.name)}</strong><div style="font-size:12px;color:#667">${esc(x.skill)} · ${label} · ${esc(x.answer)}${x.error?` · ERROR: ${esc(x.error)}`:""}${x.retries?` · retries ${x.retries}`:""}</div></div>`;
+    }).join("");
     const summary=box.querySelector("#l4LiveBenchSummary");
     const statusEl=box.querySelector("#l4LiveBenchStatus");
     const rowsEl=box.querySelector("#l4LiveBenchRows");
     const bar=box.querySelector("#l4LiveBenchBar");
     if(bar)bar.style.width="100%";
-    if(summary)summary.innerHTML=`<strong>${report.passed}/${report.total} PASS</strong> · ${report.failed} failed · ${Math.round(report.accuracy*100)}% · ${report.durationMs} ms`;
-    if(statusEl)statusEl.textContent=report.failed?"Completed with failures — review the red rows below.":"Completed successfully.";
+    if(summary)summary.innerHTML=`<strong>Semantic ${report.passed}/${report.semanticTotal} PASS</strong> · ${report.failed} semantic fail · ${report.apiErrors} API error · ${report.retried} retries · ${report.accuracy===null?"N/A":Math.round(report.accuracy*100)+"%"} · ${report.durationMs} ms`;
+    if(statusEl){
+      if(report.failed)statusEl.textContent="Completed with semantic failures — review the red rows below.";
+      else if(report.apiErrors)statusEl.textContent="Semantic run completed, but some API/infrastructure cases were excluded from scoring.";
+      else statusEl.textContent="Completed successfully.";
+    }
     if(rowsEl)rowsEl.innerHTML=rows;
+  }
+
+
+  function l4Sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms));}
+
+  function l4ClassifyAIError(err){
+    const msg=String(err?.message||err||"");
+    if(/\b429\b|rate.?limit|too many requests/i.test(msg))return "RATE_LIMIT";
+    if(/timeout|timed out|abort/i.test(msg))return "TIMEOUT";
+    if(/\b5\d\d\b|server error/i.test(msg))return "SERVER";
+    if(/json|parse|malformed|invalid response/i.test(msg))return "INVALID_RESPONSE";
+    return "API_ERROR";
+  }
+
+  async function l4LiveJudgeResilient(snapshot,answer,{
+    judgeFn=l4TeachingJudge,
+    sleepFn=l4Sleep,
+    maxRetries=4,
+    baseDelayMs=1800,
+    maxDelayMs=12000
+  }={}){
+    let retries=0;
+    while(true){
+      try{
+        const judge=await judgeFn(snapshot,answer);
+        return {ok:true,judge,retries,errorType:null,error:""};
+      }catch(err){
+        const errorType=l4ClassifyAIError(err);
+        const retryable=["RATE_LIMIT","TIMEOUT","SERVER"].includes(errorType);
+        if(!retryable || retries>=maxRetries){
+          return {ok:false,judge:null,retries,errorType,error:String(err?.message||err)};
+        }
+        const delay=Math.min(maxDelayMs,baseDelayMs*(2**retries));
+        retries++;
+        await sleepFn(delay);
+      }
+    }
   }
 
   async function l4RunLiveAIBenchmark({visual=true}={}){
@@ -13425,31 +13470,49 @@ window.KaranganTranslationCache = {
     window.__KARANGAN_L4_LIVE_BENCH_RUNNING__=true;
     const started=Date.now(),cases=l4LiveBenchmarkCases(),results=[];
     if(visual)l4LiveBenchmarkPanel();
-    l4LiveBenchmarkUpdate({done:0,total:cases.length,status:"Starting live AI benchmark",passed:0,failed:0});
+    l4LiveBenchmarkUpdate({done:0,total:cases.length,status:"Starting rate-limit-aware live AI benchmark",passed:0,failed:0});
     try{
       for(let i=0;i<cases.length;i++){
         const c=cases[i];
-        let actual="ERROR",judge=null,error="";
-        l4LiveBenchmarkUpdate({done:i,total:cases.length,lastId:c.id,status:`Calling live AI (${i+1}/${cases.length})`,passed:results.filter(x=>x.pass).length,failed:results.filter(x=>!x.pass).length});
-        try{
-          judge=await l4TeachingJudge(c.snapshot,c.answer);
-          actual=l4TeachingDecision(judge,c.answer).issue;
-        }catch(err){
-          error=String(err?.message||err);
+        const semanticPassed=results.filter(x=>x.kind==="SEMANTIC"&&x.pass).length;
+        const semanticFailed=results.filter(x=>x.kind==="SEMANTIC"&&!x.pass).length;
+        l4LiveBenchmarkUpdate({done:i,total:cases.length,lastId:c.id,status:`Calling live AI (${i+1}/${cases.length})`,passed:semanticPassed,failed:semanticFailed});
+
+        const call=await l4LiveJudgeResilient(c.snapshot,c.answer);
+        if(!call.ok){
+          results.push({...c,kind:"API_ERROR",actual:"API_ERROR",pass:null,retries:call.retries,errorType:call.errorType,error:call.error,judge:null});
+          window.__KARANGAN_L4_LIVE_BENCH_PROGRESS__={done:i+1,total:cases.length,last:c.id};
+          l4LiveBenchmarkUpdate({done:i+1,total:cases.length,lastId:c.id,status:`API ERROR (${call.errorType}) — excluded from semantic score`,passed:semanticPassed,failed:semanticFailed,error:call.error});
+          if(call.errorType==="RATE_LIMIT")await l4Sleep(5000);
+          continue;
         }
+
+        const actual=l4TeachingDecision(call.judge,c.answer).issue;
         const pass=actual===c.expected||c.allow.includes(actual);
-        results.push({...c,actual,pass,error,judge});
+        results.push({...c,kind:"SEMANTIC",actual,pass,retries:call.retries,errorType:null,error:"",judge:call.judge});
         window.__KARANGAN_L4_LIVE_BENCH_PROGRESS__={done:i+1,total:cases.length,last:c.id};
-        l4LiveBenchmarkUpdate({done:i+1,total:cases.length,lastId:c.id,status:pass?"PASS":"FAIL",passed:results.filter(x=>x.pass).length,failed:results.filter(x=>!x.pass).length,error});
+        l4LiveBenchmarkUpdate({done:i+1,total:cases.length,lastId:c.id,status:pass?"SEMANTIC PASS":"SEMANTIC FAIL",passed:semanticPassed+(pass?1:0),failed:semanticFailed+(pass?0:1)});
+        await l4Sleep(900);
       }
     }finally{
       window.__KARANGAN_L4_LIVE_BENCH_RUNNING__=false;
     }
-    const passed=results.filter(x=>x.pass).length;
-    const report={version:L4_VERSION,suite:"LIVE_AI_SEMANTIC_BENCHMARK",total:results.length,passed,failed:results.length-passed,accuracy:passed/results.length,durationMs:Date.now()-started,results};
+
+    const semantic=results.filter(x=>x.kind==="SEMANTIC");
+    const apiErrors=results.filter(x=>x.kind==="API_ERROR");
+    const passed=semantic.filter(x=>x.pass).length;
+    const failed=semantic.length-passed;
+    const retried=results.reduce((n,x)=>n+(x.retries||0),0);
+    const report={
+      version:L4_VERSION,suite:"LIVE_AI_SEMANTIC_BENCHMARK",
+      total:results.length,semanticTotal:semantic.length,passed,failed,
+      apiErrors:apiErrors.length,retried,
+      accuracy:semantic.length?passed/semantic.length:null,
+      durationMs:Date.now()-started,results
+    };
     window.__KARANGAN_L4_LAST_LIVE_BENCH__=report;
     if(visual)l4LiveBenchmarkShow(report);
-    console.table(results.map(x=>({id:x.id,skill:x.skill,expected:x.expected,actual:x.actual,pass:x.pass,error:x.error})));
+    console.table(results.map(x=>({id:x.id,kind:x.kind,expected:x.expected,actual:x.actual,pass:x.pass,retries:x.retries,errorType:x.errorType})));
     return report;
   }
 
@@ -13812,5 +13875,94 @@ window.KaranganTranslationCache = {
   try{const saved=loadState();if(Number.isInteger(saved.lastTaskIndex))taskIndex=Math.max(0,Math.min(tasks.length-1,saved.lastTaskIndex));}catch(_){}
   document.addEventListener("click",l4ClickGateway,true);
   renderGrammarRain=start;
-  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v13.5.1-click-only-state-machine+live-ai-benchmark-runner",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null,runTeachingSimulation:l4RunTeachingSimulation,lastTeachingSimulation:()=>window.__KARANGAN_L4_LAST_SIM__||null,runLiveAIBenchmark:l4RunLiveAIBenchmark,lastLiveAIBenchmark:()=>window.__KARANGAN_L4_LAST_LIVE_BENCH__||null};
+
+  async function l4RunPredeploymentLab({visual=false}={}){
+    const tests=[];
+    const add=(name,pass,detail="")=>tests.push({name,pass:!!pass,detail});
+    const snap={exerciseId:"LAB-1",learningTarget:"Tambah tempat",skill:"PLACE",base:"Saya membaca buku.",task:{skill:"PLACE",base:"Saya membaca buku."}};
+
+    // 1 normal response
+    {
+      let calls=0;
+      const judgeFn=async()=>{calls++;return {meaning_status:"PASS",skill_target_status:"MET",appropriateness:"NATURAL",language_issue:null,primary_issue:"NONE"}};
+      const r=await l4LiveJudgeResilient(snap,"Saya membaca buku di rumah.",{judgeFn,sleepFn:async()=>{},maxRetries:4,baseDelayMs:1,maxDelayMs:2});
+      add("Normal AI response",r.ok&&calls===1&&r.retries===0,`calls=${calls}, retries=${r.retries}`);
+    }
+
+    // 2 429 then recovery
+    {
+      let calls=0;
+      const judgeFn=async()=>{calls++;if(calls<3)throw new Error("AI API 429");return {meaning_status:"PASS",skill_target_status:"MET",appropriateness:"NATURAL",language_issue:null,primary_issue:"NONE"}};
+      const r=await l4LiveJudgeResilient(snap,"Saya membaca buku di rumah.",{judgeFn,sleepFn:async()=>{},maxRetries:4,baseDelayMs:1,maxDelayMs:2});
+      add("429 exponential retry recovers",r.ok&&calls===3&&r.retries===2,`calls=${calls}, retries=${r.retries}`);
+    }
+
+    // 3 persistent 429 becomes API error, not semantic fail
+    {
+      let calls=0;
+      const judgeFn=async()=>{calls++;throw new Error("AI API 429")};
+      const r=await l4LiveJudgeResilient(snap,"Saya membaca buku di rumah.",{judgeFn,sleepFn:async()=>{},maxRetries:2,baseDelayMs:1,maxDelayMs:2});
+      add("Persistent 429 classified RATE_LIMIT",!r.ok&&r.errorType==="RATE_LIMIT"&&calls===3,`type=${r.errorType}, calls=${calls}`);
+    }
+
+    // 4 timeout retry
+    {
+      let calls=0;
+      const judgeFn=async()=>{calls++;if(calls===1)throw new Error("request timeout");return {meaning_status:"PASS",skill_target_status:"MET",appropriateness:"NATURAL",language_issue:null,primary_issue:"NONE"}};
+      const r=await l4LiveJudgeResilient(snap,"Saya membaca buku di rumah.",{judgeFn,sleepFn:async()=>{},maxRetries:2,baseDelayMs:1,maxDelayMs:2});
+      add("Timeout retry recovers",r.ok&&calls===2&&r.retries===1,`calls=${calls}`);
+    }
+
+    // 5 server 500 retry
+    {
+      let calls=0;
+      const judgeFn=async()=>{calls++;if(calls===1)throw new Error("AI API 500");return {meaning_status:"PASS",skill_target_status:"MET",appropriateness:"NATURAL",language_issue:null,primary_issue:"NONE"}};
+      const r=await l4LiveJudgeResilient(snap,"Saya membaca buku di rumah.",{judgeFn,sleepFn:async()=>{},maxRetries:2,baseDelayMs:1,maxDelayMs:2});
+      add("HTTP 500 retry recovers",r.ok&&calls===2&&r.retries===1,`calls=${calls}`);
+    }
+
+    // 6 malformed/invalid response is infrastructure error and not retried blindly
+    {
+      let calls=0;
+      const judgeFn=async()=>{calls++;throw new Error("invalid JSON response")};
+      const r=await l4LiveJudgeResilient(snap,"Saya membaca buku di rumah.",{judgeFn,sleepFn:async()=>{},maxRetries:4,baseDelayMs:1,maxDelayMs:2});
+      add("Invalid JSON classified infrastructure error",!r.ok&&r.errorType==="INVALID_RESPONSE"&&calls===1,`type=${r.errorType}, calls=${calls}`);
+    }
+
+    // 7 semantic failure stays semantic, not API error
+    {
+      const judge={meaning_status:"FAIL",skill_target_status:"NOT_MET",appropriateness:"INVALID",language_issue:null,primary_issue:"MEANING"};
+      const d=l4TeachingDecision(judge,"Saya makan buku di rumah.");
+      add("Semantic error remains semantic",d.issue==="MEANING",`issue=${d.issue}`);
+    }
+
+    // 8 creative but meaningful accepted
+    {
+      const judge={meaning_status:"PASS",skill_target_status:"MET",appropriateness:"IMAGINATIVE",language_issue:null,primary_issue:"NONE"};
+      const d=l4TeachingDecision(judge,"Saya membaca buku di dalam istana ajaib.");
+      add("Creative meaningful answer accepted",d.issue==="NONE",`issue=${d.issue}`);
+    }
+
+    // 9 language comes after semantics
+    {
+      const judge={meaning_status:"FAIL",skill_target_status:"MET",appropriateness:"NATURAL",language_issue:"Huruf besar",primary_issue:"MEANING"};
+      const d=l4TeachingDecision(judge,"saya makan buku.");
+      add("Meaning outranks language",d.issue==="MEANING",`issue=${d.issue}`);
+    }
+
+    // 10 API errors excluded from semantic denominator
+    {
+      const sample=[{kind:"SEMANTIC",pass:true},{kind:"SEMANTIC",pass:false},{kind:"API_ERROR",pass:null}];
+      const semantic=sample.filter(x=>x.kind==="SEMANTIC");
+      const pass=semantic.filter(x=>x.pass).length;
+      add("API error excluded from semantic score",semantic.length===2&&pass===1,`semantic=${semantic.length}, pass=${pass}`);
+    }
+
+    const report={version:L4_VERSION,suite:"PREDEPLOYMENT_TEST_LAB",total:tests.length,passed:tests.filter(x=>x.pass).length,failed:tests.filter(x=>!x.pass).length,tests};
+    window.__KARANGAN_L4_LAST_PREDEPLOY_LAB__=report;
+    console.table(tests);
+    return report;
+  }
+
+  window.KaranganLangkah4={version:L4_VERSION,contentVersion:CONTENT_VERSION,semanticEngine:"AI-Native-TeachingEngine-v3",decisionOrder:"Meaning>SkillTarget>Appropriateness>Language>Independence",connectedTransfer:"v3-frozen-same-skill",masteryEvidence:"independent-only-v3",feedbackQuality:"v3-ai-judge-all-free-text-stages",interactionModel:"v13.6.0-click-only-state-machine+predeployment-test-lab",render:start,legacyGrammar:LEGACY_GRAMMAR,getTasks:()=>tasks.slice(),getState:loadState,getMachine:()=>({...l4Machine}),getDebugState:l4QaState,runQA:l4RunAutomatedQA,lastQA:()=>window.__KARANGAN_L4_LAST_QA__||null,runTeachingSimulation:l4RunTeachingSimulation,lastTeachingSimulation:()=>window.__KARANGAN_L4_LAST_SIM__||null,runLiveAIBenchmark:l4RunLiveAIBenchmark,lastLiveAIBenchmark:()=>window.__KARANGAN_L4_LAST_LIVE_BENCH__||null,runPredeploymentLab:l4RunPredeploymentLab,lastPredeploymentLab:()=>window.__KARANGAN_L4_LAST_PREDEPLOY_LAB__||null};
 })();
